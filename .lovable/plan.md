@@ -1,60 +1,65 @@
-## Cyber-Safety Platform — Build Plan
+## Goal
 
-Built on the existing **TanStack Start** scaffold (file-based routing, no `react-router-dom`). All logic stays client-side; loaders just render components. Supabase calls are abstracted behind a thin client so you can drop in real credentials later — until then a mock layer backs everything with seeded data so the full UX is testable.
+Guarantee every page in the app runs as client-only React — no SSR pass touches `window`, `localStorage`, `sessionStorage`, `IndexedDB`, or `navigator`. The app still ships through TanStack Start (Vite + Cloudflare worker), but the server side only emits the HTML shell and hands off to client rendering.
 
-### 1. Foundation
+## What's actually at risk today
 
-- **i18n / RTL** — `src/lib/i18n/`
-  - `LanguageContext` with `fr` / `ar`, persisted to `localStorage`.
-  - Effect updates `document.documentElement.lang` and `dir`.
-  - `useT()` hook reads from a single `translations.ts` dictionary.
-  - All layouts use `ltr:`/`rtl:` Tailwind variants; chevrons use `rtl:rotate-180`.
-- **Provider tree** wired in `__root.tsx`: `QueryClientProvider` → `LanguageProvider` → `OfflineSyncProvider` → `<Outlet />`. Browser APIs guarded by `useEffect`.
-- **Design tokens** — extend `src/styles.css` with a friendly education palette (primary blue, accent emerald, warning amber, destructive red) in oklch, plus `--gradient-hero` and `--shadow-card`. No hardcoded colors.
+A quick audit of browser-API usage:
 
-### 2. Offline-first sync — `src/lib/offline/`
+| File | API | Currently safe on server? |
+|---|---|---|
+| `src/lib/i18n/LanguageContext.tsx` | `localStorage`, `document` | ✓ inside `useEffect` |
+| `src/lib/offline/OfflineSyncProvider.tsx` | `navigator.onLine`, `window.addEventListener` | ✓ inside `useEffect` |
+| `src/lib/offline/db.ts` | Dexie / IndexedDB | ✓ guarded by `typeof window` |
+| `src/routes/game.tsx`, `game.$trackId.tsx` | `sessionStorage` | ✓ inside `useEffect` |
+| `src/routes/_authenticated.tsx` | `api.getSession()` in `beforeLoad` | ✓ guarded by `typeof window` |
+| **`src/lib/supabase/api.ts`** | **`seed()` runs at module bottom and calls `localStorage`** | ✗ — touches storage during SSR import |
+| `src/routes/_authenticated/dashboard.tsx` | `navigator.clipboard` | ✓ inside handler |
 
-- `db.ts` — Dexie schema with `offline_queue { id++, payload, createdAt }`.
-- `queue.ts` — `enqueueResult(payload)`, `flushQueue()`.
-- `useOfflineSync()` — registers `window.addEventListener('online', flushQueue)` once; also flushes on mount if online.
-- `saveResult(payload)`: if `navigator.onLine` → Supabase insert; on failure or offline → enqueue. Toast feedback either way.
+So the code is mostly disciplined, but (a) `api.ts` seeds at import time, and (b) SSR is still rendering the React tree on every request — which means any future regression silently re-introduces the same class of bug. The user explicitly wants 100% client-side; the right fix is to take SSR off the critical path globally.
 
-### 3. Supabase layer — `src/lib/supabase/`
+## Plan
 
-- `client.ts` — `createClient` reading `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`. If env missing, exports a **mock adapter** backed by seeded in-memory + `localStorage` store so the app is fully usable now.
-- `api.ts` — typed helpers: `verifyClassCode`, `createClass`, `listMyClasses`, `listResultsForTeacher`, `insertResult`. Each delegates to real client or mock based on env presence.
-- Drop in real creds later → zero component changes.
+### 1. Disable SSR globally on the root route
 
-### 4. Routes (TanStack file-based)
+In `src/routes/__root.tsx`, set `ssr: false` on the route options:
 
-- `src/routes/index.tsx` — **Landing**: hero with bilingual headline, language switcher in navbar, two CTA cards (Student / Teacher) → `/login`.
-- `src/routes/login.tsx` — **Access Portal**: tabbed dual-role layout.
-  - Student tab: class code + name → verify → navigate to `/game` (student session in `sessionStorage`).
-  - Teacher tab: email/password with sign-up / sign-in toggle.
-- `src/routes/_authenticated.tsx` — guard layout: checks teacher session; redirects to `/login` otherwise. Renders `<SidebarProvider>` + `<AppSidebar>` + `<Outlet />`.
-- `src/routes/_authenticated/dashboard.tsx` — **Class Hub**: create-class form (auto 6-char code via `nanoid`), copyable code chips, list of classes.
-- `src/routes/_authenticated/analytics.tsx` — **Analytics Room**: Recharts bar chart (avg score per scenario) + "Target Gaps / Lacunes à cibler" panel ranking most frequent `mistakes` items.
-- `src/routes/game.tsx` — **Scenario Lobby**: 6 track cards with lucide icons.
-- `src/routes/game.$trackId.tsx` — **Arena**: question card with media placeholder; click answer → lock + flip reveal (correct/incorrect) + "Why this matters" card; progress bar; trophy summary at end → `saveResult` (offline-aware).
+```ts
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  ssr: false,
+  // ...rest unchanged
+});
+```
 
-### 5. Content — `src/content/scenarios.ts`
+This propagates to every child route. The server still serves `index.html` with the script tag (and head metadata), but React renders entirely on the client. No `useEffect`s, no providers, no Dexie/localStorage code runs server-side.
 
-Local export. Each track has `id`, bilingual `title`/`description`, lucide icon name, and 3–5 questions: `{ id, prompt_fr, prompt_ar, choices_fr[], choices_ar[], correctIndex, explanation_fr, explanation_ar }`. I'll author reasonable placeholder content for all 6 tracks.
+### 2. Remove the module-level seed in `src/lib/supabase/api.ts`
 
-### 6. Components
+Move the `seed()` call out of module scope and into the functions that actually need it (`verifyClassCode`, `listMyClasses`, `listResultsForTeacher`). This makes the module safe to import even if some path ever does evaluate server-side.
 
-`LanguageSwitcher`, `Navbar`, `AppSidebar` (shadcn sidebar with collapse), `ScenarioCard`, `QuestionCard`, `FeedbackReveal`, `TrophySummary`, `MediaPlaceholder`.
+```ts
+// remove the trailing `seed();`
+async verifyClassCode(code) { seed(); /* existing body */ }
+async listMyClasses() { seed(); /* existing body */ }
+async listResultsForTeacher() { seed(); /* existing body */ }
+```
 
-### Technical notes
+`seed()` is already idempotent (it no-ops if classes exist).
 
-- **No `react-router-dom`** — TanStack `Link` / `useNavigate` everywhere.
-- All `localStorage` / `navigator.onLine` / Dexie access inside `useEffect` or handlers (SSR-safe).
-- TanStack Query for class lists and results; invalidated after mutations and after `online` flush.
-- One hero image generated for landing (`src/assets/`). Track icons: lucide (`Fish`, `KeyRound`, `Users`, `MessageSquareWarning`, `Lock`, `Bug`).
-- When ready: add `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` and create the two tables with the spec'd RLS — app switches off the mock automatically.
+### 3. Light hygiene pass on the route guard
 
-### Out of scope (this pass)
+`src/routes/_authenticated.tsx`'s `beforeLoad` already early-returns on the server. With `ssr: false` it never runs server-side anyway, but leave the guard in place — it's defensive and free.
 
-- Real Supabase project + RLS SQL (you'll connect later).
-- Real media assets inside scenarios (placeholders only).
-- Email verification / password reset flows.
+### 4. Verification
+
+After the changes:
+- Reload `/` — landing renders normally.
+- Reload `/dashboard` while logged-out — should redirect to `/login` (now happens after hydration, fine).
+- Reload `/game/phishing` after joining DEMO01 — questions render.
+- Check the preview console — no `window is not defined`, `localStorage is not defined`, or `HTTPError` 500s.
+- View-source on any page — you'll see the head + a mostly-empty `<body>` with the script bundle, confirming SSR is off.
+
+## Out of scope
+
+- Tearing out the SSR error wrapper in `src/server.ts` — it's still useful as a safety net for static-asset / build-init failures.
+- Converting the project to a pure-Vite SPA (would mean dropping TanStack Start entirely). `ssr: false` gives you 100% client rendering without that disruption.
