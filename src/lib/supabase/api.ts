@@ -151,6 +151,7 @@ export const api = {
     return row;
   },
   async listMyClasses(): Promise<ClassRow[]> {
+    seed();
     const session = api.getSession();
     if (!session) return [];
     const classes = read<ClassRow[]>(LS_CLASSES, []);
@@ -168,6 +169,7 @@ export const api = {
     return row;
   },
   async listResultsForTeacher(): Promise<ResultRow[]> {
+    seed();
     const session = api.getSession();
     if (!session) return [];
     const classes = read<ClassRow[]>(LS_CLASSES, []).filter((c) => c.teacher_id === session.id);
@@ -176,5 +178,3 @@ export const api = {
     return results.filter((r) => ids.has(r.class_id));
   },
 };
-
-seed();
