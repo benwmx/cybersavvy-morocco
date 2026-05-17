@@ -4,7 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { MediaPlaceholder } from "@/components/MediaPlaceholder";
+import { ScenarioVisuals } from "@/components/ScenarioVisuals";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { getTrack } from "@/content/scenarios";
 import { saveResult } from "@/lib/offline/queue";
@@ -147,7 +147,7 @@ function ScenarioRunner() {
               <CardTitle className="text-xl leading-relaxed">{q.prompt[lang]}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <MediaPlaceholder />
+              <ScenarioVisuals trackId={trackId} questionId={q.id} />
               <div className="grid gap-2">
                 {q.choices[lang].map((choice, i) => {
                   const isPicked = selected === i;

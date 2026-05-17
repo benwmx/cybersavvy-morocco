@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +10,19 @@ import { ArrowRight, Bug, Fish, KeyRound, Lock, MessageSquareWarning, Users } fr
 const ICONS = { Fish, KeyRound, Users, MessageSquareWarning, Lock, Bug };
 
 export const Route = createFileRoute("/game")({
-  component: GameLobby,
+  component: GameLayout,
 });
+
+function GameLayout() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const isLobby = path === "/game" || path === "/game/";
+
+  if (!isLobby) {
+    return <Outlet />;
+  }
+
+  return <GameLobby />;
+}
 
 function GameLobby() {
   const { t, lang } = useLang();

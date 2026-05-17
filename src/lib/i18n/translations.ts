@@ -58,6 +58,12 @@ export const translations = {
     welcomeBack: "Bon retour !",
     accountCreated: "Compte créé !",
     media: "Image illustrative",
+    settings: "Paramètres",
+    account: "Compte",
+    updatePassword: "Changer le mot de passe",
+    newPassword: "Nouveau mot de passe",
+    update: "Mettre à jour",
+    passwordUpdated: "Mot de passe mis à jour !",
   },
   ar: {
     appName: "سايبر سيف",
@@ -115,6 +121,12 @@ export const translations = {
     welcomeBack: "مرحباً بعودتك!",
     accountCreated: "تم إنشاء الحساب!",
     media: "صورة توضيحية",
+    settings: "الإعدادات",
+    account: "الحساب",
+    updatePassword: "تغيير كلمة المرور",
+    newPassword: "كلمة مرور جديدة",
+    update: "تحديث",
+    passwordUpdated: "تم تحديث كلمة المرور!",
   },
 } as const;
 

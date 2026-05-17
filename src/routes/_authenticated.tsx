@@ -8,9 +8,10 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { Wifi, WifiOff } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
-  beforeLoad: () => {
+  beforeLoad: async () => {
     if (typeof window === "undefined") return;
-    if (!api.getSession()) {
+    const session = await api.getSession();
+    if (!session) {
       throw redirect({ to: "/login" });
     }
   },

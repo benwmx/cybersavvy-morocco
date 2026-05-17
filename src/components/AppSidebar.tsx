@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, BarChart3, LogOut, Shield } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, Shield, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,7 @@ export function AppSidebar() {
   const items = [
     { url: "/dashboard", label: t("classes"), icon: LayoutDashboard },
     { url: "/analytics", label: t("analytics"), icon: BarChart3 },
+    { url: "/settings", label: t("settings"), icon: Settings },
   ];
 
   const logout = () => {

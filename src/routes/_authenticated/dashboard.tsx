@@ -34,7 +34,7 @@ function DashboardPage() {
   });
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t("classes")}</h1>
         <p className="text-muted-foreground">{t("createClass")}</p>
