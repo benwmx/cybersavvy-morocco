@@ -10,16 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as GuestRouteImport } from './routes/guest'
 import { Route as GameRouteImport } from './routes/game'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GameTrackIdRouteImport } from './routes/game.$trackId'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuestRoute = GuestRouteImport.update({
+  id: '/guest',
+  path: '/guest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GameRoute = GameRouteImport.update({
@@ -41,6 +48,11 @@ const GameTrackIdRoute = GameTrackIdRouteImport.update({
   path: '/$trackId',
   getParentRoute: () => GameRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -55,17 +67,21 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/game': typeof GameRouteWithChildren
+  '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/game': typeof GameRouteWithChildren
+  '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
 export interface FileRoutesById {
@@ -73,9 +89,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/game': typeof GameRouteWithChildren
+  '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
 export interface FileRouteTypes {
@@ -83,20 +101,32 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/game'
+    | '/guest'
     | '/login'
     | '/analytics'
     | '/dashboard'
+    | '/settings'
     | '/game/$trackId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/game' | '/login' | '/analytics' | '/dashboard' | '/game/$trackId'
+  to:
+    | '/'
+    | '/game'
+    | '/guest'
+    | '/login'
+    | '/analytics'
+    | '/dashboard'
+    | '/settings'
+    | '/game/$trackId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/game'
+    | '/guest'
     | '/login'
     | '/_authenticated/analytics'
     | '/_authenticated/dashboard'
+    | '/_authenticated/settings'
     | '/game/$trackId'
   fileRoutesById: FileRoutesById
 }
@@ -104,6 +134,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   GameRoute: typeof GameRouteWithChildren
+  GuestRoute: typeof GuestRoute
   LoginRoute: typeof LoginRoute
 }
 
@@ -114,6 +145,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guest': {
+      id: '/guest'
+      path: '/guest'
+      fullPath: '/guest'
+      preLoaderRoute: typeof GuestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/game': {
@@ -144,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameTrackIdRouteImport
       parentRoute: typeof GameRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -164,11 +209,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -189,8 +236,19 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   GameRoute: GameRouteWithChildren,
+  GuestRoute: GuestRoute,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

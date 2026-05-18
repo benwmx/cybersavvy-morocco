@@ -3,7 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { GraduationCap, ShieldCheck, ArrowRight, Wifi, Languages, Trophy } from "lucide-react";
+import { GraduationCap, ShieldCheck, ArrowRight, Wifi, Languages, Trophy, PlayCircle } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -41,14 +41,14 @@ function LandingPage() {
               </h1>
               <p className="mt-6 text-lg text-muted-foreground">{t("heroSubtitle")}</p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="rounded-full px-8">
                   <Link to="/login">
                     {t("getStarted")}
                     <ArrowRight className="ltr:ml-2 rtl:mr-2 rtl:rotate-180 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link to="/game">{t("studentPortal")}</Link>
+                <Button asChild size="lg" variant="outline" className="rounded-full px-8">
+                  <Link to="/guest">{t("guestMode")}</Link>
                 </Button>
               </div>
             </div>
@@ -57,7 +57,8 @@ function LandingPage() {
 
         {/* Portals */}
         <section className="container mx-auto px-4 pb-20">
-          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
+          <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto">
+            {/* Student */}
             <Link to="/login" className="group">
               <Card className="h-full transition-all hover:-translate-y-1 hover:shadow-xl border-2 hover:border-primary">
                 <CardHeader>
@@ -75,6 +76,27 @@ function LandingPage() {
                 </CardContent>
               </Card>
             </Link>
+
+            {/* Guest */}
+            <Link to="/guest" className="group">
+              <Card className="h-full transition-all hover:-translate-y-1 hover:shadow-xl border-2 border-emerald-500/20 hover:border-emerald-500">
+                <CardHeader>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 mb-2">
+                    <PlayCircle className="h-6 w-6" />
+                  </div>
+                  <CardTitle>{t("guestMode")}</CardTitle>
+                  <CardDescription>{t("guestDesc")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <span className="inline-flex items-center text-sm font-medium text-emerald-600 group-hover:underline">
+                    {t("getStarted")}
+                    <ArrowRight className="ltr:ml-1 rtl:mr-1 rtl:rotate-180 h-4 w-4" />
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Teacher */}
             <Link to="/login" className="group">
               <Card className="h-full transition-all hover:-translate-y-1 hover:shadow-xl border-2 hover:border-primary">
                 <CardHeader>
