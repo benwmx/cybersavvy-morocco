@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { api } from "@/lib/supabase/api";
@@ -8,9 +8,10 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { Wifi, WifiOff } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
-  beforeLoad: () => {
+  beforeLoad: async () => {
     if (typeof window === "undefined") return;
-    if (!api.getSession()) {
+    const session = await api.getSession();
+    if (!session) {
       throw redirect({ to: "/login" });
     }
   },
@@ -20,21 +21,21 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthLayout() {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <header className="h-14 flex items-center justify-between border-b px-3 gap-2">
-            <SidebarTrigger />
-            <div className="flex items-center gap-3">
-              <OnlineBadge />
-              <LanguageSwitcher />
-            </div>
-          </header>
-          <main className="flex-1 p-4 lg:p-8 bg-muted/30">
+      <AppSidebar />
+      <SidebarInset>
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 gap-2">
+          <SidebarTrigger />
+          <div className="flex items-center gap-3">
+            <OnlineBadge />
+            <LanguageSwitcher />
+          </div>
+        </header>
+        <main className="flex-1 p-4 lg:p-8 bg-muted/30">
+          <div className="max-w-7xl mx-auto w-full">
             <Outlet />
-          </main>
-        </div>
-      </div>
+          </div>
+        </main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

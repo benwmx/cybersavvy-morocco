@@ -51,12 +51,12 @@ function StudentForm() {
   const { t } = useLang();
   const navigate = useNavigate();
   const [code, setCode] = useState("");
-  const [name, setName] = useState("");
+  const [massar, setMassar] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim() || !name.trim()) {
+    if (!code.trim() || !massar.trim()) {
       toast.error(t("enterCode"));
       return;
     }
@@ -67,9 +67,22 @@ function StudentForm() {
         toast.error(t("invalidCode"));
         return;
       }
+      
+      const student = await api.verifyStudent(cls.id, massar.trim());
+      if (!student) {
+        toast.error(t("invalidCode")); // Or a more specific message if available
+        return;
+      }
+
       sessionStorage.setItem(
         "cs.student",
-        JSON.stringify({ class_id: cls.id, class_name: cls.name, name: name.trim() })
+        JSON.stringify({ 
+          class_id: cls.id, 
+          class_name: cls.name, 
+          massar_code: student.massar_code,
+          name_fr: student.name_fr,
+          name_ar: student.name_ar
+        })
       );
       navigate({ to: "/game" });
     } finally {
@@ -97,8 +110,15 @@ function StudentForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="name">{t("yourName")}</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Label htmlFor="massar">{t("massarCode")}</Label>
+            <Input
+              id="massar"
+              value={massar}
+              onChange={(e) => setMassar(e.target.value.toUpperCase())}
+              placeholder="G123456789"
+              className="font-mono uppercase tracking-widest text-center text-lg"
+              maxLength={12}
+            />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {t("join")}
