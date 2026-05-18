@@ -255,3 +255,7 @@ export const TRACKS: Track[] = [
 export function getTrack(id: string) {
   return TRACKS.find((t) => t.id === id);
 }
+
+export function getTracks() {
+  return TRACKS;
+}

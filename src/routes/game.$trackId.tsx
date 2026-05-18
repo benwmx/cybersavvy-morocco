@@ -7,8 +7,9 @@ import { Progress } from "@/components/ui/progress";
 import { ScenarioVisuals } from "@/components/ScenarioVisuals";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { getTrack } from "@/content/scenarios";
+import { api, ScenarioRow } from "@/lib/supabase/api";
 import { saveResult } from "@/lib/offline/queue";
-import { Check, X, Lightbulb, Trophy, ArrowRight, RefreshCw } from "lucide-react";
+import { Check, X, Lightbulb, Trophy, ArrowRight, RefreshCw, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/game/$trackId")({
@@ -19,13 +20,38 @@ function ScenarioRunner() {
   const { trackId } = useParams({ from: "/game/$trackId" });
   const { t, lang } = useLang();
   const navigate = useNavigate();
-  const track = useMemo(() => getTrack(trackId), [trackId]);
+  
+  const [dynamicTrack, setDynamicTrack] = useState<ScenarioRow | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [student, setStudent] = useState<{ class_id: string; name: string } | null>(null);
+  const staticTrack = useMemo(() => getTrack(trackId), [trackId]);
+
+  useEffect(() => {
+    if (staticTrack) {
+      setLoading(false);
+      return;
+    }
+
+    api.getScenario(trackId).then(track => {
+      if (track) setDynamicTrack(track);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [trackId, staticTrack]);
+
+  const [student, setStudent] = useState<{ class_id: string; massar_code: string } | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
+
   useEffect(() => {
     const raw = sessionStorage.getItem("cs.student");
-    if (!raw) navigate({ to: "/login" });
-    else setStudent(JSON.parse(raw));
+    const guestRaw = localStorage.getItem("cs.guest");
+    
+    if (raw) {
+      setStudent(JSON.parse(raw));
+    } else if (guestRaw) {
+      setIsGuest(true);
+    } else {
+      navigate({ to: "/login" });
+    }
   }, [navigate]);
 
   const [idx, setIdx] = useState(0);
@@ -33,7 +59,11 @@ function ScenarioRunner() {
   const [mistakes, setMistakes] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
-  const [saveState, setSaveState] = useState<"idle" | "online" | "queued">("idle");
+  const [saveState, setSaveState] = useState<"idle" | "online" | "queued" | "guest">("idle");
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-bold">{t("syncing")}</div>;
+
+  const track = staticTrack || dynamicTrack;
 
   if (!track) {
     return (
@@ -43,14 +73,15 @@ function ScenarioRunner() {
     );
   }
 
-  const q = track.questions[idx];
-  const total = track.questions.length;
+  const questions = track.questions;
+  const q = questions[idx];
+  const total = questions.length;
 
   const handlePick = (i: number) => {
     if (selected !== null) return;
     setSelected(i);
     if (i === q.correctIndex) setScore((s) => s + 1);
-    else setMistakes((m) => [...m, q.id]);
+    else setMistakes((m) => [...m, q.id || idx.toString()]);
   };
 
   const handleNext = async () => {
@@ -59,10 +90,15 @@ function ScenarioRunner() {
       setSelected(null);
     } else {
       setDone(true);
-      if (student) {
+      if (isGuest) {
+        const history = JSON.parse(localStorage.getItem("cs.guest_history") || "[]");
+        history.push({ trackId: track.id, score, total, date: new Date().toISOString() });
+        localStorage.setItem("cs.guest_history", JSON.stringify(history));
+        setSaveState("guest");
+      } else if (student) {
         const res = await saveResult({
           class_id: student.class_id,
-          student_name: student.name,
+          massar_code: student.massar_code,
           scenario_id: track.id,
           score,
           max_score: total,
@@ -94,11 +130,11 @@ function ScenarioRunner() {
                 {score} <span className="text-2xl text-muted-foreground">/ {total}</span>
               </p>
               <p className="text-xs text-muted-foreground mb-6">
-                {saveState === "queued" ? `↻ ${t("syncQueued")}` : `✓ ${t("syncDone")}`}
+                {saveState === "queued" ? `↻ ${t("syncQueued")}` : saveState === "guest" ? t("guestHistory") : `✓ ${t("syncDone")}`}
               </p>
               <div className="flex flex-wrap gap-2 justify-center">
                 <Button asChild>
-                  <Link to="/game">
+                  <Link to={isGuest ? "/guest" : "/game"}>
                     <ArrowRight className="ltr:mr-2 rtl:ml-2 rtl:rotate-180 h-4 w-4" />
                     {t("backToTracks")}
                   </Link>
@@ -147,9 +183,20 @@ function ScenarioRunner() {
               <CardTitle className="text-xl leading-relaxed">{q.prompt[lang]}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <ScenarioVisuals trackId={trackId} questionId={q.id} />
+              {q.media_url ? (
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                  {q.media_url.match(/\.(mp4|webm|ogg)$/) || q.media_url.includes('youtube.com') || q.media_url.includes('vimeo.com') ? (
+                    <video src={q.media_url} controls className="w-full h-full object-contain" />
+                  ) : (
+                    <img src={q.media_url} alt="Question visual" className="w-full h-full object-contain" />
+                  )}
+                </div>
+              ) : (
+                <ScenarioVisuals trackId={track.id} questionId={q.id || idx.toString()} />
+              )}
+              
               <div className="grid gap-2">
-                {q.choices[lang].map((choice, i) => {
+                {q.choices[lang].map((choice: string, i: number) => {
                   const isPicked = selected === i;
                   const isAnswer = i === q.correctIndex;
                   let style = "border-border hover:border-primary hover:bg-primary/5";

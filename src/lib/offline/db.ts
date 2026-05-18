@@ -4,7 +4,7 @@ export interface QueuedResult {
   id?: number;
   payload: {
     class_id: string;
-    student_name: string;
+    massar_code: string;
     scenario_id: string;
     score: number;
     max_score: number;

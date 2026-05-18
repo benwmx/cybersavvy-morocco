@@ -11,12 +11,14 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { api } from "@/lib/supabase/api";
 
 export function AppSidebar() {
   const { t } = useLang();
+  const { state } = useSidebar();
   const navigate = useNavigate();
   const path = useRouterState({ select: (r) => r.location.pathname });
   const items = [
@@ -34,10 +36,14 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <Link to="/dashboard" className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
             <Shield className="h-4 w-4" />
           </div>
-          <span className="font-semibold">{t("appName")}</span>
+          {state === "expanded" && (
+            <span className="font-semibold truncate animate-in fade-in duration-300">
+              {t("appName")}
+            </span>
+          )}
         </Link>
       </SidebarHeader>
       <SidebarContent>

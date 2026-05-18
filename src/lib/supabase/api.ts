@@ -5,13 +5,32 @@ export interface ClassRow {
   teacher_id: string;
   name: string;
   access_code: string;
+  assigned_scenarios: string[]; // UUIDs or system IDs
+  created_at: string;
+}
+
+export interface StudentRow {
+  id: string;
+  class_id: string;
+  massar_code: string;
+  name_fr: string;
+  name_ar: string;
+}
+
+export interface ScenarioRow {
+  id: string;
+  teacher_id: string | null;
+  category: string;
+  title: { fr: string; ar: string };
+  description: { fr: string; ar: string };
+  questions: any[]; // JSONB Array
   created_at: string;
 }
 
 export interface ResultRow {
   id: string;
   class_id: string;
-  student_name: string;
+  massar_code: string;
   scenario_id: string;
   score: number;
   max_score: number;
@@ -23,6 +42,8 @@ export interface TeacherSession {
   id: string;
   email: string;
 }
+
+export const supabaseClient = supabase;
 
 export const api = {
   // ---- AUTH ----
@@ -62,6 +83,18 @@ export const api = {
     return data;
   },
 
+  async verifyStudent(classId: string, massarCode: string): Promise<StudentRow | null> {
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .eq("class_id", classId)
+      .eq("massar_code", massarCode.toUpperCase())
+      .single();
+    
+    if (error) return null;
+    return data;
+  },
+
   async createClass(name: string): Promise<ClassRow> {
     const session = await api.getSession();
     if (!session) throw new Error("Not authenticated");
@@ -71,18 +104,28 @@ export const api = {
     let access_code = "";
     for (let i = 0; i < 6; i++) access_code += chars[Math.floor(Math.random() * chars.length)];
 
+    console.log("Creating class with:", { teacher_id: session.id, name, access_code });
+
     const { data, error } = await supabase
       .from("classes")
       .insert([{ 
         teacher_id: session.id, 
         name, 
-        access_code 
+        access_code,
+        assigned_scenarios: [] 
       }])
-      .select()
-      .single();
+      .select();
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error("Supabase error creating class:", error);
+      throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      throw new Error("Class created but could not be retrieved. Check your RLS SELECT policies.");
+    }
+    
+    return data[0];
   },
 
   async listMyClasses(): Promise<ClassRow[]> {
@@ -97,6 +140,75 @@ export const api = {
 
     if (error) throw error;
     return data || [];
+  },
+
+  async updateClassScenarios(classId: string, scenarios: string[]): Promise<void> {
+    const { error } = await supabase
+      .from("classes")
+      .update({ assigned_scenarios: scenarios })
+      .eq("id", classId);
+    if (error) throw error;
+  },
+
+  // ---- STUDENTS ----
+  async listStudentsInClass(classId: string): Promise<StudentRow[]> {
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .eq("class_id", classId)
+      .order("name_fr", { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async addStudent(student: Omit<StudentRow, "id">): Promise<StudentRow> {
+    const { data, error } = await supabase
+      .from("students")
+      .insert([student])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // ---- SCENARIOS ----
+  async listScenarios(): Promise<ScenarioRow[]> {
+    const session = await api.getSession();
+    const query = supabase.from("scenarios").select("*");
+    
+    if (session) {
+      // Show system defaults (teacher_id IS NULL) OR teacher's own tracks
+      query.or(`teacher_id.is.null,teacher_id.eq.${session.id}`);
+    } else {
+      // Guest/Public: only system defaults
+      query.is("teacher_id", null);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createScenario(scenario: Omit<ScenarioRow, "id" | "created_at">): Promise<ScenarioRow> {
+    const { data, error } = await supabase
+      .from("scenarios")
+      .insert([scenario])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async getScenario(id: string): Promise<ScenarioRow | null> {
+    const { data, error } = await supabase
+      .from("scenarios")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) return null;
+    return data;
   },
 
   // ---- RESULTS ----
