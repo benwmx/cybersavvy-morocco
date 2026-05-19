@@ -33,14 +33,14 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" side={dir === "rtl" ? "right" : "left"}>
+    <Sidebar collapsible="icon" side="left">
       <SidebarHeader>
         <Link to="/dashboard" className="flex items-center gap-2 px-2 py-2 min-h-[48px] justify-center lg:justify-start">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0 mx-auto lg:mx-0">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1E3A8A] text-white shadow-lg shadow-blue-900/20 shrink-0 mx-auto lg:mx-0">
             <Shield className="h-4 w-4" />
           </div>
           {state === "expanded" && (
-            <span className="font-semibold truncate animate-in fade-in duration-300 ms-2">
+            <span className="font-semibold truncate animate-in fade-in duration-300 ms-2 text-[#1E3A8A]">
               {t("appName")}
             </span>
           )}
