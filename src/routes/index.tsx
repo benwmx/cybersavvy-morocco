@@ -97,8 +97,7 @@ function LandingPage() {
 
             <div className="space-y-4">
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-[#1E3A8A] leading-[1.15]">
-                <span className="block mb-2">{t("platformTitle")}</span>
-                <span className="block text-3xl md:text-5xl opacity-80" dir="rtl">{t("platformTitleAr")}</span>
+                {lang === "fr" ? t("platformTitle") : t("platformTitleAr")}
               </h1>
             </div>
 
@@ -113,7 +112,7 @@ function LandingPage() {
                 onClick={() => document.getElementById("gateways")?.scrollIntoView({ behavior: "smooth" })}
               >
                 <span className="flex items-center gap-3">
-                  {t("startPath")} / {t("startPathAr")}
+                  {lang === "fr" ? t("startPath") : t("startPathAr")}
                   <ChevronDown className="h-5 w-5 animate-bounce" />
                 </span>
               </Button>
@@ -133,12 +132,11 @@ function LandingPage() {
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#1E3A8A] mb-6 group-hover:scale-110 transition-transform duration-300">
                       <GraduationCap className="h-7 w-7" />
                     </div>
-                    <CardTitle className="text-2xl font-bold flex flex-col gap-1">
-                      <span>{t("learnerSpace")}</span>
-                      <span className="text-xl text-[#1E3A8A]/60 font-medium" dir="rtl">{t("learnerSpaceAr")}</span>
+                    <CardTitle className="text-2xl font-bold">
+                      {lang === "fr" ? t("learnerSpace") : t("learnerSpaceAr")}
                     </CardTitle>
                     <CardDescription className="text-base mt-2">
-                      {t("learnerDesc")}
+                      {lang === "fr" ? t("learnerDesc") : t("learnerDescAr")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-8 pt-0">
@@ -172,12 +170,11 @@ function LandingPage() {
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mb-6 group-hover:scale-110 transition-transform duration-300">
                       <ShieldCheck className="h-7 w-7" />
                     </div>
-                    <CardTitle className="text-2xl font-bold flex flex-col gap-1">
-                      <span>{t("trainerSpace")}</span>
-                      <span className="text-xl text-emerald-600/60 font-medium" dir="rtl">{t("trainerSpaceAr")}</span>
+                    <CardTitle className="text-2xl font-bold">
+                      {lang === "fr" ? t("trainerSpace") : t("trainerSpaceAr")}
                     </CardTitle>
                     <CardDescription className="text-base mt-2">
-                      {t("trainerDesc")}
+                      {lang === "fr" ? t("trainerDesc") : t("trainerDescAr")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-8 pt-0">
@@ -228,8 +225,7 @@ function LandingPage() {
                       <pillar.icon className="h-6 w-6" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-1">{pillar.title}</h3>
-                  <p className="text-lg opacity-80 font-medium" dir="rtl">{pillar.titleAr}</p>
+                  <h3 className="text-xl font-bold">{lang === "fr" ? pillar.title : pillar.titleAr}</h3>
                 </div>
               ))}
             </div>
@@ -246,18 +242,15 @@ function LandingPage() {
               
               <div className="space-y-4 max-w-3xl mx-auto">
                 <h2 className="text-2xl md:text-4xl font-bold leading-tight">
-                  {t("offlineResilience")}
+                  {lang === "fr" ? t("offlineResilience") : t("offlineResilienceAr")}
                 </h2>
-                <p className="text-xl opacity-80" dir="rtl">
-                  {t("offlineResilienceAr")}
-                </p>
               </div>
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button asChild size="lg" variant="secondary" className="h-14 px-8 rounded-xl font-bold text-[#1E3A8A] shadow-lg active:scale-95 transition-transform">
                   <Link to="/guest" className="flex items-center gap-2">
                     <PlayCircle className="h-5 w-5" />
-                    {t("freeAccess")} / {t("freeAccessAr")}
+                    {lang === "fr" ? t("freeAccess") : t("freeAccessAr")}
                   </Link>
                 </Button>
                 <div className="flex items-center gap-6 text-sm font-medium opacity-80">
