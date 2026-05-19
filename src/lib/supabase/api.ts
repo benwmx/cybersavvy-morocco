@@ -173,6 +173,15 @@ export const api = {
     return data;
   },
 
+  async removeStudent(studentId: string): Promise<void> {
+    const { error } = await supabase
+      .from("students")
+      .delete()
+      .eq("id", studentId);
+    
+    if (error) throw error;
+  },
+
   // ---- SCENARIOS ----
   async listScenarios(): Promise<ScenarioRow[]> {
     const session = await api.getSession();
