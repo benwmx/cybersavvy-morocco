@@ -32,7 +32,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const dir = lang === "ar" ? "rtl" : "ltr";
-  const t = (k: TKey) => translations[lang][k] ?? translations.fr[k];
+  const t = (k: TKey) => (translations[lang] as any)[k] ?? (translations.fr as any)[k];
 
   return <Ctx.Provider value={{ lang, setLang, t, dir }}>{children}</Ctx.Provider>;
 }
