@@ -17,7 +17,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { api } from "@/lib/supabase/api";
 
 export function AppSidebar() {
-  const { t } = useLang();
+  const { t, dir } = useLang();
   const { state } = useSidebar();
   const navigate = useNavigate();
   const path = useRouterState({ select: (r) => r.location.pathname });
@@ -33,14 +33,14 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" side="left">
+    <Sidebar collapsible="icon" side={dir === "rtl" ? "right" : "left"}>
       <SidebarHeader>
         <Link to="/dashboard" className="flex items-center gap-2 px-2 py-2 min-h-[48px] justify-center lg:justify-start">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0 mx-auto lg:mx-0">
             <Shield className="h-4 w-4" />
           </div>
           {state === "expanded" && (
-            <span className="font-semibold truncate animate-in fade-in duration-300 ltr:ml-1 rtl:mr-1">
+            <span className="font-semibold truncate animate-in fade-in duration-300 ms-2">
               {t("appName")}
             </span>
           )}
@@ -53,10 +53,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={path === item.url}>
-                    <Link to={item.url} className="flex items-center gap-2">
+                  <SidebarMenuButton asChild isActive={path === item.url} className="data-[active=true]:bg-blue-50 data-[active=true]:text-[#1E3A8A]">
+                    <Link to={item.url} className="flex items-center gap-3">
                       <item.icon className="h-4 w-4" />
-                      <span>{item.label}</span>
+                      <span className="font-medium">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -65,11 +65,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="p-4 border-t border-slate-100">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={logout}>
-              <LogOut className="h-4 w-4" />
+            <SidebarMenuButton 
+              onClick={logout} 
+              className="w-full justify-start text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl h-10 px-3 font-bold"
+            >
+              <LogOut className="h-4 w-4 ms-0 me-3" />
               <span>{t("logout")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

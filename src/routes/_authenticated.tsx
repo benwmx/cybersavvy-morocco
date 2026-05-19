@@ -23,15 +23,22 @@ function AuthLayout() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 gap-2">
-          <SidebarTrigger />
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-white/80 backdrop-blur-md px-6 gap-4">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger className="-ms-2 text-[#1E3A8A] hover:bg-blue-50" />
+            <div className="h-6 w-px bg-slate-200 hidden md:block" />
+            <h2 className="text-sm font-bold text-[#1E3A8A] hidden sm:block uppercase tracking-wider">
+              {typeof window !== "undefined" && window.location.pathname.includes("dashboard") ? "Panel Control" : ""}
+            </h2>
+          </div>
+          <div className="flex items-center gap-4">
             <OnlineBadge />
+            <div className="h-6 w-px bg-slate-200" />
             <LanguageSwitcher />
           </div>
         </header>
-        <main className="flex-1 p-4 lg:p-8 bg-muted/30">
-          <div className="max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-6 lg:p-10 bg-slate-50/50">
+          <div className="max-w-7xl mx-auto w-full animate-in fade-in duration-500">
             <Outlet />
           </div>
         </main>
@@ -45,13 +52,13 @@ function OnlineBadge() {
   const { t } = useLang();
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all ${
         online
-          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+          : "bg-amber-50 text-amber-700 border border-amber-200"
       }`}
     >
-      {online ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+      <span className={`h-2 w-2 rounded-full ${online ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
       {online ? t("online") : t("offline")}
     </span>
   );
