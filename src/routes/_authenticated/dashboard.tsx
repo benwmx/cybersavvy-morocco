@@ -192,6 +192,15 @@ function StudentsPanel() {
     onError: () => toast.error(t("alreadyExists")),
   });
 
+  const removeStudent = useMutation({
+    mutationFn: (id: string) => api.removeStudent(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["students", selectedClassId] });
+      toast.success(lang === "fr" ? "Élève retiré" : "تم حذف التلميذ");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <Card className="lg:col-span-1">
@@ -265,19 +274,48 @@ function StudentsPanel() {
           ) : students.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">{t("noStudents")}</p>
           ) : (
-            <div className="divide-y">
-              {students.map((s) => (
-                <div key={s.id} className="py-3 flex items-center justify-between">
-                  <div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between px-3 py-2 bg-muted/50 rounded-lg text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                <div className="flex-1">
+                  {lang === "fr" ? "Nom & Code Massar" : "الاسم ورمز مسار"}
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right hidden sm:block w-32">
+                    {lang === "fr" ? "Nom Arabe" : "الاسم بالفرنسية"}
+                  </div>
+                  <div className="w-8"></div> {/* Spacer for trash icon */}
+                </div>
+              </div>
+              <div className="space-y-1">
+                {students.map((s) => (
+                <div key={s.id} className="px-3 py-3 flex items-center justify-between group hover:bg-muted/30 transition-colors rounded-lg">
+                  <div className="flex-1">
                     <p className="font-medium">{lang === "fr" ? s.name_fr : s.name_ar}</p>
                     <p className="text-xs text-muted-foreground font-mono">{s.massar_code}</p>
                   </div>
-                  <div className="text-right text-xs text-muted-foreground">
-                    <p>{lang === "fr" ? s.name_ar : s.name_fr}</p>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right text-xs text-muted-foreground hidden sm:block w-32">
+                      <p>{lang === "fr" ? s.name_ar : s.name_fr}</p>
+                    </div>
+                    <div className="w-8 flex justify-center">
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                          if (confirm(lang === "fr" ? "Voulez-vous vraiment retirer cet élève ?" : "هل تريد حقاً حذف هذا التلميذ؟")) {
+                            removeStudent.mutate(s.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
+          </div>
           )}
         </CardContent>
       </Card>
