@@ -71,36 +71,72 @@ export default {
     try {
       const url = new URL(request.url);
       if (url.pathname.startsWith("/api/classes/") && request.method === "DELETE") {
-        const classId = url.pathname.split("/").pop();
-        if (classId) {
-          const { api, supabaseClient } = await import("./lib/supabase/api");
-          
-          // Get token from Authorization header
-          const authHeader = request.headers.get("Authorization");
-          const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
-          
-          if (!token) {
-            return new Response(JSON.stringify({ error: "No token provided" }), {
-              status: 401,
-              headers: { "Content-Type": "application/json" },
-            });
-          }
+          const classId = url.pathname.split("/").pop();
+          if (classId && classId !== "classes") {
+            const { api, supabaseClient } = await import("./lib/supabase/api");
+            
+            // Get token from Authorization header
+            const authHeader = request.headers.get("Authorization");
+            const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
+            
+            if (!token) {
+              return new Response(JSON.stringify({ error: "No token provided" }), {
+                status: 401,
+                headers: { "Content-Type": "application/json" },
+              });
+            }
 
-          try {
-            // Verify token with Supabase
-            const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-            if (authError || !user) throw new Error("Not authenticated");
+            try {
+              // Verify token with Supabase
+              const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+              if (authError || !user) throw new Error("Not authenticated");
 
-            await api.deleteClass(classId, user.id);
-            return new Response(null, { status: 204 });
-          } catch (error: any) {
-            console.error("Delete class error:", error);
-            return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), {
-              status: error.message === "Not authenticated" ? 401 : 500,
-              headers: { "Content-Type": "application/json" },
-            });
+              // Initialize authenticated client for RLS-compliant operations
+              const { createClient } = await import("@supabase/supabase-js");
+              
+              const rawUrl = import.meta.env.VITE_SUPABASE_URL;
+              const supabaseUrl = rawUrl?.replace(/\/+$/, "").replace(/\/rest\/v1\/?$/, "");
+              const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+              const authenticatedSupabase = createClient(
+                supabaseUrl || "https://placeholder.supabase.co",
+                supabaseKey || "placeholder",
+                {
+                  global: { headers: { Authorization: `Bearer ${token}` } },
+                }
+              );
+
+              // 1. Delete associated results
+              const { error: resultsError } = await authenticatedSupabase
+                .from("results")
+                .delete()
+                .eq("class_id", classId);
+              if (resultsError) throw new Error(`Failed to delete results: ${resultsError.message}`);
+
+              // 2. Delete associated students
+              const { error: studentsError } = await authenticatedSupabase
+                .from("students")
+                .delete()
+                .eq("class_id", classId);
+              if (studentsError) throw new Error(`Failed to delete students: ${studentsError.message}`);
+
+              // 3. Delete the class itself
+              const { error: classError } = await authenticatedSupabase
+                .from("classes")
+                .delete()
+                .eq("id", classId)
+                .eq("teacher_id", user.id);
+              if (classError) throw new Error(`Failed to delete class: ${classError.message}`);
+              
+              return new Response(null, { status: 204 });
+            } catch (error: any) {
+              console.error("Delete class error:", error);
+              return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), {
+                status: error.message === "Not authenticated" ? 401 : 500,
+                headers: { "Content-Type": "application/json" },
+              });
+            }
           }
-        }
       }
 
       const handler = await getServerEntry();
