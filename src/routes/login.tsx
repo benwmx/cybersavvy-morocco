@@ -10,14 +10,22 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { api } from "@/lib/supabase/api";
 import { toast } from "sonner";
 import { GraduationCap, ShieldCheck } from "lucide-react";
+import { z } from "zod";
+
+const loginSearchSchema = z.object({
+  role: z.enum(["student", "teacher"]).optional(),
+});
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search) => loginSearchSchema.parse(search),
   component: LoginPage,
   head: () => ({ meta: [{ title: "Accès — CyberSafe" }] }),
 });
 
 function LoginPage() {
   const { t, lang } = useLang();
+  const { role } = Route.useSearch();
+
   return (
     <div className="min-h-screen bg-slate-50/50">
       <Navbar />
@@ -32,7 +40,7 @@ function LoginPage() {
             </p>
           </div>
 
-          <Tabs defaultValue="student" className="w-full">
+          <Tabs defaultValue={role || "student"} className="w-full">
             <TabsList className="grid w-full grid-cols-2 p-1 bg-white border border-slate-200 rounded-xl h-12 shadow-sm">
               <TabsTrigger 
                 value="student" 
