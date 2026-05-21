@@ -69,6 +69,40 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const url = new URL(request.url);
+      if (url.pathname.startsWith("/api/classes/") && request.method === "DELETE") {
+        const classId = url.pathname.split("/").pop();
+        if (classId) {
+          const { api, supabaseClient } = await import("./lib/supabase/api");
+          
+          // Get token from Authorization header
+          const authHeader = request.headers.get("Authorization");
+          const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
+          
+          if (!token) {
+            return new Response(JSON.stringify({ error: "No token provided" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          try {
+            // Verify token with Supabase
+            const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+            if (authError || !user) throw new Error("Not authenticated");
+
+            await api.deleteClass(classId, user.id);
+            return new Response(null, { status: 204 });
+          } catch (error: any) {
+            console.error("Delete class error:", error);
+            return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), {
+              status: error.message === "Not authenticated" ? 401 : 500,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+        }
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
