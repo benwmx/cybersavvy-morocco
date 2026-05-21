@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { api, ClassRow, StudentRow, ScenarioRow } from "@/lib/supabase/api";
+import { api, ClassRow, StudentRow, ScenarioRow, supabaseClient } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { getTracks } from "@/content/scenarios";
 import { Copy, Check, Plus, GraduationCap, Users, BookOpen, Trash2, GripVertical, Image as ImageIcon, Video, Layout } from "lucide-react";
@@ -80,6 +80,32 @@ function ClassesPanel() {
     }
   });
 
+  const deleteClass = useMutation({
+    mutationFn: async (id: string) => {
+      // Get the current session to get the access token
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      
+      const res = await fetch(`/api/classes/${id}`, { 
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${session?.access_token}`
+        }
+      });
+      
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete class");
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["classes"] });
+      toast.success(t("delete") + " ✓");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Error deleting class");
+    }
+  });
+
   return (
     <div className="space-y-8">
       <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden">
@@ -125,14 +151,19 @@ function ClassesPanel() {
           </div>
         )}
         {classes.map((c) => (
-          <ClassCard key={c.id} cls={c} />
+          <ClassCard 
+            key={c.id} 
+            cls={c} 
+            onDelete={() => deleteClass.mutate(c.id)} 
+            isDeleting={deleteClass.isPending && deleteClass.variables === c.id}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function ClassCard({ cls }: { cls: ClassRow }) {
+function ClassCard({ cls, onDelete, isDeleting }: { cls: ClassRow, onDelete: () => void, isDeleting: boolean }) {
   const { t } = useLang();
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -150,7 +181,22 @@ function ClassCard({ cls }: { cls: ClassRow }) {
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#1E3A8A] group-hover:scale-110 transition-transform">
             <GraduationCap className="h-6 w-6" />
           </div>
-          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-10 w-10 rounded-xl text-rose-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-600 active:scale-90"
+              onClick={() => {
+                if (confirm(t("deleteConfirm"))) {
+                  onDelete();
+                }
+              }}
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          </div>
         </div>
         <CardTitle className="text-xl font-extrabold text-slate-900 line-clamp-1">{cls.name}</CardTitle>
         <CardDescription className="font-bold text-[#1E3A8A]/60 text-xs uppercase tracking-widest">{t("accessCode")}</CardDescription>

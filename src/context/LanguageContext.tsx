@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { translations, type Lang } from "../lib/i18n/translations";
 
-type TranslationDict = typeof translations.fr;
+type TranslationDict = Record<keyof typeof translations.fr, string>;
 
 interface LanguageContextType {
   lang: Lang;
