@@ -150,6 +150,33 @@ export const api = {
     if (error) throw error;
   },
 
+  async deleteClass(classId: string, userId?: string): Promise<void> {
+    const effectiveUserId = userId || (await api.getSession())?.id;
+    if (!effectiveUserId) throw new Error("Not authenticated");
+
+    // 1. Delete associated results
+    const { error: resultsError } = await supabase
+      .from("results")
+      .delete()
+      .eq("class_id", classId);
+    if (resultsError) throw resultsError;
+
+    // 2. Delete associated students
+    const { error: studentsError } = await supabase
+      .from("students")
+      .delete()
+      .eq("class_id", classId);
+    if (studentsError) throw studentsError;
+
+    // 3. Delete the class itself
+    const { error: classError } = await supabase
+      .from("classes")
+      .delete()
+      .eq("id", classId)
+      .eq("teacher_id", effectiveUserId); // Ensure only the owner can delete
+    if (classError) throw classError;
+  },
+
   // ---- STUDENTS ----
   async listStudentsInClass(classId: string): Promise<StudentRow[]> {
     const { data, error } = await supabase
