@@ -1,4 +1,5 @@
 import { supabase } from "./client";
+import { db } from "../db";
 
 export interface ClassRow {
   id: string;
@@ -150,31 +151,47 @@ export const api = {
     if (error) throw error;
   },
 
-  async deleteClass(classId: string, userId?: string): Promise<void> {
-    const effectiveUserId = userId || (await api.getSession())?.id;
-    if (!effectiveUserId) throw new Error("Not authenticated");
+  async deleteClass(classId: string): Promise<void> {
+    const session = await api.getSession();
+    if (!session) throw new Error("Not authenticated");
 
-    // 1. Delete associated results
-    const { error: resultsError } = await supabase
-      .from("results")
-      .delete()
-      .eq("class_id", classId);
-    if (resultsError) throw resultsError;
+    // Optimistically update Dexie
+    await db.classes.update(classId, { sync_status: 'pending_delete' });
 
-    // 2. Delete associated students
-    const { error: studentsError } = await supabase
-      .from("students")
-      .delete()
-      .eq("class_id", classId);
-    if (studentsError) throw studentsError;
+    // Try to sync with Supabase
+    try {
+      // 1. Delete associated results (ordered for foreign keys)
+      const { error: resultsError } = await supabase
+        .from("results")
+        .delete()
+        .eq("class_id", classId);
+      if (resultsError) throw resultsError;
 
-    // 3. Delete the class itself
-    const { error: classError } = await supabase
-      .from("classes")
-      .delete()
-      .eq("id", classId)
-      .eq("teacher_id", effectiveUserId); // Ensure only the owner can delete
-    if (classError) throw classError;
+      // 2. Delete associated students
+      const { error: studentsError } = await supabase
+        .from("students")
+        .delete()
+        .eq("class_id", classId);
+      if (studentsError) throw studentsError;
+
+      // 3. Delete the class itself
+      const { error: classError } = await supabase
+        .from("classes")
+        .delete()
+        .eq("id", classId)
+        .eq("teacher_id", session.id);
+      if (classError) throw classError;
+
+      // Successful sync: delete from Dexie
+      await db.classes.delete(classId);
+    } catch (e: any) {
+      console.error("DEBUG:", e);
+      alert("Delete failed: " + e.message);
+      
+      // Revert optimism if failed
+      await db.classes.update(classId, { sync_status: 'synced' });
+      throw e; 
+    }
   },
 
   // ---- STUDENTS ----
