@@ -153,7 +153,7 @@ function LandingPage() {
                   className="inline-flex items-center justify-between group px-8 h-16 border border-slate-200 hover:border-[#1E3A8A] transition-colors rounded-sm"
                 >
                   <span className="font-bold uppercase tracking-widest text-xs text-slate-900">
-                    {isAr ? "دخول المتعلم" : "Accès Apprenant"}
+                    {isAr ? "دخول المتعلم" : "Espace Apprenant"}
                   </span>
                   <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#1E3A8A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                 </Link>
@@ -190,7 +190,7 @@ function LandingPage() {
                   className="inline-flex items-center justify-between group px-8 h-16 border border-slate-200 hover:border-slate-900 transition-colors rounded-sm"
                 >
                   <span className="font-bold uppercase tracking-widest text-xs text-slate-900">
-                    {isAr ? "فضاء المكون" : "Espace Formateur"}
+                    {isAr ? "فضاء المكون" : "Espace Enseignant"}
                   </span>
                   <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                 </Link>
