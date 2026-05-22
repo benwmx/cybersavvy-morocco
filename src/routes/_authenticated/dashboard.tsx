@@ -81,28 +81,14 @@ function ClassesPanel() {
   });
 
   const deleteClass = useMutation({
-    mutationFn: async (id: string) => {
-      // Get the current session to get the access token
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      
-      const res = await fetch(`/api/classes/${id}`, { 
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${session?.access_token}`
-        }
-      });
-      
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to delete class");
-      }
-    },
+    mutationFn: (id: string) => api.deleteClass(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["classes"] });
       toast.success(t("delete") + " ✓");
     },
     onError: (err: any) => {
-      toast.error(err.message || "Error deleting class");
+      // The error is already alerted by the api.deleteClass catch block
+      console.error("Mutation error:", err);
     }
   });
 
