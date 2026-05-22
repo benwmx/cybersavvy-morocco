@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -11,10 +11,11 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { TRACKS } from "@/content/scenarios";
-import { Target, TrendingUp, BarChart3 } from "lucide-react";
+import { Target, TrendingUp, BarChart3, GraduationCap } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   component: AnalyticsPage,
@@ -22,9 +23,20 @@ export const Route = createFileRoute("/_authenticated/analytics")({
 
 function AnalyticsPage() {
   const { t, lang } = useLang();
+  const [selectedClassId, setSelectedClassId] = useState<string>("all");
+
   const { data: results = [] } = useQuery({
-    queryKey: ["results"],
-    queryFn: () => api.listResultsForTeacher(),
+    queryKey: ["results", selectedClassId],
+    queryFn: async () => {
+      const allResults = await api.listResultsForTeacher();
+      if (selectedClassId === "all") return allResults;
+      return allResults.filter(r => r.class_id === selectedClassId);
+    },
+  });
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ["classes"],
+    queryFn: () => api.listMyClasses(),
   });
 
   const chartData = useMemo(() => {
@@ -49,7 +61,6 @@ function AnalyticsPage() {
     }
     const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6);
     return entries.map(([qid, count]) => {
-      // resolve label
       for (const tr of TRACKS) {
         const q = tr.questions.find((q) => q.id === qid);
         if (q) return { qid, count, track: tr.title[lang], label: q.prompt[lang] };
@@ -60,10 +71,28 @@ function AnalyticsPage() {
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-700">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("analytics")}</h1>
-        <p className="text-slate-500 font-medium">Performance globale et identification des zones de risque.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("analytics")}</h1>
+          <p className="text-slate-500 font-medium">Performance par cohorte et identification des risques.</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <GraduationCap className="h-5 w-5 text-slate-400" />
+          <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+            <SelectTrigger className="w-[280px] h-12 rounded-2xl border-slate-200 bg-white shadow-sm font-bold text-slate-700">
+              <SelectValue placeholder="Toutes les classes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les classes</SelectItem>
+              {classes.map((cls) => (
+                <SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+
 
       <div className="grid gap-8 lg:grid-cols-3">
         <Card className="lg:col-span-2 border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden">
