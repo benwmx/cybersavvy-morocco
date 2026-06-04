@@ -8,3 +8,27 @@ package-lock.json
 .gemini/
 graphify-out/
 .env
+
+# IDE
+.idea/
+.vscode/
+
+# Supabase artifacts
+supabase/.branches/
+supabase/migrations/
+
+# Static assets
+public/
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.ico
+*.woff
+*.woff2
+
+# Config boilerplate
+eslint.config.js
+bunfig.toml
+wrangler.jsonc
+components.json
