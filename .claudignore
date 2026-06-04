@@ -1,0 +1,10 @@
+node_modules/
+dist/
+bun.lock
+package-lock.json
+.git/
+.wrangler/
+.claude/
+.gemini/
+graphify-out/
+.env

@@ -19,25 +19,15 @@
     "ast_hash": "cf1c84dbf5cc6ab4ed7b0a8ef947fb27",
     "semantic_hash": "cf1c84dbf5cc6ab4ed7b0a8ef947fb27"
   },
-  "/home/ben/Projects/cybersavvy-morocco/detect_files.sh": {
-    "mtime": 1779478029.5180156,
-    "ast_hash": "ce87cbf3b4c1051af091dc062898f5fc",
-    "semantic_hash": "ce87cbf3b4c1051af091dc062898f5fc"
-  },
   "/home/ben/Projects/cybersavvy-morocco/tsconfig.json": {
     "mtime": 1779042007.48176,
     "ast_hash": "994abf64c2b9f78b568879f80ed0170e",
     "semantic_hash": "994abf64c2b9f78b568879f80ed0170e"
   },
   "/home/ben/Projects/cybersavvy-morocco/.gemini/settings.json": {
-    "mtime": 1779443547.534319,
+    "mtime": 1780555279.170033,
     "ast_hash": "f080aabf772e803c9e24b9ad0acbf2b6",
     "semantic_hash": "f080aabf772e803c9e24b9ad0acbf2b6"
-  },
-  "/home/ben/Projects/cybersavvy-morocco/.lovable/project.json": {
-    "mtime": 1779042007.4775774,
-    "ast_hash": "b60a4e3c0d4cde0e87e00b1d1b82a55b",
-    "semantic_hash": "b60a4e3c0d4cde0e87e00b1d1b82a55b"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/router.tsx": {
     "mtime": 1779042007.4815235,
@@ -70,19 +60,19 @@
     "semantic_hash": "d9837f38cc05303254571985e3164050"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/lib/db.ts": {
-    "mtime": 1779408905.4736218,
+    "mtime": 1780428205.6147828,
     "ast_hash": "e010506f809efd6d43ea63da8e9e9d5b",
     "semantic_hash": "e010506f809efd6d43ea63da8e9e9d5b"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/lib/supabase/client.ts": {
-    "mtime": 1779042053.1103036,
-    "ast_hash": "ed34df7199d6f85f37de88b14dfd9984",
-    "semantic_hash": "ed34df7199d6f85f37de88b14dfd9984"
+    "mtime": 1780429041.1577163,
+    "ast_hash": "c7b00239b86c1ba470c77d6b5ed2405d",
+    "semantic_hash": "c7b00239b86c1ba470c77d6b5ed2405d"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/lib/supabase/api.ts": {
-    "mtime": 1779410798.5025523,
-    "ast_hash": "b9e9560e3819d7f05456eff01ac1390d",
-    "semantic_hash": "b9e9560e3819d7f05456eff01ac1390d"
+    "mtime": 1780429789.164656,
+    "ast_hash": "a8fa5407199e877d801258f20d710efc",
+    "semantic_hash": "a8fa5407199e877d801258f20d710efc"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/lib/i18n/LanguageContext.tsx": {
     "mtime": 1779150953.753506,
@@ -120,9 +110,9 @@
     "semantic_hash": "c0a0bdd4638c391a1dd06ac82074e60b"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/components/AppSidebar.tsx": {
-    "mtime": 1779390044.823288,
-    "ast_hash": "caf905c5dbc62c1f3048dcfc4ccbdaf0",
-    "semantic_hash": "caf905c5dbc62c1f3048dcfc4ccbdaf0"
+    "mtime": 1780430278.6560278,
+    "ast_hash": "532e94a39e63efefa49a68d8dcfb3239",
+    "semantic_hash": "532e94a39e63efefa49a68d8dcfb3239"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/components/LanguageSwitcher.tsx": {
     "mtime": 1779390044.824288,
@@ -380,17 +370,17 @@
     "semantic_hash": "d6ddc7d660809d97acb93423577f8003"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/routes/login.tsx": {
-    "mtime": 1779390044.833092,
-    "ast_hash": "49805e23ae8b9787e121ec2f7b81062c",
-    "semantic_hash": "49805e23ae8b9787e121ec2f7b81062c"
+    "mtime": 1780429827.7868686,
+    "ast_hash": "83abc8ebbb8508615ba8b47597b9a177",
+    "semantic_hash": "83abc8ebbb8508615ba8b47597b9a177"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/routes/_authenticated.tsx": {
-    "mtime": 1779390044.8292966,
+    "mtime": 1780428205.6167827,
     "ast_hash": "fc8b8f20530a7a2bffc30f4a09c98a5f",
     "semantic_hash": "fc8b8f20530a7a2bffc30f4a09c98a5f"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/routes/game.$trackId.tsx": {
-    "mtime": 1779390044.8312888,
+    "mtime": 1780428205.6177828,
     "ast_hash": "203cd2ca667627599c7dcbd4e29f0ba3",
     "semantic_hash": "203cd2ca667627599c7dcbd4e29f0ba3"
   },
@@ -405,14 +395,14 @@
     "semantic_hash": "1040c24a42ba561fd9b70c24f7c94220"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/routes/__root.tsx": {
-    "mtime": 1779408829.4923396,
-    "ast_hash": "0130e77950cf4242b92a60b792c1402f",
-    "semantic_hash": "0130e77950cf4242b92a60b792c1402f"
+    "mtime": 1780430236.5900412,
+    "ast_hash": "ed7b87da24d64df5643d37ca78786d11",
+    "semantic_hash": "ed7b87da24d64df5643d37ca78786d11"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/routes/game.tsx": {
-    "mtime": 1779390044.8317308,
-    "ast_hash": "9f6ca9afe14d4fcb32c42cdec44984ed",
-    "semantic_hash": "9f6ca9afe14d4fcb32c42cdec44984ed"
+    "mtime": 1780429375.0023756,
+    "ast_hash": "0e131ce0ae05d9120a4e688abeffa287",
+    "semantic_hash": "0e131ce0ae05d9120a4e688abeffa287"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/routes/_authenticated/settings.tsx": {
     "mtime": 1779390044.8308148,
@@ -420,9 +410,9 @@
     "semantic_hash": "545af89966d245a92edce5474449b7f1"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/routes/_authenticated/dashboard.tsx": {
-    "mtime": 1779411035.7194688,
-    "ast_hash": "6aa6dada63e366b5963625ded3bbaf19",
-    "semantic_hash": "6aa6dada63e366b5963625ded3bbaf19"
+    "mtime": 1780429885.5371866,
+    "ast_hash": "46b5fe03bbc1318b441c6d5cf40d6746",
+    "semantic_hash": "46b5fe03bbc1318b441c6d5cf40d6746"
   },
   "/home/ben/Projects/cybersavvy-morocco/src/routes/_authenticated/analytics.tsx": {
     "mtime": 1779411244.5762758,
@@ -439,9 +429,49 @@
     "ast_hash": "b8b919d4498cd37b1c985c38b2fe13c8",
     "semantic_hash": "b8b919d4498cd37b1c985c38b2fe13c8"
   },
-  "/home/ben/Projects/cybersavvy-morocco/.lovable/plan.md": {
-    "mtime": 1779042053.0919824,
-    "ast_hash": "abb0fd0413c80537e5ae2467baf3f303",
-    "semantic_hash": "abb0fd0413c80537e5ae2467baf3f303"
+  "/home/ben/Projects/cybersavvy-morocco/src/lib/database.types.ts": {
+    "mtime": 1780429116.7440736,
+    "ast_hash": "f0ab6175ea62a87e4e0156692a107e95",
+    "semantic_hash": "f0ab6175ea62a87e4e0156692a107e95"
+  },
+  "/home/ben/Projects/cybersavvy-morocco/src/hooks/useAuth.ts": {
+    "mtime": 1780429055.053782,
+    "ast_hash": "399b09b9d9324726e275f62daff01577",
+    "semantic_hash": "399b09b9d9324726e275f62daff01577"
+  },
+  "/home/ben/Projects/cybersavvy-morocco/src/hooks/useAnalytics.ts": {
+    "mtime": 1780429055.0657818,
+    "ast_hash": "d39a4136b5d81a71828e5217f751b908",
+    "semantic_hash": "d39a4136b5d81a71828e5217f751b908"
+  },
+  "/home/ben/Projects/cybersavvy-morocco/src/hooks/useStudentHistory.ts": {
+    "mtime": 1780429055.066782,
+    "ast_hash": "134a48f42dcb298283f182af4fe610ad",
+    "semantic_hash": "134a48f42dcb298283f182af4fe610ad"
+  },
+  "/home/ben/Projects/cybersavvy-morocco/src/hooks/use-i18n.tsx": {
+    "mtime": 1780429062.1322792,
+    "ast_hash": "8af0a760c1e2a4cbdb359407cc566b27",
+    "semantic_hash": "8af0a760c1e2a4cbdb359407cc566b27"
+  },
+  "/home/ben/Projects/cybersavvy-morocco/src/hooks/useGameData.ts": {
+    "mtime": 1780429055.0657818,
+    "ast_hash": "f4138b4f0db4763be3fbedf4af50e395",
+    "semantic_hash": "f4138b4f0db4763be3fbedf4af50e395"
+  },
+  "/home/ben/Projects/cybersavvy-morocco/src/context/StudentContext.tsx": {
+    "mtime": 1780429661.3759522,
+    "ast_hash": "3de329c73a96427ee4642db23754ad43",
+    "semantic_hash": "3de329c73a96427ee4642db23754ad43"
+  },
+  "/home/ben/Projects/cybersavvy-morocco/.claude/settings.local.json": {
+    "mtime": 1780554537.7288938,
+    "ast_hash": "799044afbb0a64d636a8ba64be8b0690",
+    "semantic_hash": "799044afbb0a64d636a8ba64be8b0690"
+  },
+  "/home/ben/Projects/cybersavvy-morocco/CLAUDE.md": {
+    "mtime": 1780535126.850858,
+    "ast_hash": "6b54c0a6c413ff3f1a9a79d6dfe39df4",
+    "semantic_hash": "6b54c0a6c413ff3f1a9a79d6dfe39df4"
   }
 }
