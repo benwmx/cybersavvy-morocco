@@ -7,6 +7,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { useStudent } from "@/context/StudentContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { api, ScenarioRow } from "@/lib/supabase/api";
+import { getDB } from "@/lib/offline/db";
 import { ArrowRight, Layout, ShieldCheck, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/game")({
@@ -42,8 +43,28 @@ function GameLobby() {
 
     const fetchScenarios = async () => {
       try {
-        const scenarios = await api.listVisibleScenarios(student.class_id);
-        setAssignedScenarios(scenarios);
+        const db = getDB();
+        if (db) {
+          const statusRows = await db.class_scenario_status
+            .where("class_id")
+            .equals(student.class_id)
+            .filter(r => r.is_visible)
+            .toArray();
+
+          if (statusRows.length > 0) {
+            const ids = statusRows.map(r => r.scenario_id);
+            const local = await db.scenarios.where("id").anyOf(ids).toArray();
+            setAssignedScenarios(local as ScenarioRow[]);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fallback: fetch from Supabase when Dexie is empty (first load / online)
+        if (navigator.onLine) {
+          const scenarios = await api.listVisibleScenarios(student.class_id);
+          setAssignedScenarios(scenarios);
+        }
       } catch (err) {
         console.error("Failed to fetch scenarios:", err);
       } finally {

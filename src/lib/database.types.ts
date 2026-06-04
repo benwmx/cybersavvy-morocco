@@ -77,6 +77,9 @@ export interface Database {
           title: Json
           description: Json
           questions: Json
+          icon: string | null
+          color: string | null
+          is_public: boolean
           created_at: string
         }
         Insert: {
@@ -86,6 +89,9 @@ export interface Database {
           title: Json
           description: Json
           questions: Json
+          icon?: string | null
+          color?: string | null
+          is_public?: boolean
           created_at?: string
         }
         Update: {
@@ -95,6 +101,9 @@ export interface Database {
           title?: Json
           description?: Json
           questions?: Json
+          icon?: string | null
+          color?: string | null
+          is_public?: boolean
           created_at?: string
         }
       }
@@ -209,6 +218,23 @@ export interface Database {
           mistakes?: string[] | null
           created_at?: string
         }
+      }
+    }
+    Functions: {
+      get_class_visible_scenarios: {
+        Args: { p_class_id: string }
+        Returns: {
+          id: string
+          teacher_id: string | null
+          category_id: string
+          title: Json
+          description: Json
+          questions: Json
+          icon: string | null
+          color: string | null
+          is_public: boolean
+          created_at: string
+        }[]
       }
     }
   }
