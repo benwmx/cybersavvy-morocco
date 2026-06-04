@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScenarioVisuals } from "@/components/ScenarioVisuals";
 import { useLang } from "@/lib/i18n/LanguageContext";
+import { useStudent } from "@/context/StudentContext";
 import { getTrack } from "@/content/scenarios";
 import { api, ScenarioRow } from "@/lib/supabase/api";
+import { getDB } from "@/lib/offline/db";
 import { saveResult } from "@/lib/offline/queue";
 import { Check, X, Lightbulb, Trophy, ArrowRight, RefreshCw, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -32,27 +34,37 @@ function ScenarioRunner() {
       return;
     }
 
-    api.getScenario(trackId).then(track => {
-      if (track) setDynamicTrack(track);
+    (async () => {
+      // Prefer local Dexie, fall back to Supabase when online
+      const db = getDB();
+      if (db) {
+        const local = await db.scenarios.get(trackId);
+        if (local) {
+          setDynamicTrack(local as ScenarioRow);
+          setLoading(false);
+          return;
+        }
+      }
+      if (navigator.onLine) {
+        const remote = await api.getScenario(trackId).catch(() => null);
+        if (remote) setDynamicTrack(remote);
+      }
       setLoading(false);
-    }).catch(() => setLoading(false));
+    })();
   }, [trackId, staticTrack]);
 
-  const [student, setStudent] = useState<{ class_id: string; massar_code: string; name_fr: string; name_ar: string } | null>(null);
+  const { student } = useStudent();
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("cs.student");
-    const guestRaw = localStorage.getItem("cs.guest");
-    
-    if (raw) {
-      setStudent(JSON.parse(raw));
-    } else if (guestRaw) {
-      setIsGuest(true);
-    } else {
-      navigate({ to: "/login" });
+    if (!student) {
+      if (localStorage.getItem("cs.guest")) {
+        setIsGuest(true);
+      } else {
+        navigate({ to: "/login" });
+      }
     }
-  }, [navigate]);
+  }, [student, navigate]);
 
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -101,8 +113,8 @@ function ScenarioRunner() {
         setSaveState("guest");
       } else if (student) {
         const res = await saveResult({
+          student_id: student.id,
           class_id: student.class_id,
-          massar_code: student.massar_code,
           scenario_id: track.id,
           score,
           max_score: total,

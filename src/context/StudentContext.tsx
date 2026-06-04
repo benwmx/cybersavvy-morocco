@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { syncClassScenarios } from "@/lib/offline/syncService";
 
 interface StudentDetails {
   id: string;
@@ -19,35 +20,31 @@ const StudentContext = createContext<StudentContextType | undefined>(undefined);
 export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [student, setStudent] = useState<StudentDetails | null>(null);
 
-  // Load from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem('cs.student');
+    const stored = localStorage.getItem("cs.student");
     if (stored) {
       try {
         setStudent(JSON.parse(stored));
-      } catch (e) {
-        localStorage.removeItem('cs.student');
+      } catch {
+        localStorage.removeItem("cs.student");
       }
     }
   }, []);
 
-  const login = (details: StudentDetails) => {
+  const login = useCallback((details: StudentDetails) => {
     setStudent(details);
-    localStorage.setItem('cs.student', JSON.stringify(details));
-  };
+    localStorage.setItem("cs.student", JSON.stringify(details));
+    // Non-blocking: pre-populate Dexie with class scenarios for offline use
+    syncClassScenarios(details.class_id).catch(console.error);
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setStudent(null);
-    localStorage.removeItem('cs.student');
-  };
+    localStorage.removeItem("cs.student");
+  }, []);
 
   return (
-    <StudentContext.Provider value={{ 
-      student, 
-      isAuthenticated: !!student, 
-      login, 
-      logout 
-    }}>
+    <StudentContext.Provider value={{ student, isAuthenticated: !!student, login, logout }}>
       {children}
     </StudentContext.Provider>
   );
@@ -56,7 +53,7 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 export const useStudent = () => {
   const context = useContext(StudentContext);
   if (context === undefined) {
-    throw new Error('useStudent must be used within a StudentProvider');
+    throw new Error("useStudent must be used within a StudentProvider");
   }
   return context;
 };
