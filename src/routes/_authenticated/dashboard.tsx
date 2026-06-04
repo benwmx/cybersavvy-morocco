@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { api, ClassRow, StudentRow, ScenarioRow, supabaseClient } from "@/lib/supabase/api";
+import { api, ClassRow, StudentRow, ScenarioRow, ResultRow, supabaseClient } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
+import { useI18n } from "@/hooks/use-i18n";
 import { getTracks } from "@/content/scenarios";
-import { Copy, Check, Plus, GraduationCap, Users, BookOpen, Trash2, GripVertical, Image as ImageIcon, Video, Layout } from "lucide-react";
+import { Copy, Check, Plus, GraduationCap, Users, BookOpen, Trash2, GripVertical, Image as ImageIcon, Video, Layout, BarChart3, TrendingUp, AlertCircle, Loader2, BadgeInfo } from "lucide-react";
 import { toast } from "sonner";
+import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -26,8 +28,12 @@ function DashboardPage() {
         <p className="text-slate-500 font-medium">Gestion et supervision des cohortes institutionnelles.</p>
       </div>
 
-      <Tabs defaultValue="classes" className="space-y-8">
+      <Tabs defaultValue="analytics" className="space-y-8">
         <TabsList className="inline-flex h-14 items-center justify-center rounded-2xl bg-white p-1.5 shadow-xl shadow-slate-200/50 border border-slate-100">
+          <TabsTrigger value="analytics" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white font-bold transition-all gap-2 h-full">
+            <BarChart3 className="h-5 w-5" />
+            {t("analytics")}
+          </TabsTrigger>
           <TabsTrigger value="classes" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white font-bold transition-all gap-2 h-full">
             <GraduationCap className="h-5 w-5" />
             {t("classes")}
@@ -42,6 +48,10 @@ function DashboardPage() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="analytics" className="space-y-6">
+          <AnalyticsPanel />
+        </TabsContent>
+
         <TabsContent value="classes" className="space-y-6">
           <ClassesPanel />
         </TabsContent>
@@ -54,6 +64,173 @@ function DashboardPage() {
           <StudentsPanel />
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function AnalyticsPanel() {
+  const { t, lang } = useLang();
+  const { translate } = useI18n();
+  const [selectedClassId, setSelectedClassId] = useState<string>("all");
+
+  const { data: classes = [] } = useQuery({ queryKey: ["classes"], queryFn: () => api.listMyClasses() });
+  const { data: results = [], isLoading } = useQuery({ queryKey: ["results-teacher"], queryFn: () => api.listResultsForTeacher() });
+  const { data: scenarios = [] } = useQuery({ queryKey: ["scenarios"], queryFn: () => api.listScenarios() });
+  const { data: categories = [] } = useQuery({ queryKey: ["categories"], queryFn: () => api.listCategories() });
+
+  const filteredResults = useMemo(() => {
+    if (selectedClassId === "all") return results;
+    return results.filter(r => r.class_id === selectedClassId);
+  }, [results, selectedClassId]);
+
+  const stats = useMemo(() => {
+    if (filteredResults.length === 0) return null;
+
+    // Aggregates
+    let totalScore = 0;
+    let totalMax = 0;
+    const categoryStats: Record<string, { score: number; max: number; name: string }> = {};
+    const mistakeCounts: Record<string, number> = {};
+
+    filteredResults.forEach(r => {
+      totalScore += r.score;
+      totalMax += r.max_score;
+
+      // Find scenario for category
+      const scenario = scenarios.find(s => s.id === r.scenario_id);
+      if (scenario) {
+        const catId = scenario.category_id;
+        if (!categoryStats[catId]) {
+          const catObj = categories.find(c => c.id === catId);
+          categoryStats[catId] = { 
+            score: 0, 
+            max: 0, 
+            name: catObj ? translate(catObj.name) : `Category ${catId.substring(0, 4)}` 
+          };
+        }
+        categoryStats[catId].score += r.score;
+        categoryStats[catId].max += r.max_score;
+      }
+
+      // Mistakes
+      if (r.mistakes) {
+        r.mistakes.forEach(m => {
+          mistakeCounts[m] = (mistakeCounts[m] || 0) + 1;
+        });
+      }
+    });
+
+    const commonMistakes = Object.entries(mistakeCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    return {
+      average: (totalScore / totalMax) * 100,
+      totalAttempts: filteredResults.length,
+      categoryStats: Object.values(categoryStats),
+      commonMistakes
+    };
+  }, [filteredResults, scenarios, categories, translate]);
+
+  if (isLoading) return (
+    <div className="py-20 flex flex-col items-center gap-4">
+      <Loader2 className="h-8 w-8 text-[#1E3A8A] animate-spin" />
+      <p className="font-bold text-[#1E3A8A] uppercase tracking-widest text-xs">{t("syncing")}</p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200 border border-slate-100">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-black text-[#1E3A8A]">{lang === 'fr' ? 'Vue d\'ensemble' : 'نظرة عامة'}</h2>
+          <p className="text-slate-500 font-medium">Performance globale des cohortes.</p>
+        </div>
+        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+          <SelectTrigger className="w-full sm:w-64 h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold">
+            <SelectValue placeholder={t("chooseTrack")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{lang === 'fr' ? 'Toutes les classes' : 'جميع الأقسام'}</SelectItem>
+            {classes.map((c) => (
+              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {!stats ? (
+        <Card className="border-dashed border-2 border-slate-200 bg-transparent py-20 text-center rounded-[2.5rem]">
+          <div className="mx-auto h-20 w-20 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-300 mb-4">
+            <BarChart3 className="h-10 w-10" />
+          </div>
+          <p className="text-slate-400 font-bold italic text-lg">{t("noData")}</p>
+        </Card>
+      ) : (
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden p-8 flex flex-col justify-between">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-2xl bg-blue-50 text-[#1E3A8A] flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6" />
+                </div>
+                <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">{lang === 'fr' ? 'Moyenne Globale' : 'المعدل العام'}</h3>
+              </div>
+              <div className="space-y-2">
+                <p className="text-6xl font-black text-[#1E3A8A]">{Math.round(stats.average)}%</p>
+                <Progress value={stats.average} className="h-3 bg-slate-100" />
+              </div>
+            </div>
+            <p className="text-sm font-medium text-slate-500 mt-6">Basé sur {stats.totalAttempts} tentatives complétées.</p>
+          </Card>
+
+          <Card className="lg:col-span-2 border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <Layout className="h-6 w-6" />
+              </div>
+              <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">{lang === 'fr' ? 'Performance par Catégorie' : 'الأداء حسب المحور'}</h3>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-8">
+              {stats.categoryStats.map((cat, i) => {
+                const perc = (cat.score / cat.max) * 100;
+                return (
+                  <div key={i} className="space-y-3">
+                    <div className="flex justify-between items-end">
+                      <p className="font-bold text-slate-700">{cat.name}</p>
+                      <p className="text-lg font-black text-[#1E3A8A]">{Math.round(perc)}%</p>
+                    </div>
+                    <Progress value={perc} className="h-2 bg-slate-100" />
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          <Card className="md:col-span-2 lg:col-span-3 border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-12 w-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">{lang === 'fr' ? 'Points de Vigilance' : 'نقاط اليقظة'}</h3>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {stats.commonMistakes.length === 0 ? (
+                <p className="text-slate-400 italic font-medium">{lang === 'fr' ? 'Aucune erreur fréquente identifiée.' : 'لا توجد أخطاء شائعة محددة.'}</p>
+              ) : (
+                stats.commonMistakes.map(([mistakeId, count], i) => (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-rose-50/30 border border-rose-100/50">
+                    <div className="space-y-1">
+                      <p className="text-xs font-black text-rose-600 uppercase tracking-widest">Question ID: {mistakeId.substring(0, 8)}</p>
+                      <p className="font-bold text-slate-700">{count} {lang === 'fr' ? 'élèves ont échoué' : 'تلاميذ تعثروا'}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
@@ -87,7 +264,6 @@ function ClassesPanel() {
       toast.success(t("delete") + " ✓");
     },
     onError: (err: any) => {
-      // The error is already alerted by the api.deleteClass catch block
       console.error("Mutation error:", err);
     }
   });
@@ -131,7 +307,7 @@ function ClassesPanel() {
         {classes.length === 0 && (
           <div className="sm:col-span-2 lg:col-span-3 py-20 text-center space-y-4">
              <div className="mx-auto h-20 w-20 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-300">
-                <GraduationCap className="h-10 w-10" />
+                <BadgeInfo className="h-10 w-10" />
              </div>
              <p className="text-slate-400 font-bold italic text-lg">{t("noClasses")}</p>
           </div>
@@ -377,25 +553,31 @@ function StudentsPanel() {
 
 function QuizzesPanel() {
   const { t, lang } = useLang();
+  const { translate } = useI18n();
   const qc = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
 
   const { data: classes = [] } = useQuery({ queryKey: ["classes"], queryFn: () => api.listMyClasses() });
   const { data: scenarios = [] } = useQuery({ queryKey: ["scenarios"], queryFn: () => api.listScenarios() });
-
-  const toggleScenario = useMutation({
-    mutationFn: ({ classId, scenarioId, active }: { classId: string; scenarioId: string; active: boolean }) => {
-      const cls = classes.find((c) => c.id === classId);
-      if (!cls) return Promise.resolve();
-      const next = active
-        ? [...cls.assigned_scenarios, scenarioId]
-        : cls.assigned_scenarios.filter((id) => id !== scenarioId);
-      return api.updateClassScenarios(classId, next);
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["classes"] }),
+  
+  // Fetch visibility status for all teacher's classes and scenarios
+  const { data: visibility = [] } = useQuery({
+    queryKey: ["visibility-status"],
+    queryFn: async () => {
+      const { data } = await supabaseClient.from("class_scenario_status").select("*");
+      return data || [];
+    }
   });
 
-  const systemTracks = getTracks();
+  const toggleScenario = useMutation({
+    mutationFn: async ({ classId, scenarioId, active }: { classId: string; scenarioId: string; active: boolean }) => {
+      const { error } = await supabaseClient
+        .from("class_scenario_status")
+        .upsert({ class_id: classId, scenario_id: scenarioId, is_visible: active }, { onConflict: 'class_id,scenario_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["visibility-status"] }),
+  });
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -421,21 +603,21 @@ function QuizzesPanel() {
         <div className="space-y-6">
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 ps-2">{t("systemScenarios")}</h3>
           <div className="grid gap-4">
-            {systemTracks.map((track) => (
+            {scenarios.filter(s => s.teacher_id === null).map((track) => (
               <Card key={track.id} className="border-none shadow-lg shadow-slate-100 bg-white rounded-2xl overflow-hidden group">
                 <div className="flex flex-col md:flex-row md:items-center justify-between p-6 gap-6">
                   <div className="flex items-center gap-4">
-                    <div className={`h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center ${track.color || "text-[#1E3A8A]"}`}>
+                    <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-[#1E3A8A]">
                        <Layout className="h-6 w-6" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900 text-lg">{track.title[lang]}</p>
-                      <p className="text-sm text-slate-500 font-medium">{track.description[lang]}</p>
+                      <p className="font-bold text-slate-900 text-lg">{translate(track.title)}</p>
+                      <p className="text-sm text-slate-500 font-medium">{translate(track.description)}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {classes.map((cls) => {
-                      const isActive = cls.assigned_scenarios.includes(track.id);
+                      const isActive = visibility.find(v => v.class_id === cls.id && v.scenario_id === track.id)?.is_visible ?? false;
                       return (
                         <Button
                           key={cls.id}
@@ -471,13 +653,13 @@ function QuizzesPanel() {
                         <BookOpen className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="font-bold text-slate-900 text-lg">{track.title[lang]}</p>
-                        <p className="text-sm text-slate-500 font-medium">{track.description[lang]}</p>
+                        <p className="font-bold text-slate-900 text-lg">{translate(track.title)}</p>
+                        <p className="text-sm text-slate-500 font-medium">{translate(track.description)}</p>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {classes.map((cls) => {
-                        const isActive = cls.assigned_scenarios.includes(track.id);
+                        const isActive = visibility.find(v => v.class_id === cls.id && v.scenario_id === track.id)?.is_visible ?? false;
                         return (
                           <Button
                             key={cls.id}
@@ -506,7 +688,6 @@ function ScenarioCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
   const { t, lang } = useLang();
   const [title, setTitle] = useState({ fr: "", ar: "" });
   const [desc, setDesc] = useState({ fr: "", ar: "" });
-  const [category, setCategory] = useState("Privacy");
   const [questions, setQuestions] = useState<any[]>([]);
 
   const addQuestion = () => {
@@ -534,9 +715,11 @@ function ScenarioCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
     mutationFn: async () => {
       const session = await api.getSession();
       if (!session) throw new Error("Not authenticated");
+      // Find a category ID or use a default one for now
+      const { data: cats } = await supabaseClient.from("categories").select("id").limit(1).single();
       return api.createScenario({
         teacher_id: session.id,
-        category,
+        category_id: cats?.id || "00000000-0000-0000-0000-000000000000",
         title,
         description: desc,
         questions

@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, BarChart3, LogOut, Shield, Settings } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, Shield, Settings, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -14,10 +14,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useLang } from "@/lib/i18n/LanguageContext";
+import { useStudent } from "@/context/StudentContext";
 import { api } from "@/lib/supabase/api";
 
 export function AppSidebar() {
-  const { t, dir } = useLang();
+  const { t, lang, dir } = useLang();
+  const { student, logout: studentLogout } = useStudent();
   const { state } = useSidebar();
   const navigate = useNavigate();
   const path = useRouterState({ select: (r) => r.location.pathname });
@@ -27,8 +29,12 @@ export function AppSidebar() {
     { url: "/settings", label: t("settings"), icon: Settings },
   ];
 
-  const logout = () => {
-    api.signOut();
+  const logout = async () => {
+    if (student) {
+      studentLogout();
+    } else {
+      await api.signOut();
+    }
     navigate({ to: "/login" });
   };
 
@@ -47,6 +53,27 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
+        {student && (
+          <SidebarGroup>
+            <SidebarGroupLabel>{lang === 'fr' ? 'Mon Profil' : 'ملفي الشخصي'}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <div className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-slate-700">
+                    <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#1E3A8A]">
+                      <User className="h-4 w-4" />
+                    </div>
+                    {state === "expanded" && (
+                      <span className="truncate">
+                        {lang === 'fr' ? student.name_fr : student.name_ar}
+                      </span>
+                    )}
+                  </div>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
         <SidebarGroup>
           <SidebarGroupLabel>{t("dashboard")}</SidebarGroupLabel>
           <SidebarGroupContent>

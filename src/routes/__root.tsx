@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
+import { StudentProvider } from "@/context/StudentContext";
 import { OfflineSyncProvider } from "@/lib/offline/OfflineSyncProvider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -64,10 +65,12 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <OfflineSyncProvider>
-          <Outlet />
-          <Toaster />
-        </OfflineSyncProvider>
+        <StudentProvider>
+          <OfflineSyncProvider>
+            <Outlet />
+            <Toaster />
+          </OfflineSyncProvider>
+        </StudentProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );
