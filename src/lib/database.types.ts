@@ -1,0 +1,215 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      translations: {
+        Row: {
+          key: string
+          fr: string
+          ar: string
+        }
+        Insert: {
+          key: string
+          fr: string
+          ar: string
+        }
+        Update: {
+          key?: string
+          fr?: string
+          ar?: string
+        }
+      }
+      categories: {
+        Row: {
+          id: string
+          teacher_id: string | null
+          name: Json
+          color_code: string | null
+        }
+        Insert: {
+          id?: string
+          teacher_id?: string | null
+          name: Json
+          color_code?: string | null
+        }
+        Update: {
+          id?: string
+          teacher_id?: string | null
+          name?: Json
+          color_code?: string | null
+        }
+      }
+      classes: {
+        Row: {
+          id: string
+          teacher_id: string
+          name: string
+          access_code: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          teacher_id: string
+          name: string
+          access_code: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          teacher_id?: string
+          name?: string
+          access_code?: string
+          created_at?: string
+        }
+      }
+      scenarios: {
+        Row: {
+          id: string
+          teacher_id: string | null
+          category_id: string
+          title: Json
+          description: Json
+          questions: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          teacher_id?: string | null
+          category_id: string
+          title: Json
+          description: Json
+          questions: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          teacher_id?: string | null
+          category_id?: string
+          title?: Json
+          description?: Json
+          questions?: Json
+          created_at?: string
+        }
+      }
+      tutorials: {
+        Row: {
+          id: string
+          teacher_id: string | null
+          category_id: string
+          title: Json
+          content: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          teacher_id?: string | null
+          category_id: string
+          title: Json
+          content: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          teacher_id?: string | null
+          category_id?: string
+          title?: Json
+          content?: Json
+          created_at?: string
+        }
+      }
+      class_categories: {
+        Row: {
+          class_id: string
+          category_id: string
+        }
+        Insert: {
+          class_id: string
+          category_id: string
+        }
+        Update: {
+          class_id?: string
+          category_id?: string
+        }
+      }
+      class_scenario_status: {
+        Row: {
+          class_id: string
+          scenario_id: string
+          is_visible: boolean
+        }
+        Insert: {
+          class_id: string
+          scenario_id: string
+          is_visible?: boolean
+        }
+        Update: {
+          class_id?: string
+          scenario_id?: string
+          is_visible?: boolean
+        }
+      }
+      students: {
+        Row: {
+          id: string
+          class_id: string
+          massar_code: string
+          name_fr: string
+          name_ar: string
+        }
+        Insert: {
+          id?: string
+          class_id: string
+          massar_code: string
+          name_fr: string
+          name_ar: string
+        }
+        Update: {
+          id?: string
+          class_id?: string
+          massar_code?: string
+          name_fr?: string
+          name_ar?: string
+        }
+      }
+      results: {
+        Row: {
+          id: string
+          student_id: string
+          class_id: string
+          scenario_id: string
+          score: number
+          max_score: number
+          mistakes: string[] | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          class_id: string
+          scenario_id: string
+          score: number
+          max_score: number
+          mistakes?: string[] | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          class_id?: string
+          scenario_id?: string
+          score?: number
+          max_score?: number
+          mistakes?: string[] | null
+          created_at?: string
+        }
+      }
+    }
+  }
+}
