@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLang } from "@/lib/i18n/LanguageContext";
+import { useStudent } from "@/context/StudentContext";
 import { api } from "@/lib/supabase/api";
 import { toast } from "sonner";
-import { GraduationCap, ShieldCheck } from "lucide-react";
+import { GraduationCap, ShieldCheck, Loader2, ArrowRight } from "lucide-react";
 import { z } from "zod";
 
 const loginSearchSchema = z.object({
@@ -72,42 +73,43 @@ function LoginPage() {
 
 function StudentForm() {
   const { t, lang } = useLang();
+  const { login } = useStudent();
   const navigate = useNavigate();
-  const [code, setCode] = useState("");
-  const [massar, setMassar] = useState("");
+  const [accessCode, setAccessCode] = useState("");
+  const [massarCode, setMassarCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim() || !massar.trim()) {
+    if (!accessCode.trim() || !massarCode.trim()) {
       toast.error(t("enterCode"));
       return;
     }
     setLoading(true);
     try {
-      const cls = await api.verifyClassCode(code.trim());
+      const cls = await api.verifyClassCode(accessCode.trim());
       if (!cls) {
-        toast.error(t("invalidCode"));
+        toast.error(lang === 'fr' ? 'Code d\'accès invalide' : 'رمز الدخول غير صحيح');
         return;
       }
       
-      const student = await api.verifyStudent(cls.id, massar.trim());
+      const student = await api.verifyStudent(cls.id, massarCode.trim());
       if (!student) {
-        toast.error(t("invalidCode"));
+        toast.error(lang === 'fr' ? 'Code Massar non trouvé dans cette classe' : 'رمز مسار غير موجود في هذا القسم');
         return;
       }
 
-      sessionStorage.setItem(
-        "cs.student",
-        JSON.stringify({ 
-          class_id: cls.id, 
-          class_name: cls.name, 
-          massar_code: student.massar_code,
-          name_fr: student.name_fr,
-          name_ar: student.name_ar
-        })
-      );
-      navigate({ to: "/game" });
+      login({
+        id: student.id,
+        class_id: cls.id,
+        name_fr: student.name_fr,
+        name_ar: student.name_ar
+      });
+      toast.success(lang === 'fr' ? `Bienvenue, ${student.name_fr}` : `مرحباً بك، ${student.name_ar}`);
+      navigate({ to: "/dashboard" });
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error(lang === 'fr' ? 'Une erreur est survenue' : 'حدث خطأ ما');
     } finally {
       setLoading(false);
     }
@@ -126,8 +128,8 @@ function StudentForm() {
             <Label htmlFor="code" className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("classCode")}</Label>
             <Input
               id="code"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
               placeholder="DEMO01"
               className="font-mono uppercase tracking-widest text-center text-lg h-12 border-slate-200 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] rounded-xl bg-slate-50/50"
               maxLength={8}
@@ -137,15 +139,22 @@ function StudentForm() {
             <Label htmlFor="massar" className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("massarCode")}</Label>
             <Input
               id="massar"
-              value={massar}
-              onChange={(e) => setMassar(e.target.value.toUpperCase())}
+              value={massarCode}
+              onChange={(e) => setMassarCode(e.target.value.toUpperCase())}
               placeholder="G123456789"
               className="font-mono uppercase tracking-widest text-center text-lg h-12 border-slate-200 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] rounded-xl bg-slate-50/50"
               maxLength={12}
             />
           </div>
-          <Button type="submit" className="w-full h-12 rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-bold shadow-lg shadow-blue-900/10 active:scale-95 transition-all" disabled={loading}>
-            {t("join")}
+          <Button type="submit" className="w-full h-12 rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-bold shadow-lg shadow-blue-900/10 active:scale-95 transition-all group" disabled={loading}>
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <span>{t("join")}</span>
+                <ArrowRight className="w-4 h-4 ml-2 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+              </>
+            )}
           </Button>
         </form>
       </CardContent>
@@ -206,7 +215,7 @@ function TeacherForm() {
             />
           </div>
           <Button type="submit" className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold shadow-lg shadow-emerald-900/10 active:scale-95 transition-all" disabled={loading}>
-            {mode === "in" ? t("signIn") : t("signUp")}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (mode === "in" ? t("signIn") : t("signUp"))}
           </Button>
           <button
             type="button"
