@@ -29,16 +29,7 @@
 - **Offline Logic**: Uses a queue system (`src/lib/offline/queue.ts`) to buffer requests when offline.
 
 ## 4. Database Schema
-### Core Tables (Supabase `public` schema)
-- **translations**: `key` (PK), `fr`, `ar` (Global UI strings).
-- **categories**: `id` (PK), `teacher_id` (FK), `name` (JSON: fr/ar), `color_code`.
-- **classes**: `id` (PK), `teacher_id` (FK), `name`, `access_code` (Unique 6-char code), `created_at`.
-- **scenarios**: `id` (PK), `teacher_id` (FK, nullable), `category_id` (FK), `title` (JSON), `description` (JSON), `questions` (JSON), `created_at`.
-- **students**: `id` (PK), `class_id` (FK), `massar_code`, `name_fr`, `name_ar`.
-- **results**: `id` (PK), `student_id` (FK), `class_id` (FK), `scenario_id` (FK), `score`, `max_score`, `mistakes` (text[]), `created_at`.
-- **tutorials**: `id` (PK), `teacher_id` (FK), `category_id` (FK), `title` (JSON), `content` (JSON).
-- **class_categories**: Junction table linking classes to active categories.
-- **class_scenario_status**: Tracks visibility of specific scenarios for specific classes.
+Core tables (Supabase `public` schema): `translations`, `categories`, `classes`, `scenarios`, `students`, `results`, `tutorials`, `class_categories` (junction), `class_scenario_status` (junction). Full column types in `src/lib/supabase/database.types.ts`.
 
 ## 5. Coding Standards
 - **Naming**: PascalCase for components (`AppSidebar.tsx`), camelCase for hooks (`useAuth.ts`) and variables.
@@ -61,24 +52,13 @@
 - `offline/db.ts`: Dexie database schema for local storage.
 - `offline/OfflineSyncProvider.tsx`: Global provider for online/offline state.
 
-## 7. Current State
-- **Implemented**:
-  - Multi-language engine (FR/AR).
-  - Teacher dashboard (Class management, Analytics).
-  - Student portal (Access via Code Massar).
-  - Game/Scenario engine with result tracking.
-  - Offline mode with Dexie synchronization.
-- **In Progress / Incomplete**:
-  - Detailed Tutorial engine (tutorial table exists but UI is minimal).
-  - Advanced scenario builder for teachers.
-
-## 8. Environment Variables
+## 7. Environment Variables
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-## 9. Dev Commands
+## 8. Dev Commands
 - **Install**: `bun install`
 - **Development**: `bun dev`
 - **Build**: `bun build`
