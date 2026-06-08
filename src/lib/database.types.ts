@@ -32,18 +32,21 @@ export interface Database {
           teacher_id: string | null
           name: Json
           color_code: string | null
+          source_category_id: string | null
         }
         Insert: {
           id?: string
           teacher_id?: string | null
           name: Json
           color_code?: string | null
+          source_category_id?: string | null
         }
         Update: {
           id?: string
           teacher_id?: string | null
           name?: Json
           color_code?: string | null
+          source_category_id?: string | null
         }
       }
       classes: {
