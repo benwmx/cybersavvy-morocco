@@ -166,11 +166,127 @@ export const api = {
 
   // ---- SCENARIOS, CATEGORIES & TUTORIALS ----
   async listCategories(): Promise<CategoryRow[]> {
-    const { data, error } = await supabase
-      .from("categories")
-      .select("*");
+    const { data, error } = await supabase.from("categories").select("*");
     if (error) throw error;
     return data || [];
+  },
+
+  async createCategory(data: PublicTables["categories"]["Insert"]): Promise<CategoryRow> {
+    const { data: created, error } = await supabase
+      .from("categories")
+      .insert([data])
+      .select()
+      .single();
+    if (error) throw error;
+    return created;
+  },
+
+  async updateCategory(id: string, data: PublicTables["categories"]["Update"]): Promise<CategoryRow> {
+    const { data: updated, error } = await supabase
+      .from("categories")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return updated;
+  },
+
+  async deleteCategory(id: string): Promise<void> {
+    const { error } = await supabase.from("categories").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async forkCategory(globalCategoryId: string): Promise<CategoryRow> {
+    const session = await api.getSession();
+    if (!session) throw new Error("Not authenticated");
+
+    // Fetch global category
+    const { data: global, error: catErr } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("id", globalCategoryId)
+      .single();
+    if (catErr || !global) throw catErr ?? new Error("Category not found");
+
+    // Create private fork
+    const { data: fork, error: forkErr } = await supabase
+      .from("categories")
+      .insert([{
+        teacher_id: session.id,
+        name: global.name,
+        color_code: global.color_code,
+        source_category_id: globalCategoryId,
+      }])
+      .select()
+      .single();
+    if (forkErr || !fork) throw forkErr ?? new Error("Fork creation failed");
+
+    // Copy global scenarios into the fork
+    const { data: globalScenarios } = await supabase
+      .from("scenarios")
+      .select("*")
+      .eq("category_id", globalCategoryId)
+      .is("teacher_id", null);
+
+    if (globalScenarios?.length) {
+      const copies = globalScenarios.map(s => ({
+        teacher_id: session.id,
+        category_id: fork.id,
+        title: s.title,
+        description: s.description,
+        questions: s.questions,
+        icon: s.icon,
+        color: s.color,
+        is_public: false,
+      }));
+      await supabase.from("scenarios").insert(copies);
+    }
+
+    return fork;
+  },
+
+  async resetCategoryToDefault(privateCategoryId: string): Promise<void> {
+    const session = await api.getSession();
+    if (!session) throw new Error("Not authenticated");
+
+    // Get the source global category id
+    const { data: privatecat, error: catErr } = await supabase
+      .from("categories")
+      .select("source_category_id")
+      .eq("id", privateCategoryId)
+      .single();
+    if (catErr || !privatecat?.source_category_id) throw new Error("No source category to reset from");
+
+    const sourceId = privatecat.source_category_id;
+
+    // Delete all teacher-owned scenarios in this category
+    await supabase
+      .from("scenarios")
+      .delete()
+      .eq("category_id", privateCategoryId)
+      .eq("teacher_id", session.id);
+
+    // Re-copy global scenarios
+    const { data: globalScenarios } = await supabase
+      .from("scenarios")
+      .select("*")
+      .eq("category_id", sourceId)
+      .is("teacher_id", null);
+
+    if (globalScenarios?.length) {
+      const copies = globalScenarios.map(s => ({
+        teacher_id: session.id,
+        category_id: privateCategoryId,
+        title: s.title,
+        description: s.description,
+        questions: s.questions,
+        icon: s.icon,
+        color: s.color,
+        is_public: false,
+      }));
+      await supabase.from("scenarios").insert(copies);
+    }
   },
 
   async listTutorials(categoryId?: string): Promise<TutorialRow[]> {
@@ -184,12 +300,12 @@ export const api = {
 
   async listScenarios(): Promise<ScenarioRow[]> {
     const session = await api.getSession();
-    const query = supabase.from("scenarios").select("*");
-    
+    let query = supabase.from("scenarios").select("*");
+
     if (session) {
-      query.or(`teacher_id.is.null,teacher_id.eq.${session.id}`);
+      query = query.or(`teacher_id.is.null,teacher_id.eq.${session.id}`);
     } else {
-      query.is("teacher_id", null);
+      query = query.is("teacher_id", null);
     }
 
     const { data, error } = await query.order("created_at", { ascending: false });
@@ -216,6 +332,22 @@ export const api = {
       .single();
     if (error) throw error;
     return data;
+  },
+
+  async updateScenario(id: string, data: PublicTables["scenarios"]["Update"]): Promise<ScenarioRow> {
+    const { data: updated, error } = await supabase
+      .from("scenarios")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return updated;
+  },
+
+  async deleteScenario(id: string): Promise<void> {
+    const { error } = await supabase.from("scenarios").delete().eq("id", id);
+    if (error) throw error;
   },
 
   async getScenario(id: string): Promise<ScenarioRow | null> {
