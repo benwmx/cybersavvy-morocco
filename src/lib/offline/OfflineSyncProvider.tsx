@@ -42,9 +42,9 @@ export function OfflineSyncProvider({ children }: { children: ReactNode }) {
 
     if (navigator.onLine) runSync();
 
-    // Teacher auth: sync private data on login, scrub on logout
+    // Teacher auth: sync private data on login or page reload, scrub on logout
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session?.user?.id) {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user?.id) {
         syncPrivateScenarios(session.user.id).catch(console.error);
       } else if (event === "SIGNED_OUT") {
         scrubPrivateData().catch(console.error);
