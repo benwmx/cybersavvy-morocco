@@ -1,11 +1,23 @@
 import { getDB, type LocalClassScenarioStatus } from "./db";
 import { supabase } from "@/lib/supabase/client";
 import type { ScenarioRow, CategoryRow } from "@/lib/supabase/api";
+import type { LocalTranslation } from "./db";
 
 type SB = typeof supabase;
 
 // Narrow supabase to `any` only where the generated types can't express joins or RPCs
 const sb = supabase as unknown as { rpc: (fn: string, args?: unknown) => Promise<{ data: unknown; error: unknown }>; from: SB["from"] };
+
+// Fetch all UI translations from Supabase and cache them in Dexie.
+// Runs anonymously on app init — no auth required.
+export async function syncTranslations(): Promise<void> {
+  if (!navigator.onLine) return;
+  const db = getDB();
+  if (!db) return;
+
+  const { data } = await supabase.from("translations").select("*");
+  if (data?.length) await db.translations.bulkPut(data as LocalTranslation[]);
+}
 
 // Fetch all public scenarios and categories; runs anonymously on app init.
 export async function syncPublicScenarios(): Promise<void> {
