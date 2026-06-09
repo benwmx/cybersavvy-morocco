@@ -65,7 +65,7 @@ export function ScenarioVisuals({ trackId, questionId }: VisualsProps) {
         <div className="bg-muted px-4 py-2 border-b flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-primary" />
-            <span className="text-xs font-medium">Email Inbox</span>
+            <span className="text-xs font-medium">{lang === "fr" ? "Boîte mail" : "صندوق البريد"}</span>
           </div>
         </div>
         <div className="p-4 space-y-3">
@@ -97,7 +97,7 @@ export function ScenarioVisuals({ trackId, questionId }: VisualsProps) {
       <div className="w-full aspect-video rounded-xl border bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center p-6">
         <div className="w-full max-w-xs space-y-4 bg-card p-6 rounded-xl border shadow-sm">
           <div className="space-y-1">
-            <Label className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Password</Label>
+            <Label className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">{lang === "fr" ? "Mot de passe" : "كلمة المرور"}</Label>
             <div className="relative">
               <Input 
                 type="text" 
@@ -116,7 +116,7 @@ export function ScenarioVisuals({ trackId, questionId }: VisualsProps) {
               </div>
             )}
           </div>
-          <Button size="sm" className="w-full">Login</Button>
+          <Button size="sm" className="w-full">{lang === "fr" ? "Connexion" : "تسجيل الدخول"}</Button>
         </div>
       </div>
     );
@@ -169,7 +169,7 @@ export function ScenarioVisuals({ trackId, questionId }: VisualsProps) {
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
             <User className="h-4 w-4" />
           </div>
-          <span className="font-medium text-sm">Groupe Classe</span>
+          <span className="font-medium text-sm">{lang === "fr" ? "Groupe Classe" : "مجموعة القسم"}</span>
         </div>
         <div className="flex-1 bg-[#e5ddd5] dark:bg-zinc-900 p-4 space-y-3 overflow-y-auto">
           <div className="flex flex-col items-start max-w-[80%]">
@@ -259,7 +259,7 @@ export function ScenarioVisuals({ trackId, questionId }: VisualsProps) {
     <div className="aspect-video w-full rounded-xl border bg-muted/40 flex items-center justify-center">
        <div className="text-muted-foreground flex flex-col items-center gap-2">
           <Smartphone className="h-8 w-8" />
-          <span className="text-sm">Scenario Visual</span>
+          <span className="text-sm">{lang === "fr" ? "Visuel du scénario" : "مرئيات السيناريو"}</span>
        </div>
     </div>
   );
