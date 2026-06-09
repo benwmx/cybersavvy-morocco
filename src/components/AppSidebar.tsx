@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, BarChart3, LogOut, Shield, Settings, User } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, Shield, Settings, User, GraduationCap, Users, BookOpen, BookMarked } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,10 +22,15 @@ export function AppSidebar() {
   const { student, logout: studentLogout } = useStudent();
   const { state } = useSidebar();
   const navigate = useNavigate();
-  const path = useRouterState({ select: (r) => r.location.pathname });
+  const path = useRouterState({ select: r => r.location.pathname });
+
   const items = [
-    { url: "/dashboard", label: t("classes"), icon: LayoutDashboard },
+    { url: "/dashboard", label: lang === "fr" ? "Vue d'ensemble" : "نظرة عامة", icon: LayoutDashboard },
     { url: "/analytics", label: t("analytics"), icon: BarChart3 },
+    { url: "/classes", label: t("classes"), icon: GraduationCap },
+    { url: "/quizzes", label: lang === "fr" ? "Parcours" : "المسارات", icon: BookOpen },
+    { url: "/students", label: lang === "fr" ? "Élèves" : "التلاميذ", icon: Users },
+    { url: "/tutorials", label: lang === "fr" ? "Tutoriels" : "الدروس", icon: BookMarked },
     { url: "/settings", label: t("settings"), icon: Settings },
   ];
 
@@ -52,10 +57,11 @@ export function AppSidebar() {
           )}
         </Link>
       </SidebarHeader>
+
       <SidebarContent>
         {student && (
           <SidebarGroup>
-            <SidebarGroupLabel>{lang === 'fr' ? 'Mon Profil' : 'ملفي الشخصي'}</SidebarGroupLabel>
+            <SidebarGroupLabel>{lang === "fr" ? "Mon Profil" : "ملفي الشخصي"}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
@@ -65,7 +71,7 @@ export function AppSidebar() {
                     </div>
                     {state === "expanded" && (
                       <span className="truncate">
-                        {lang === 'fr' ? student.name_fr : student.name_ar}
+                        {lang === "fr" ? student.name_fr : student.name_ar}
                       </span>
                     )}
                   </div>
@@ -74,13 +80,18 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
         <SidebarGroup>
           <SidebarGroupLabel>{t("dashboard")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {items.map(item => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={path === item.url} className="data-[active=true]:bg-blue-50 data-[active=true]:text-[#1E3A8A]">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={path === item.url}
+                    className="data-[active=true]:bg-blue-50 data-[active=true]:text-[#1E3A8A]"
+                  >
                     <Link to={item.url} className="flex items-center gap-3">
                       <item.icon className="h-4 w-4" />
                       <span className="font-medium">{item.label}</span>
@@ -92,11 +103,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter className="p-4 border-t border-slate-100">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton 
-              onClick={logout} 
+            <SidebarMenuButton
+              onClick={logout}
               className="w-full justify-start text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl h-10 px-3 font-bold"
             >
               <LogOut className="h-4 w-4 ms-0 me-3" />
