@@ -21,11 +21,18 @@ export interface LocalClassScenarioStatus {
   is_visible: boolean;
 }
 
+export interface LocalTranslation {
+  key: string;
+  fr: string;
+  ar: string;
+}
+
 class CyberDB extends Dexie {
   offline_queue!: Table<QueuedResult, number>;
   scenarios!: Table<ScenarioRow, string>;
   categories!: Table<CategoryRow, string>;
   class_scenario_status!: Table<LocalClassScenarioStatus, [string, string]>;
+  translations!: Table<LocalTranslation, string>;
 
   constructor() {
     super("cyber-safety-db");
@@ -37,6 +44,13 @@ class CyberDB extends Dexie {
       scenarios: "id, teacher_id, category_id, is_public",
       categories: "id, teacher_id",
       class_scenario_status: "[class_id+scenario_id], class_id, scenario_id",
+    });
+    this.version(3).stores({
+      offline_queue: "++id, createdAt",
+      scenarios: "id, teacher_id, category_id, is_public",
+      categories: "id, teacher_id",
+      class_scenario_status: "[class_id+scenario_id], class_id, scenario_id",
+      translations: "key",
     });
   }
 }
