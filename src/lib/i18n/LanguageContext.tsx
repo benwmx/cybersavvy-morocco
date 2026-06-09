@@ -7,7 +7,7 @@ type Overrides = Record<string, { fr: string; ar: string }>;
 interface LangCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
-  t: (k: TKey) => string;
+  t: (k: TKey | (string & {})) => string;
   dir: "ltr" | "rtl";
 }
 
@@ -50,7 +50,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const dir = lang === "ar" ? "rtl" : "ltr";
 
-  const t = (k: TKey): string => {
+  const t = (k: TKey | (string & {})): string => {
     const override = overrides[k];
     if (override) return override[lang] ?? override.fr;
     return (translations[lang] as any)[k] ?? (translations.fr as any)[k];
