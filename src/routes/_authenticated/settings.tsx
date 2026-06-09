@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +27,7 @@ function SettingsPage() {
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) {
-      toast.error("Password too short");
+      toast.error(lang === "fr" ? "Mot de passe trop court (6 caractères min.)" : "كلمة المرور قصيرة جداً (6 أحرف على الأقل)");
       return;
     }
     setLoading(true);
@@ -46,7 +46,7 @@ function SettingsPage() {
     <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-700">
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("settings")}</h1>
-        <p className="text-slate-500 font-medium">Sécurité et configuration du compte formateur.</p>
+        <p className="text-slate-500 font-medium">{lang === "fr" ? "Sécurité et configuration du compte enseignant." : "إعدادات الأمان والحساب."}</p>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
@@ -57,11 +57,11 @@ function SettingsPage() {
               <User className="h-6 w-6" />
               {t("account")}
             </CardTitle>
-            <CardDescription className="text-base">Informations d'identification de votre compte.</CardDescription>
+            <CardDescription className="text-base">{lang === "fr" ? "Informations de votre compte." : "معلومات حسابك."}</CardDescription>
           </CardHeader>
           <CardContent className="p-8 pt-0 space-y-6">
             <div className="space-y-2 p-6 rounded-2xl bg-slate-50 border border-slate-100">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Adresse Email</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("email")}</Label>
               <p className="font-bold text-lg text-slate-700 select-all">{session?.email || "..."}</p>
             </div>
           </CardContent>
@@ -74,7 +74,7 @@ function SettingsPage() {
               <KeyRound className="h-6 w-6" />
               {t("updatePassword")}
             </CardTitle>
-            <CardDescription className="text-base">Mettre à jour vos paramètres de sécurité.</CardDescription>
+            <CardDescription className="text-base">{lang === "fr" ? "Modifier le mot de passe de votre compte." : "تغيير كلمة مرور حسابك."}</CardDescription>
           </CardHeader>
           <CardContent className="p-8 pt-0">
             <form onSubmit={handleUpdatePassword} className="space-y-6">
