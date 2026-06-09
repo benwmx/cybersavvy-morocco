@@ -32,3 +32,9 @@ eslint.config.js
 bunfig.toml
 wrangler.jsonc
 components.json
+
+# Auto-generated files
+src/routeTree.gen.ts
+
+# Other AI tools
+GEMINI.md

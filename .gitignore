@@ -33,3 +33,18 @@ dist-ssr
 .aider*
 .env
 
+# AI tool artifacts
+.gemini/
+GEMINI.md
+graphify-out/
+
+# Sandbox / shell environment artifacts
+.bash_profile
+.bashrc
+.zshrc
+.zprofile
+.profile
+.gitconfig
+.gitmodules
+.ripgreprc
+.mcp.json
