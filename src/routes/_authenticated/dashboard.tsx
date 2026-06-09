@@ -1150,15 +1150,7 @@ function CategoryCard({
                           </span>
                         </div>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-bold text-sm text-slate-800">{translate(scenario.title)}</p>
-                            {!isOwn && (
-                              <span className="text-[9px] font-black uppercase tracking-widest bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full shrink-0">
-                                {lang === "fr" ? "Système" : "نظام"}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5">{translate(scenario.description)}</p>
+                          <p className="text-sm text-slate-600">{translate(scenario.description)}</p>
                         </div>
                       </div>
 
