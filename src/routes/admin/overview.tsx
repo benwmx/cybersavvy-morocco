@@ -40,7 +40,7 @@ function StatCard({
 }
 
 function OverviewPage() {
-  const { lang } = useLang();
+  const { t } = useLang();
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["admin-stats"],
@@ -48,49 +48,14 @@ function OverviewPage() {
   });
 
   const cards = [
+    { label: t("teachers"),     value: stats?.total_teachers ?? "—", icon: Users,        barColor: "bg-violet-500",   iconBg: "bg-violet-50",  iconText: "text-violet-600"  },
+    { label: t("classesLabel"), value: stats?.total_classes  ?? "—", icon: GraduationCap,barColor: "bg-[#1E3A8A]",    iconBg: "bg-blue-50",    iconText: "text-[#1E3A8A]"   },
+    { label: t("studentsLabel"),value: stats?.total_students ?? "—", icon: Users,        barColor: "bg-emerald-500",  iconBg: "bg-emerald-50", iconText: "text-emerald-600" },
+    { label: t("results"),      value: stats?.total_results  ?? "—", icon: BookOpen,     barColor: "bg-amber-500",    iconBg: "bg-amber-50",   iconText: "text-amber-600"   },
     {
-      label: lang === "fr" ? "Enseignants" : "المعلمون",
-      value: stats?.total_teachers ?? "—",
-      icon: Users,
-      barColor: "bg-violet-500",
-      iconBg: "bg-violet-50",
-      iconText: "text-violet-600",
-    },
-    {
-      label: lang === "fr" ? "Classes" : "الأقسام",
-      value: stats?.total_classes ?? "—",
-      icon: GraduationCap,
-      barColor: "bg-[#1E3A8A]",
-      iconBg: "bg-blue-50",
-      iconText: "text-[#1E3A8A]",
-    },
-    {
-      label: lang === "fr" ? "Élèves" : "التلاميذ",
-      value: stats?.total_students ?? "—",
-      icon: Users,
-      barColor: "bg-emerald-500",
-      iconBg: "bg-emerald-50",
-      iconText: "text-emerald-600",
-    },
-    {
-      label: lang === "fr" ? "Résultats" : "النتائج",
-      value: stats?.total_results ?? "—",
-      icon: BookOpen,
-      barColor: "bg-amber-500",
-      iconBg: "bg-amber-50",
-      iconText: "text-amber-600",
-    },
-    {
-      label: lang === "fr" ? "Score moyen" : "متوسط الدرجات",
-      value: isLoading
-        ? "—"
-        : stats?.avg_score_percent != null
-        ? `${stats.avg_score_percent}%`
-        : "—",
-      icon: TrendingUp,
-      barColor: "bg-rose-500",
-      iconBg: "bg-rose-50",
-      iconText: "text-rose-600",
+      label: t("avgScoreLabel"),
+      value: isLoading ? "—" : stats?.avg_score_percent != null ? `${stats.avg_score_percent}%` : "—",
+      icon: TrendingUp, barColor: "bg-rose-500", iconBg: "bg-rose-50", iconText: "text-rose-600",
     },
   ];
 
@@ -101,14 +66,8 @@ function OverviewPage() {
           <LayoutDashboard className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {lang === "fr" ? "Vue d'ensemble" : "نظرة عامة"}
-          </h1>
-          <p className="text-slate-500 font-medium text-sm">
-            {lang === "fr"
-              ? "Statistiques globales de la plateforme"
-              : "إحصائيات المنصة الشاملة"}
-          </p>
+          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("overview")}</h1>
+          <p className="text-slate-500 font-medium text-sm">{t("adminOverviewSubtitle")}</p>
         </div>
       </div>
 
