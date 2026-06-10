@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  const { lang } = useLang();
+  const { t } = useLang();
 
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: () => api.getSession() });
   const { data: classes = [] } = useQuery({ queryKey: ["classes"], queryFn: () => api.listMyClasses() });
@@ -32,72 +32,18 @@ function DashboardPage() {
     : null;
 
   const stats = [
-    {
-      label: lang === "fr" ? "Classes" : "الأقسام",
-      value: classes.length,
-      icon: GraduationCap,
-      color: "bg-blue-50 text-[#1E3A8A]",
-      to: "/classes",
-    },
-    {
-      label: lang === "fr" ? "Élèves" : "التلاميذ",
-      value: totalStudents.data ?? "—",
-      icon: Users,
-      color: "bg-emerald-50 text-emerald-600",
-      to: "/students",
-    },
-    {
-      label: lang === "fr" ? "Parcours" : "المسارات",
-      value: scenarios.length,
-      icon: BookOpen,
-      color: "bg-violet-50 text-violet-600",
-      to: "/quizzes",
-    },
-    {
-      label: lang === "fr" ? "Moyenne générale" : "المعدل العام",
-      value: avgScore !== null ? `${avgScore}%` : "—",
-      icon: TrendingUp,
-      color: "bg-amber-50 text-amber-600",
-      to: "/analytics",
-    },
+    { label: t("classesLabel"), value: classes.length,               icon: GraduationCap, color: "bg-blue-50 text-[#1E3A8A]",      to: "/classes"   },
+    { label: t("studentsLabel"), value: totalStudents.data ?? "—",   icon: Users,         color: "bg-emerald-50 text-emerald-600",   to: "/students"  },
+    { label: t("tracks"),        value: scenarios.length,            icon: BookOpen,      color: "bg-violet-50 text-violet-600",     to: "/quizzes"   },
+    { label: t("avgGeneral"),    value: avgScore !== null ? `${avgScore}%` : "—", icon: TrendingUp, color: "bg-amber-50 text-amber-600", to: "/analytics" },
   ];
 
   const shortcuts = [
-    {
-      label: lang === "fr" ? "Analyses" : "التحليلات",
-      desc: lang === "fr" ? "Performance des cohortes" : "أداء الأفواج",
-      icon: BarChart3,
-      to: "/analytics",
-      accent: "bg-[#1E3A8A]",
-    },
-    {
-      label: lang === "fr" ? "Classes" : "الأقسام",
-      desc: lang === "fr" ? "Gérer les groupes" : "إدارة المجموعات",
-      icon: GraduationCap,
-      to: "/classes",
-      accent: "bg-emerald-500",
-    },
-    {
-      label: lang === "fr" ? "Parcours" : "المسارات",
-      desc: lang === "fr" ? "Catégories & scénarios" : "المحاور والمسارات",
-      icon: BookOpen,
-      to: "/quizzes",
-      accent: "bg-violet-500",
-    },
-    {
-      label: lang === "fr" ? "Élèves" : "التلاميذ",
-      desc: lang === "fr" ? "Registre & import" : "السجل والاستيراد",
-      icon: Users,
-      to: "/students",
-      accent: "bg-amber-500",
-    },
-    {
-      label: lang === "fr" ? "Tutoriels" : "الدروس",
-      desc: lang === "fr" ? "Contenu pédagogique" : "المحتوى التعليمي",
-      icon: BookMarked,
-      to: "/tutorials",
-      accent: "bg-rose-500",
-    },
+    { label: t("analytics"),     desc: t("analyticsDesc"),   icon: BarChart3,  to: "/analytics", accent: "bg-[#1E3A8A]"    },
+    { label: t("classesLabel"),  desc: t("classesDesc"),     icon: GraduationCap, to: "/classes", accent: "bg-emerald-500" },
+    { label: t("tracks"),        desc: t("tracksDesc"),      icon: BookOpen,   to: "/quizzes",   accent: "bg-violet-500"   },
+    { label: t("studentsLabel"), desc: t("studentsDesc"),    icon: Users,      to: "/students",  accent: "bg-amber-500"    },
+    { label: t("tutorialsLabel"),desc: t("tutorialsDesc"),   icon: BookMarked, to: "/tutorials", accent: "bg-rose-500"     },
   ];
 
   const fullName = session
@@ -112,15 +58,9 @@ function DashboardPage() {
         </div>
         <div className="space-y-0.5">
           <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {fullName
-              ? lang === "fr"
-                ? `Bonjour, ${fullName}`
-                : `مرحباً، ${fullName}`
-              : lang === "fr" ? "Vue d'ensemble" : "نظرة عامة"}
+            {fullName ? `${t("greeting")}, ${fullName}` : t("overview")}
           </h1>
-          <p className="text-slate-500 font-medium">
-            {lang === "fr" ? "Tableau de bord de supervision." : "لوحة قيادة الإشراف."}
-          </p>
+          <p className="text-slate-500 font-medium">{t("dashboardSubtitle")}</p>
         </div>
       </div>
 
@@ -144,7 +84,7 @@ function DashboardPage() {
       {/* Shortcuts */}
       <div>
         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">
-          {lang === "fr" ? "Accès rapide" : "وصول سريع"}
+          {t("quickAccess")}
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shortcuts.map(s => (

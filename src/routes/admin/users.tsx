@@ -10,7 +10,7 @@ export const Route = createFileRoute("/admin/users")({
 });
 
 function UsersPage() {
-  const { lang } = useLang();
+  const { t, lang } = useLang();
 
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ["admin-users"],
@@ -32,13 +32,9 @@ function UsersPage() {
         </div>
         <div>
           <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {lang === "fr" ? "Utilisateurs" : "المستخدمون"}
+            {t("adminUsersTitle")}
           </h1>
-          <p className="text-slate-500 font-medium text-sm">
-            {lang === "fr"
-              ? "Tous les comptes enseignants inscrits"
-              : "جميع حسابات المعلمين المسجلين"}
-          </p>
+          <p className="text-slate-500 font-medium text-sm">{t("adminUsersSubtitle")}</p>
         </div>
       </div>
 
@@ -47,12 +43,10 @@ function UsersPage() {
           <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-amber-800">
-              {lang === "fr" ? "Migration requise" : "يلزم تشغيل Migration"}
+              {t("migrationRequired")}
             </p>
             <p className="text-sm text-amber-700 mt-1">
-              {lang === "fr"
-                ? "Exécutez supabase/migrations/006_admin_functions.sql dans l'éditeur SQL de Supabase."
-                : "شغّل ملف supabase/migrations/006_admin_functions.sql في محرر SQL لـ Supabase."}
+              {t("migrationRequiredDesc")}
             </p>
           </div>
         </div>
@@ -64,18 +58,16 @@ function UsersPage() {
           <CardTitle className="text-2xl font-black text-[#1E3A8A]">
             {isLoading
               ? "…"
-              : lang === "fr"
-              ? `${users.length} compte${users.length !== 1 ? "s" : ""}`
-              : `${users.length} حساب`}
+              : `${users.length} ${t("adminUsersTitle").toLowerCase()}`}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-8 py-3 bg-slate-50 border-y border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
-            <span>{lang === "fr" ? "Nom" : "الاسم"}</span>
-            <span>{lang === "fr" ? "Email" : "البريد الإلكتروني"}</span>
-            <span>{lang === "fr" ? "Inscrit le" : "تاريخ التسجيل"}</span>
-            <span className="text-center">{lang === "fr" ? "Classes" : "الأقسام"}</span>
-            <span className="text-center">{lang === "fr" ? "Élèves" : "التلاميذ"}</span>
+            <span>{t("colName")}</span>
+            <span>{t("colEmail")}</span>
+            <span>{t("colRegisteredAt")}</span>
+            <span className="text-center">{t("classesLabel")}</span>
+            <span className="text-center">{t("studentsLabel")}</span>
           </div>
 
           {isLoading ? (
@@ -90,7 +82,7 @@ function UsersPage() {
             </div>
           ) : users.length === 0 && !error ? (
             <div className="py-16 text-center text-slate-400 font-bold italic">
-              {lang === "fr" ? "Aucun utilisateur." : "لا يوجد مستخدمون."}
+              {t("noUsers")}
             </div>
           ) : (
             <div className="divide-y divide-slate-50 max-h-[62vh] overflow-y-auto">
