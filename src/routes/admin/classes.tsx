@@ -10,7 +10,7 @@ export const Route = createFileRoute("/admin/classes")({
 });
 
 function ClassesPage() {
-  const { lang } = useLang();
+  const { t, lang } = useLang();
 
   const { data: classes = [], isLoading } = useQuery({
     queryKey: ["admin-all-classes"],
@@ -34,13 +34,9 @@ function ClassesPage() {
         </div>
         <div>
           <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {lang === "fr" ? "Classes" : "الأقسام"}
+            {t("classesLabel")}
           </h1>
-          <p className="text-slate-500 font-medium text-sm">
-            {lang === "fr"
-              ? "Toutes les classes créées sur la plateforme"
-              : "جميع الأقسام المنشأة على المنصة"}
-          </p>
+          <p className="text-slate-500 font-medium text-sm">{t("adminClassesSubtitle")}</p>
         </div>
       </div>
 
@@ -50,19 +46,17 @@ function ClassesPage() {
           <CardTitle className="text-2xl font-black text-[#1E3A8A]">
             {isLoading
               ? "…"
-              : lang === "fr"
-              ? `${classes.length} classe${classes.length !== 1 ? "s" : ""}`
-              : `${classes.length} قسم`}
+              : `${classes.length} ${t("classesLabel").toLowerCase()}`}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className={`grid ${cols} gap-4 px-8 py-3 bg-slate-50 border-y border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400`}>
-            <span>{lang === "fr" ? "Nom" : "الاسم"}</span>
-            <span>{lang === "fr" ? "Enseignant" : "المعلم"}</span>
-            <span className="text-center">{lang === "fr" ? "Code" : "الرمز"}</span>
-            <span className="text-center">{lang === "fr" ? "Élèves" : "التلاميذ"}</span>
-            <span className="text-center">{lang === "fr" ? "Scénarios" : "السيناريوهات"}</span>
-            <span>{lang === "fr" ? "Créée le" : "تاريخ الإنشاء"}</span>
+            <span>{t("colName")}</span>
+            <span>{t("colTeacher")}</span>
+            <span className="text-center">{t("colCode")}</span>
+            <span className="text-center">{t("studentsLabel")}</span>
+            <span className="text-center">{t("colScenarios")}</span>
+            <span>{t("colCreatedAt")}</span>
           </div>
 
           {isLoading ? (
@@ -77,7 +71,7 @@ function ClassesPage() {
             </div>
           ) : classes.length === 0 ? (
             <div className="py-16 text-center text-slate-400 font-bold italic">
-              {lang === "fr" ? "Aucune classe." : "لا توجد أقسام."}
+              {t("noClassesAdmin")}
             </div>
           ) : (
             <div className="divide-y divide-slate-50 max-h-[62vh] overflow-y-auto">
