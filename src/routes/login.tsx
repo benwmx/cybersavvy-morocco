@@ -182,7 +182,7 @@ function TeacherForm() {
         session = await api.signUp(email, password);
         toast.success(t("accountCreated"));
       }
-      navigate({ to: session.isAdmin ? "/admin/translations" : "/dashboard" });
+      navigate({ to: session.isAdmin ? "/admin/overview" : "/dashboard" });
     } catch (err) {
       toast.error((err as Error).message);
     } finally {

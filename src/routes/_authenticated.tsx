@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated")({
     if (typeof window === "undefined") return;
     const session = await api.getSession();
     if (!session) throw redirect({ to: "/login" });
-    if (session.isAdmin) throw redirect({ to: "/admin/translations" });
+    if (session.isAdmin) throw redirect({ to: "/admin/overview" });
   },
   component: AuthLayout,
 });
