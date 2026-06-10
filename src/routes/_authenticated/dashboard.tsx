@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { GraduationCap, Users, BookOpen, BarChart3, TrendingUp, BookMarked, ArrowRight } from "lucide-react";
+import { GraduationCap, Users, BookOpen, BarChart3, TrendingUp, BookMarked, ArrowRight, User } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardPage() {
   const { lang } = useLang();
 
+  const { data: session } = useQuery({ queryKey: ["session"], queryFn: () => api.getSession() });
   const { data: classes = [] } = useQuery({ queryKey: ["classes"], queryFn: () => api.listMyClasses() });
   const { data: scenarios = [] } = useQuery({ queryKey: ["scenarios"], queryFn: () => api.listScenarios() });
   const { data: results = [] } = useQuery({ queryKey: ["results-teacher"], queryFn: () => api.listResultsForTeacher() });
@@ -99,15 +100,28 @@ function DashboardPage() {
     },
   ];
 
+  const fullName = session
+    ? [session.firstName, session.lastName].filter(Boolean).join(" ")
+    : null;
+
   return (
     <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-700">
-      <div className="space-y-1">
-        <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-          {lang === "fr" ? "Vue d'ensemble" : "نظرة عامة"}
-        </h1>
-        <p className="text-slate-500 font-medium">
-          {lang === "fr" ? "Tableau de bord de supervision." : "لوحة قيادة الإشراف."}
-        </p>
+      <div className="flex items-center gap-4">
+        <div className="h-14 w-14 rounded-2xl bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
+          <User className="h-7 w-7" />
+        </div>
+        <div className="space-y-0.5">
+          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
+            {fullName
+              ? lang === "fr"
+                ? `Bonjour, ${fullName}`
+                : `مرحباً، ${fullName}`
+              : lang === "fr" ? "Vue d'ensemble" : "نظرة عامة"}
+          </h1>
+          <p className="text-slate-500 font-medium">
+            {lang === "fr" ? "Tableau de bord de supervision." : "لوحة قيادة الإشراف."}
+          </p>
+        </div>
       </div>
 
       {/* KPI row */}
