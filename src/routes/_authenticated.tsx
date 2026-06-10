@@ -11,9 +11,8 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
     const session = await api.getSession();
-    if (!session) {
-      throw redirect({ to: "/login" });
-    }
+    if (!session) throw redirect({ to: "/login" });
+    if (session.isAdmin) throw redirect({ to: "/admin/translations" });
   },
   component: AuthLayout,
 });

@@ -22,6 +22,9 @@ import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedQuizzesRouteImport } from './routes/_authenticated/quizzes'
 import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated/students'
 import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminTranslationsRouteImport } from './routes/admin/translations'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -87,12 +90,29 @@ const AuthenticatedTutorialsRoute = AuthenticatedTutorialsRouteImport.update({
   path: '/tutorials',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/_authenticated/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTranslationsRoute = AdminTranslationsRouteImport.update({
+  id: '/admin/translations',
+  path: '/translations',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/game': typeof GameRouteWithChildren
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/translations': typeof AdminTranslationsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -107,6 +127,8 @@ export interface FileRoutesByTo {
   '/game': typeof GameRouteWithChildren
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/translations': typeof AdminTranslationsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -120,9 +142,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
   '/game': typeof GameRouteWithChildren
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/classes': typeof AuthenticatedClassesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -130,6 +154,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/tutorials': typeof AuthenticatedTutorialsRoute
+  '/admin/translations': typeof AdminTranslationsRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
 export interface FileRouteTypes {
@@ -139,6 +164,8 @@ export interface FileRouteTypes {
     | '/game'
     | '/guest'
     | '/login'
+    | '/admin'
+    | '/admin/translations'
     | '/analytics'
     | '/classes'
     | '/dashboard'
@@ -153,6 +180,8 @@ export interface FileRouteTypes {
     | '/game'
     | '/guest'
     | '/login'
+    | '/admin'
+    | '/admin/translations'
     | '/analytics'
     | '/classes'
     | '/dashboard'
@@ -165,9 +194,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin'
     | '/game'
     | '/guest'
     | '/login'
+    | '/_authenticated/admin'
     | '/_authenticated/analytics'
     | '/_authenticated/classes'
     | '/_authenticated/dashboard'
@@ -175,12 +206,14 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/students'
     | '/_authenticated/tutorials'
+    | '/admin/translations'
     | '/game/$trackId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AdminRoute: typeof AdminRouteWithChildren
   GameRoute: typeof GameRouteWithChildren
   GuestRoute: typeof GuestRoute
   LoginRoute: typeof LoginRoute
@@ -279,10 +312,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTutorialsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/translations': {
+      id: '/admin/translations'
+      path: '/translations'
+      fullPath: '/admin/translations'
+      preLoaderRoute: typeof AdminTranslationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedClassesRoute: typeof AuthenticatedClassesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -293,6 +348,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedClassesRoute: AuthenticatedClassesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -301,6 +357,16 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedStudentsRoute: AuthenticatedStudentsRoute,
   AuthenticatedTutorialsRoute: AuthenticatedTutorialsRoute,
 }
+
+interface AdminRouteChildren {
+  AdminTranslationsRoute: typeof AdminTranslationsRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminTranslationsRoute: AdminTranslationsRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
@@ -319,6 +385,7 @@ const GameRouteWithChildren = GameRoute._addFileChildren(GameRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AdminRoute: AdminRouteWithChildren,
   GameRoute: GameRouteWithChildren,
   GuestRoute: GuestRoute,
   LoginRoute: LoginRoute,
