@@ -15,6 +15,7 @@ export const supabaseClient = supabase;
 export interface TeacherSession {
   id: string;
   email: string;
+  isAdmin: boolean;
 }
 
 export const api = {
@@ -22,9 +23,28 @@ export const api = {
   async listTranslations(): Promise<TranslationRow[]> {
     const { data, error } = await supabase
       .from("translations")
-      .select("*");
+      .select("*")
+      .order("key", { ascending: true });
     if (error) throw error;
     return data || [];
+  },
+
+  async upsertTranslation(key: string, fr: string, ar: string): Promise<TranslationRow> {
+    const { data, error } = await supabase
+      .from("translations")
+      .upsert({ key, fr, ar }, { onConflict: "key" })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteTranslation(key: string): Promise<void> {
+    const { error } = await supabase
+      .from("translations")
+      .delete()
+      .eq("key", key);
+    if (error) throw error;
   },
 
   // ---- AUTH & SESSION ----
@@ -32,20 +52,20 @@ export const api = {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
     if (!data.user) throw new Error("No user returned");
-    return { id: data.user.id, email: data.user.email! };
+    return { id: data.user.id, email: data.user.email!, isAdmin: data.user.app_metadata?.is_admin === true };
   },
 
   async signIn(email: string, password: string): Promise<TeacherSession> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     if (!data.user) throw new Error("No user returned");
-    return { id: data.user.id, email: data.user.email! };
+    return { id: data.user.id, email: data.user.email!, isAdmin: data.user.app_metadata?.is_admin === true };
   },
 
   async getSession(): Promise<TeacherSession | null> {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return null;
-    return { id: session.user.id, email: session.user.email! };
+    return { id: session.user.id, email: session.user.email!, isAdmin: session.user.app_metadata?.is_admin === true };
   },
 
   async signOut() {
