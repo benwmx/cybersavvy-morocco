@@ -447,25 +447,28 @@ export const api = {
     return (data || []) as { id: string; email: string; created_at: string; class_count: number; student_count: number }[];
   },
 
-  async adminListAllClasses(): Promise<(ClassRow & { student_count: number })[]> {
-    const { data: classes, error } = await supabase
-      .from("classes")
-      .select("*")
-      .order("created_at", { ascending: false });
+  async adminListAllClasses(): Promise<{
+    id: string;
+    name: string;
+    access_code: string;
+    teacher_id: string;
+    teacher_email: string;
+    student_count: number;
+    scenario_count: number;
+    created_at: string;
+  }[]> {
+    const { data, error } = await supabase.rpc("admin_list_classes");
     if (error) throw error;
-    if (!classes || classes.length === 0) return [];
-
-    const { data: students } = await supabase
-      .from("students")
-      .select("class_id")
-      .in("class_id", classes.map(c => c.id));
-
-    const counts = (students || []).reduce<Record<string, number>>((acc, s) => {
-      acc[s.class_id] = (acc[s.class_id] || 0) + 1;
-      return acc;
-    }, {});
-
-    return classes.map(c => ({ ...c, student_count: counts[c.id] || 0 }));
+    return (data || []) as {
+      id: string;
+      name: string;
+      access_code: string;
+      teacher_id: string;
+      teacher_email: string;
+      student_count: number;
+      scenario_count: number;
+      created_at: string;
+    }[];
   },
 
   async adminListGlobalCategories(): Promise<CategoryRow[]> {
