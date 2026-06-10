@@ -70,7 +70,8 @@ function UsersPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="grid grid-cols-[1fr_140px_80px_80px] gap-4 px-8 py-3 bg-slate-50 border-y border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <div className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-8 py-3 bg-slate-50 border-y border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span>{lang === "fr" ? "Nom" : "الاسم"}</span>
             <span>{lang === "fr" ? "Email" : "البريد الإلكتروني"}</span>
             <span>{lang === "fr" ? "Inscrit le" : "تاريخ التسجيل"}</span>
             <span className="text-center">{lang === "fr" ? "Classes" : "الأقسام"}</span>
@@ -80,8 +81,8 @@ function UsersPage() {
           {isLoading ? (
             <div className="divide-y divide-slate-50">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="grid grid-cols-[1fr_140px_80px_80px] gap-4 px-8 py-4">
-                  {Array.from({ length: 4 }).map((_, j) => (
+                <div key={i} className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-8 py-4">
+                  {Array.from({ length: 5 }).map((_, j) => (
                     <div key={j} className="h-4 bg-slate-100 rounded animate-pulse" />
                   ))}
                 </div>
@@ -93,24 +94,23 @@ function UsersPage() {
             </div>
           ) : (
             <div className="divide-y divide-slate-50 max-h-[62vh] overflow-y-auto">
-              {users.map(u => (
-                <div
-                  key={u.id}
-                  className="grid grid-cols-[1fr_140px_80px_80px] gap-4 px-8 py-4 items-center hover:bg-slate-50/60 transition-colors"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-700 truncate">{u.email}</p>
-                    <p className="text-[10px] font-mono text-slate-400 truncate mt-0.5">{u.id}</p>
+              {users.map(u => {
+                const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ");
+                return (
+                  <div
+                    key={u.id}
+                    className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-8 py-4 items-center hover:bg-slate-50/60 transition-colors"
+                  >
+                    <p className="text-sm font-semibold text-slate-700 truncate">
+                      {fullName || <span className="text-slate-300 italic">{lang === "fr" ? "—" : "—"}</span>}
+                    </p>
+                    <p className="text-sm text-slate-500 truncate">{u.email}</p>
+                    <span className="text-sm text-slate-500">{fmt(u.created_at)}</span>
+                    <span className="text-sm font-bold text-[#1E3A8A] text-center">{u.class_count}</span>
+                    <span className="text-sm font-bold text-emerald-600 text-center">{u.student_count}</span>
                   </div>
-                  <span className="text-sm text-slate-500">{fmt(u.created_at)}</span>
-                  <span className="text-sm font-bold text-[#1E3A8A] text-center">
-                    {u.class_count}
-                  </span>
-                  <span className="text-sm font-bold text-emerald-600 text-center">
-                    {u.student_count}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

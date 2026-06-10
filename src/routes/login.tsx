@@ -166,6 +166,8 @@ function TeacherForm() {
   const { t, lang } = useLang();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"in" | "up">("in");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -179,7 +181,7 @@ function TeacherForm() {
         session = await api.signIn(email, password);
         toast.success(t("welcomeBack"));
       } else {
-        session = await api.signUp(email, password);
+        session = await api.signUp(email, password, firstName, lastName);
         toast.success(t("accountCreated"));
       }
       navigate({ to: session.isAdmin ? "/admin/overview" : "/dashboard" });
@@ -199,6 +201,34 @@ function TeacherForm() {
       </CardHeader>
       <CardContent className="p-8">
         <form onSubmit={onSubmit} className="space-y-6">
+          {mode === "up" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">
+                  {lang === "fr" ? "Prénom" : "الاسم الأول"}
+                </Label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  className="h-11 rounded-xl bg-slate-50/50 border-slate-200"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">
+                  {lang === "fr" ? "Nom" : "اسم العائلة"}
+                </Label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  className="h-11 rounded-xl bg-slate-50/50 border-slate-200"
+                />
+              </div>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl bg-slate-50/50 border-slate-200" />
@@ -220,7 +250,7 @@ function TeacherForm() {
           </Button>
           <button
             type="button"
-            onClick={() => setMode(mode === "in" ? "up" : "in")}
+            onClick={() => { setMode(mode === "in" ? "up" : "in"); setFirstName(""); setLastName(""); }}
             className="text-sm text-muted-foreground hover:text-[#1E3A8A] font-medium w-full text-center py-2"
           >
             {mode === "in" ? t("needAccount") : t("haveAccount")}
