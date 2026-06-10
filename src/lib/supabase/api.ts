@@ -16,6 +16,8 @@ export interface TeacherSession {
   id: string;
   email: string;
   isAdmin: boolean;
+  firstName: string;
+  lastName: string;
 }
 
 export const api = {
@@ -48,24 +50,46 @@ export const api = {
   },
 
   // ---- AUTH & SESSION ----
-  async signUp(email: string, password: string): Promise<TeacherSession> {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+  async signUp(email: string, password: string, firstName: string, lastName: string): Promise<TeacherSession> {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { first_name: firstName.trim(), last_name: lastName.trim() } },
+    });
     if (error) throw error;
     if (!data.user) throw new Error("No user returned");
-    return { id: data.user.id, email: data.user.email!, isAdmin: data.user.app_metadata?.is_admin === true };
+    return {
+      id: data.user.id,
+      email: data.user.email!,
+      isAdmin: data.user.app_metadata?.is_admin === true,
+      firstName: data.user.user_metadata?.first_name ?? "",
+      lastName: data.user.user_metadata?.last_name ?? "",
+    };
   },
 
   async signIn(email: string, password: string): Promise<TeacherSession> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     if (!data.user) throw new Error("No user returned");
-    return { id: data.user.id, email: data.user.email!, isAdmin: data.user.app_metadata?.is_admin === true };
+    return {
+      id: data.user.id,
+      email: data.user.email!,
+      isAdmin: data.user.app_metadata?.is_admin === true,
+      firstName: data.user.user_metadata?.first_name ?? "",
+      lastName: data.user.user_metadata?.last_name ?? "",
+    };
   },
 
   async getSession(): Promise<TeacherSession | null> {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return null;
-    return { id: session.user.id, email: session.user.email!, isAdmin: session.user.app_metadata?.is_admin === true };
+    return {
+      id: session.user.id,
+      email: session.user.email!,
+      isAdmin: session.user.app_metadata?.is_admin === true,
+      firstName: session.user.user_metadata?.first_name ?? "",
+      lastName: session.user.user_metadata?.last_name ?? "",
+    };
   },
 
   async signOut() {
@@ -80,6 +104,20 @@ export const api = {
   async updateEmail(email: string) {
     const { error } = await supabase.auth.updateUser({ email });
     if (error) throw error;
+  },
+
+  async updateProfile(firstName: string, lastName: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+    const { error: authError } = await supabase.auth.updateUser({
+      data: { first_name: firstName.trim(), last_name: lastName.trim() },
+    });
+    if (authError) throw authError;
+    const { error: dbError } = await supabase
+      .from("profiles")
+      .update({ first_name: firstName.trim(), last_name: lastName.trim(), updated_at: new Date().toISOString() })
+      .eq("id", user.id);
+    if (dbError) throw dbError;
   },
 
   // ---- CLASSES ----
@@ -423,33 +461,22 @@ export const api = {
     total_results: number;
     avg_score_percent: number | null;
   }> {
-    const [classesResult, studentsResult, resultsResult] = await Promise.all([
-      supabase.from("classes").select("teacher_id"),
-      supabase.from("students").select("id", { count: "exact", head: true }),
-      supabase.from("results").select("score, max_score"),
-    ]);
-
-    const classes = classesResult.data || [];
-    const results = resultsResult.data || [];
-    const uniqueTeachers = new Set(classes.map(c => c.teacher_id)).size;
-    const scored = results.filter(r => r.max_score > 0);
-    const avgScore = scored.length > 0
-      ? Math.round(scored.reduce((sum, r) => sum + (r.score / r.max_score * 100), 0) / scored.length)
-      : null;
-
+    const { data, error } = await supabase.rpc("admin_get_stats");
+    if (error) throw error;
+    const row = (data as any[])?.[0] ?? {};
     return {
-      total_teachers: uniqueTeachers,
-      total_classes: classes.length,
-      total_students: studentsResult.count ?? 0,
-      total_results: results.length,
-      avg_score_percent: avgScore,
+      total_teachers: Number(row.total_teachers ?? 0),
+      total_classes:  Number(row.total_classes  ?? 0),
+      total_students: Number(row.total_students ?? 0),
+      total_results:  Number(row.total_results  ?? 0),
+      avg_score_percent: row.avg_score_percent != null ? Number(row.avg_score_percent) : null,
     };
   },
 
-  async adminListUsers(): Promise<{ id: string; email: string; created_at: string; class_count: number; student_count: number }[]> {
+  async adminListUsers(): Promise<{ id: string; email: string; first_name: string; last_name: string; created_at: string; class_count: number; student_count: number }[]> {
     const { data, error } = await supabase.rpc("admin_list_users");
     if (error) throw error;
-    return (data || []) as { id: string; email: string; created_at: string; class_count: number; student_count: number }[];
+    return (data || []) as { id: string; email: string; first_name: string; last_name: string; created_at: string; class_count: number; student_count: number }[];
   },
 
   async adminListAllClasses(): Promise<{
