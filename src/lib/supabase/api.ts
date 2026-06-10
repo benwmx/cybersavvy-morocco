@@ -77,6 +77,11 @@ export const api = {
     if (error) throw error;
   },
 
+  async updateEmail(email: string) {
+    const { error } = await supabase.auth.updateUser({ email });
+    if (error) throw error;
+  },
+
   // ---- CLASSES ----
   async verifyClassCode(code: string): Promise<ClassRow | null> {
     const { data, error } = await supabase
