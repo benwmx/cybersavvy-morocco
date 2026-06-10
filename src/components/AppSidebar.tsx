@@ -16,6 +16,7 @@ import {
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useStudent } from "@/context/StudentContext";
 import { api } from "@/lib/supabase/api";
+import { useQuery } from "@tanstack/react-query";
 
 export function AppSidebar() {
   const { t, lang } = useLang();
@@ -23,6 +24,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const navigate = useNavigate();
   const path = useRouterState({ select: r => r.location.pathname });
+  const { data: session } = useQuery({ queryKey: ["session"], queryFn: () => api.getSession() });
 
   const items = [
     { url: "/dashboard", label: lang === "fr" ? "Vue d'ensemble" : "نظرة عامة", icon: LayoutDashboard },
@@ -59,19 +61,23 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {student && (
+        {(student || session) && (
           <SidebarGroup>
             <SidebarGroupLabel>{lang === "fr" ? "Mon Profil" : "ملفي الشخصي"}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <div className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-slate-700">
-                    <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#1E3A8A]">
+                    <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#1E3A8A] shrink-0">
                       <User className="h-4 w-4" />
                     </div>
                     {state === "expanded" && (
                       <span className="truncate">
-                        {lang === "fr" ? student.name_fr : student.name_ar}
+                        {student
+                          ? (lang === "fr" ? student.name_fr : student.name_ar)
+                          : session
+                            ? [session.firstName, session.lastName].filter(Boolean).join(" ") || session.email
+                            : null}
                       </span>
                     )}
                   </div>
