@@ -239,6 +239,16 @@ export interface Database {
           created_at: string
         }[]
       }
+      admin_list_users: {
+        Args: Record<string, never>
+        Returns: {
+          id: string
+          email: string
+          created_at: string
+          class_count: number
+          student_count: number
+        }[]
+      }
     }
   }
 }

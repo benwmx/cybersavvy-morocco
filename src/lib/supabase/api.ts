@@ -410,6 +410,82 @@ export const api = {
     return data as any;
   },
 
+  // ---- ADMIN ----
+  async adminGetStats(): Promise<{
+    total_teachers: number;
+    total_classes: number;
+    total_students: number;
+    total_results: number;
+    avg_score_percent: number | null;
+  }> {
+    const [classesResult, studentsResult, resultsResult] = await Promise.all([
+      supabase.from("classes").select("teacher_id"),
+      supabase.from("students").select("id", { count: "exact", head: true }),
+      supabase.from("results").select("score, max_score"),
+    ]);
+
+    const classes = classesResult.data || [];
+    const results = resultsResult.data || [];
+    const uniqueTeachers = new Set(classes.map(c => c.teacher_id)).size;
+    const scored = results.filter(r => r.max_score > 0);
+    const avgScore = scored.length > 0
+      ? Math.round(scored.reduce((sum, r) => sum + (r.score / r.max_score * 100), 0) / scored.length)
+      : null;
+
+    return {
+      total_teachers: uniqueTeachers,
+      total_classes: classes.length,
+      total_students: studentsResult.count ?? 0,
+      total_results: results.length,
+      avg_score_percent: avgScore,
+    };
+  },
+
+  async adminListUsers(): Promise<{ id: string; email: string; created_at: string; class_count: number; student_count: number }[]> {
+    const { data, error } = await supabase.rpc("admin_list_users");
+    if (error) throw error;
+    return (data || []) as { id: string; email: string; created_at: string; class_count: number; student_count: number }[];
+  },
+
+  async adminListAllClasses(): Promise<(ClassRow & { student_count: number })[]> {
+    const { data: classes, error } = await supabase
+      .from("classes")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    if (!classes || classes.length === 0) return [];
+
+    const { data: students } = await supabase
+      .from("students")
+      .select("class_id")
+      .in("class_id", classes.map(c => c.id));
+
+    const counts = (students || []).reduce<Record<string, number>>((acc, s) => {
+      acc[s.class_id] = (acc[s.class_id] || 0) + 1;
+      return acc;
+    }, {});
+
+    return classes.map(c => ({ ...c, student_count: counts[c.id] || 0 }));
+  },
+
+  async adminListGlobalCategories(): Promise<CategoryRow[]> {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .is("teacher_id", null)
+      .order("id");
+    if (error) throw error;
+    return data || [];
+  },
+
+  async adminListGlobalScenarios(categoryId?: string): Promise<ScenarioRow[]> {
+    let query = supabase.from("scenarios").select("*").is("teacher_id", null);
+    if (categoryId) query = query.eq("category_id", categoryId);
+    const { data, error } = await query.order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
   async listResultsForTeacher(): Promise<ResultRow[]> {
     const session = await api.getSession();
     if (!session) return [];
