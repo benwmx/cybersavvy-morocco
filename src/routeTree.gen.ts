@@ -29,6 +29,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminContentRouteImport } from './routes/admin/content'
 import { Route as AdminClassesRouteImport } from './routes/admin/classes'
 import { Route as AdminTranslationsRouteImport } from './routes/admin/translations'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -129,6 +130,11 @@ const AdminTranslationsRoute = AdminTranslationsRouteImport.update({
   path: '/translations',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/admin/content': typeof AdminContentRoute
   '/admin/classes': typeof AdminClassesRoute
   '/admin/translations': typeof AdminTranslationsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/admin/content': typeof AdminContentRoute
   '/admin/classes': typeof AdminClassesRoute
   '/admin/translations': typeof AdminTranslationsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/admin/content': typeof AdminContentRoute
   '/admin/classes': typeof AdminClassesRoute
   '/admin/translations': typeof AdminTranslationsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
 export interface FileRouteTypes {
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/classes'
     | '/admin/translations'
+    | '/admin/settings'
     | '/analytics'
     | '/classes'
     | '/dashboard'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/classes'
     | '/admin/translations'
+    | '/admin/settings'
     | '/analytics'
     | '/classes'
     | '/dashboard'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/classes'
     | '/admin/translations'
+    | '/admin/settings'
     | '/game/$trackId'
   fileRoutesById: FileRoutesById
 }
@@ -409,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTranslationsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
@@ -440,6 +459,7 @@ interface AdminRouteChildren {
   AdminContentRoute: typeof AdminContentRoute
   AdminClassesRoute: typeof AdminClassesRoute
   AdminTranslationsRoute: typeof AdminTranslationsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -448,6 +468,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminContentRoute: AdminContentRoute,
   AdminClassesRoute: AdminClassesRoute,
   AdminTranslationsRoute: AdminTranslationsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
