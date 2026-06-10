@@ -27,13 +27,13 @@ export function AppSidebar() {
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: () => api.getSession() });
 
   const items = [
-    { url: "/dashboard", label: lang === "fr" ? "Vue d'ensemble" : "نظرة عامة", icon: LayoutDashboard },
-    { url: "/analytics", label: t("analytics"), icon: BarChart3 },
-    { url: "/classes", label: t("classes"), icon: GraduationCap },
-    { url: "/quizzes", label: lang === "fr" ? "Parcours" : "المسارات", icon: BookOpen },
-    { url: "/students", label: lang === "fr" ? "Élèves" : "التلاميذ", icon: Users },
-    { url: "/tutorials", label: lang === "fr" ? "Tutoriels" : "الدروس", icon: BookMarked },
-    { url: "/settings", label: t("settings"), icon: Settings },
+    { url: "/dashboard", label: t("overview"),      icon: LayoutDashboard },
+    { url: "/analytics", label: t("analytics"),     icon: BarChart3 },
+    { url: "/classes",   label: t("classes"),       icon: GraduationCap },
+    { url: "/quizzes",   label: t("tracks"),        icon: BookOpen },
+    { url: "/students",  label: t("studentsLabel"), icon: Users },
+    { url: "/tutorials", label: t("tutorialsLabel"),icon: BookMarked },
+    { url: "/settings",  label: t("settings"),      icon: Settings },
   ];
 
   const logout = async () => {
@@ -63,7 +63,7 @@ export function AppSidebar() {
       <SidebarContent>
         {(student || session) && (
           <SidebarGroup>
-            <SidebarGroupLabel>{lang === "fr" ? "Mon Profil" : "ملفي الشخصي"}</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("myProfile")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>

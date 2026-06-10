@@ -12,19 +12,17 @@ export const Route = createFileRoute("/admin/settings")({
 type Status = { ok: boolean; msg: string } | null;
 
 function SettingsPage() {
-  const { lang } = useLang();
+  const { t } = useLang();
 
-  const [email, setEmail]           = useState("");
+  const [email, setEmail]             = useState("");
   const [emailStatus, setEmailStatus] = useState<Status>(null);
   const [emailLoading, setEmailLoading] = useState(false);
 
-  const [currentPw, setCurrentPw]   = useState("");
-  const [newPw, setNewPw]           = useState("");
-  const [confirmPw, setConfirmPw]   = useState("");
-  const [pwStatus, setPwStatus]     = useState<Status>(null);
-  const [pwLoading, setPwLoading]   = useState(false);
-
-  const t = (fr: string, ar: string) => lang === "fr" ? fr : ar;
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw]         = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [pwStatus, setPwStatus]   = useState<Status>(null);
+  const [pwLoading, setPwLoading] = useState(false);
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,10 +30,10 @@ function SettingsPage() {
     setEmailLoading(true);
     try {
       await api.updateEmail(email.trim());
-      setEmailStatus({ ok: true, msg: t("Un e-mail de confirmation a été envoyé à la nouvelle adresse.", "تم إرسال بريد تأكيد إلى العنوان الجديد.") });
+      setEmailStatus({ ok: true, msg: t("adminEmailSent") });
       setEmail("");
     } catch (err: any) {
-      setEmailStatus({ ok: false, msg: err.message ?? t("Erreur inconnue.", "خطأ غير معروف.") });
+      setEmailStatus({ ok: false, msg: err.message ?? t("unknownError") });
     } finally {
       setEmailLoading(false);
     }
@@ -45,25 +43,22 @@ function SettingsPage() {
     e.preventDefault();
     setPwStatus(null);
     if (newPw !== confirmPw) {
-      setPwStatus({ ok: false, msg: t("Les mots de passe ne correspondent pas.", "كلمتا المرور غير متطابقتين.") });
+      setPwStatus({ ok: false, msg: t("adminPasswordMismatch") });
       return;
     }
     if (newPw.length < 8) {
-      setPwStatus({ ok: false, msg: t("Le mot de passe doit comporter au moins 8 caractères.", "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.") });
+      setPwStatus({ ok: false, msg: t("adminPasswordTooShort") });
       return;
     }
     setPwLoading(true);
     try {
-      // Re-authenticate first to confirm identity
       const session = await api.getSession();
-      if (session?.email) {
-        await api.signIn(session.email, currentPw);
-      }
+      if (session?.email) await api.signIn(session.email, currentPw);
       await api.updatePassword(newPw);
-      setPwStatus({ ok: true, msg: t("Mot de passe mis à jour.", "تم تحديث كلمة المرور.") });
+      setPwStatus({ ok: true, msg: t("adminPasswordUpdated") });
       setCurrentPw(""); setNewPw(""); setConfirmPw("");
     } catch (err: any) {
-      setPwStatus({ ok: false, msg: err.message ?? t("Erreur inconnue.", "خطأ غير معروف.") });
+      setPwStatus({ ok: false, msg: err.message ?? t("unknownError") });
     } finally {
       setPwLoading(false);
     }
@@ -76,12 +71,8 @@ function SettingsPage() {
           <Settings className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {t("Paramètres", "الإعدادات")}
-          </h1>
-          <p className="text-slate-500 font-medium text-sm">
-            {t("Gérez vos identifiants de connexion", "إدارة بيانات تسجيل الدخول")}
-          </p>
+          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("settings")}</h1>
+          <p className="text-slate-500 font-medium text-sm">{t("adminSettingsSubtitle")}</p>
         </div>
       </div>
 
@@ -90,15 +81,13 @@ function SettingsPage() {
         <div className="h-2 bg-[#1E3A8A]" />
         <CardHeader className="p-8 pb-4 flex flex-row items-center gap-3">
           <Mail className="h-5 w-5 text-[#1E3A8A] shrink-0" />
-          <CardTitle className="text-xl font-black text-[#1E3A8A]">
-            {t("Changer l'adresse e-mail", "تغيير البريد الإلكتروني")}
-          </CardTitle>
+          <CardTitle className="text-xl font-black text-[#1E3A8A]">{t("adminChangeEmail")}</CardTitle>
         </CardHeader>
         <CardContent className="p-8 pt-2">
           <form onSubmit={handleEmailSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-black uppercase tracking-widest text-slate-400">
-                {t("Nouvelle adresse e-mail", "البريد الإلكتروني الجديد")}
+                {t("adminNewEmail")}
               </label>
               <input
                 type="email"
@@ -115,7 +104,7 @@ function SettingsPage() {
               disabled={emailLoading}
               className="w-full rounded-xl bg-[#1E3A8A] text-white text-sm font-black py-2.5 hover:bg-[#1E3A8A]/90 disabled:opacity-50 transition-all"
             >
-              {emailLoading ? t("Envoi…", "جارٍ الإرسال…") : t("Mettre à jour l'e-mail", "تحديث البريد الإلكتروني")}
+              {emailLoading ? t("adminSending") : t("adminUpdateEmail")}
             </button>
           </form>
         </CardContent>
@@ -126,34 +115,20 @@ function SettingsPage() {
         <div className="h-2 bg-[#1E3A8A]" />
         <CardHeader className="p-8 pb-4 flex flex-row items-center gap-3">
           <Lock className="h-5 w-5 text-[#1E3A8A] shrink-0" />
-          <CardTitle className="text-xl font-black text-[#1E3A8A]">
-            {t("Changer le mot de passe", "تغيير كلمة المرور")}
-          </CardTitle>
+          <CardTitle className="text-xl font-black text-[#1E3A8A]">{t("adminChangePassword")}</CardTitle>
         </CardHeader>
         <CardContent className="p-8 pt-2">
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <Field
-              label={t("Mot de passe actuel", "كلمة المرور الحالية")}
-              value={currentPw}
-              onChange={setCurrentPw}
-            />
-            <Field
-              label={t("Nouveau mot de passe", "كلمة المرور الجديدة")}
-              value={newPw}
-              onChange={setNewPw}
-            />
-            <Field
-              label={t("Confirmer le nouveau mot de passe", "تأكيد كلمة المرور الجديدة")}
-              value={confirmPw}
-              onChange={setConfirmPw}
-            />
+            <Field label={t("adminCurrentPassword")} value={currentPw} onChange={setCurrentPw} />
+            <Field label={t("adminNewPassword")}     value={newPw}     onChange={setNewPw}     />
+            <Field label={t("adminConfirmPassword")} value={confirmPw} onChange={setConfirmPw} />
             {pwStatus && <StatusBanner status={pwStatus} />}
             <button
               type="submit"
               disabled={pwLoading}
               className="w-full rounded-xl bg-[#1E3A8A] text-white text-sm font-black py-2.5 hover:bg-[#1E3A8A]/90 disabled:opacity-50 transition-all"
             >
-              {pwLoading ? t("Mise à jour…", "جارٍ التحديث…") : t("Mettre à jour le mot de passe", "تحديث كلمة المرور")}
+              {pwLoading ? t("adminUpdating") : t("adminUpdatePassword")}
             </button>
           </form>
         </CardContent>

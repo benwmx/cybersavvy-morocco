@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const queryClient = useQueryClient();
 
   const { data: session } = useQuery({
@@ -36,7 +36,7 @@ function SettingsPage() {
     try {
       await api.updateProfile(firstName, lastName);
       await queryClient.invalidateQueries({ queryKey: ["session"] });
-      toast.success(lang === "fr" ? "Profil mis à jour." : "تم تحديث الملف الشخصي.");
+      toast.success(t("profileUpdated"));
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -47,7 +47,7 @@ function SettingsPage() {
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) {
-      toast.error(lang === "fr" ? "Mot de passe trop court (6 caractères min.)" : "كلمة المرور قصيرة جداً (6 أحرف على الأقل)");
+      toast.error(t("passwordTooShort"));
       return;
     }
     setPwLoading(true);
@@ -66,7 +66,7 @@ function SettingsPage() {
     <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-700">
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("settings")}</h1>
-        <p className="text-slate-500 font-medium">{lang === "fr" ? "Sécurité et configuration du compte enseignant." : "إعدادات الأمان والحساب."}</p>
+        <p className="text-slate-500 font-medium">{t("settingsSubtitle")}</p>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
@@ -78,7 +78,7 @@ function SettingsPage() {
               <User className="h-6 w-6" />
               {t("account")}
             </CardTitle>
-            <CardDescription className="text-base">{lang === "fr" ? "Informations de votre compte." : "معلومات حسابك."}</CardDescription>
+            <CardDescription className="text-base">{t("profileDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="p-8 pt-0 space-y-6">
             <div className="space-y-2 p-6 rounded-2xl bg-slate-50 border border-slate-100">
@@ -89,7 +89,7 @@ function SettingsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    {lang === "fr" ? "Prénom" : "الاسم الأول"}
+                    {t("firstName")}
                   </Label>
                   <Input
                     id="firstName"
@@ -100,7 +100,7 @@ function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    {lang === "fr" ? "Nom" : "اسم العائلة"}
+                    {t("lastName")}
                   </Label>
                   <Input
                     id="lastName"
@@ -111,7 +111,7 @@ function SettingsPage() {
                 </div>
               </div>
               <Button type="submit" disabled={nameLoading} className="h-11 px-8 rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black shadow-lg shadow-blue-900/10 active:scale-95 transition-all">
-                {lang === "fr" ? "Enregistrer" : "حفظ"}
+                {t("save")}
               </Button>
             </form>
           </CardContent>
@@ -125,7 +125,7 @@ function SettingsPage() {
               <KeyRound className="h-6 w-6" />
               {t("updatePassword")}
             </CardTitle>
-            <CardDescription className="text-base">{lang === "fr" ? "Modifier le mot de passe de votre compte." : "تغيير كلمة مرور حسابك."}</CardDescription>
+            <CardDescription className="text-base">{t("updatePasswordDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="p-8 pt-0">
             <form onSubmit={handleUpdatePassword} className="space-y-6">

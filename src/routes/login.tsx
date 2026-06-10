@@ -204,9 +204,7 @@ function TeacherForm() {
           {mode === "up" && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="firstName">
-                  {lang === "fr" ? "Prénom" : "الاسم الأول"}
-                </Label>
+                <Label htmlFor="firstName">{t("firstName")}</Label>
                 <Input
                   id="firstName"
                   value={firstName}
@@ -216,9 +214,7 @@ function TeacherForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">
-                  {lang === "fr" ? "Nom" : "اسم العائلة"}
-                </Label>
+                <Label htmlFor="lastName">{t("lastName")}</Label>
                 <Input
                   id="lastName"
                   value={lastName}
