@@ -18,7 +18,7 @@ import { useStudent } from "@/context/StudentContext";
 import { api } from "@/lib/supabase/api";
 
 export function AppSidebar() {
-  const { t, lang, dir } = useLang();
+  const { t, lang } = useLang();
   const { student, logout: studentLogout } = useStudent();
   const { state } = useSidebar();
   const navigate = useNavigate();
@@ -102,6 +102,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-slate-100">
