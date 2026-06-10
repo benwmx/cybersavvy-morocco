@@ -174,14 +174,15 @@ function TeacherForm() {
     e.preventDefault();
     setLoading(true);
     try {
+      let session;
       if (mode === "in") {
-        await api.signIn(email, password);
+        session = await api.signIn(email, password);
         toast.success(t("welcomeBack"));
       } else {
-        await api.signUp(email, password);
+        session = await api.signUp(email, password);
         toast.success(t("accountCreated"));
       }
-      navigate({ to: "/dashboard" });
+      navigate({ to: session.isAdmin ? "/admin/translations" : "/dashboard" });
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
