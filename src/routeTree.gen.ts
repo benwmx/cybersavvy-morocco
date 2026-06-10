@@ -24,6 +24,10 @@ import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminContentRouteImport } from './routes/admin/content'
+import { Route as AdminClassesRouteImport } from './routes/admin/classes'
 import { Route as AdminTranslationsRouteImport } from './routes/admin/translations'
 
 const LoginRoute = LoginRouteImport.update({
@@ -100,6 +104,26 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminOverviewRoute = AdminOverviewRouteImport.update({
+  id: '/admin/overview',
+  path: '/overview',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminContentRoute = AdminContentRouteImport.update({
+  id: '/admin/content',
+  path: '/content',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminClassesRoute = AdminClassesRouteImport.update({
+  id: '/admin/classes',
+  path: '/classes',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminTranslationsRoute = AdminTranslationsRouteImport.update({
   id: '/admin/translations',
   path: '/translations',
@@ -112,6 +136,10 @@ export interface FileRoutesByFullPath {
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/classes': typeof AdminClassesRoute
   '/admin/translations': typeof AdminTranslationsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
@@ -128,6 +156,10 @@ export interface FileRoutesByTo {
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/classes': typeof AdminClassesRoute
   '/admin/translations': typeof AdminTranslationsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
@@ -154,6 +186,10 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/tutorials': typeof AuthenticatedTutorialsRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/classes': typeof AdminClassesRoute
   '/admin/translations': typeof AdminTranslationsRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
@@ -165,6 +201,10 @@ export interface FileRouteTypes {
     | '/guest'
     | '/login'
     | '/admin'
+    | '/admin/overview'
+    | '/admin/users'
+    | '/admin/content'
+    | '/admin/classes'
     | '/admin/translations'
     | '/analytics'
     | '/classes'
@@ -181,6 +221,10 @@ export interface FileRouteTypes {
     | '/guest'
     | '/login'
     | '/admin'
+    | '/admin/overview'
+    | '/admin/users'
+    | '/admin/content'
+    | '/admin/classes'
     | '/admin/translations'
     | '/analytics'
     | '/classes'
@@ -206,6 +250,10 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/students'
     | '/_authenticated/tutorials'
+    | '/admin/overview'
+    | '/admin/users'
+    | '/admin/content'
+    | '/admin/classes'
     | '/admin/translations'
     | '/game/$trackId'
   fileRoutesById: FileRoutesById
@@ -326,6 +374,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/overview': {
+      id: '/admin/overview'
+      path: '/overview'
+      fullPath: '/admin/overview'
+      preLoaderRoute: typeof AdminOverviewRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/content': {
+      id: '/admin/content'
+      path: '/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminContentRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/classes': {
+      id: '/admin/classes'
+      path: '/classes'
+      fullPath: '/admin/classes'
+      preLoaderRoute: typeof AdminClassesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/translations': {
       id: '/admin/translations'
       path: '/translations'
@@ -359,10 +435,18 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
 }
 
 interface AdminRouteChildren {
+  AdminOverviewRoute: typeof AdminOverviewRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminContentRoute: typeof AdminContentRoute
+  AdminClassesRoute: typeof AdminClassesRoute
   AdminTranslationsRoute: typeof AdminTranslationsRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminOverviewRoute: AdminOverviewRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminContentRoute: AdminContentRoute,
+  AdminClassesRoute: AdminClassesRoute,
   AdminTranslationsRoute: AdminTranslationsRoute,
 }
 
