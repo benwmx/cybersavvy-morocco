@@ -24,6 +24,8 @@ function ClassesPage() {
       day: "numeric",
     });
 
+  const cols = "grid-cols-[1fr_180px_90px_80px_80px_130px]";
+
   return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500">
       <div className="flex items-center gap-3">
@@ -54,18 +56,20 @@ function ClassesPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="grid grid-cols-[1fr_100px_100px_140px] gap-4 px-8 py-3 bg-slate-50 border-y border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <div className={`grid ${cols} gap-4 px-8 py-3 bg-slate-50 border-y border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400`}>
             <span>{lang === "fr" ? "Nom" : "الاسم"}</span>
+            <span>{lang === "fr" ? "Enseignant" : "المعلم"}</span>
             <span className="text-center">{lang === "fr" ? "Code" : "الرمز"}</span>
             <span className="text-center">{lang === "fr" ? "Élèves" : "التلاميذ"}</span>
+            <span className="text-center">{lang === "fr" ? "Scénarios" : "السيناريوهات"}</span>
             <span>{lang === "fr" ? "Créée le" : "تاريخ الإنشاء"}</span>
           </div>
 
           {isLoading ? (
             <div className="divide-y divide-slate-50">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="grid grid-cols-[1fr_100px_100px_140px] gap-4 px-8 py-4">
-                  {Array.from({ length: 4 }).map((_, j) => (
+                <div key={i} className={`grid ${cols} gap-4 px-8 py-4`}>
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <div key={j} className="h-4 bg-slate-100 rounded animate-pulse" />
                   ))}
                 </div>
@@ -80,19 +84,18 @@ function ClassesPage() {
               {classes.map(cls => (
                 <div
                   key={cls.id}
-                  className="grid grid-cols-[1fr_100px_100px_140px] gap-4 px-8 py-4 items-center hover:bg-slate-50/60 transition-colors"
+                  className={`grid ${cols} gap-4 px-8 py-4 items-center hover:bg-slate-50/60 transition-colors`}
                 >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-700 truncate">{cls.name}</p>
-                    <p className="text-[10px] font-mono text-slate-400 truncate mt-0.5">
-                      {cls.teacher_id}
-                    </p>
-                  </div>
+                  <p className="text-sm font-semibold text-slate-700 truncate">{cls.name}</p>
+                  <p className="text-xs text-slate-500 truncate">{cls.teacher_email}</p>
                   <span className="font-mono text-sm font-bold text-[#1E3A8A] text-center tracking-wider">
                     {cls.access_code}
                   </span>
                   <span className="text-sm font-bold text-emerald-600 text-center">
-                    {(cls as any).student_count}
+                    {cls.student_count}
+                  </span>
+                  <span className="text-sm font-bold text-violet-600 text-center">
+                    {cls.scenario_count}
                   </span>
                   <span className="text-sm text-slate-500">{fmt(cls.created_at)}</span>
                 </div>
