@@ -16,12 +16,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, Layers, BookOpen, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, Plus, Layers, BookOpen, ChevronRight, HelpCircle } from "lucide-react";
 import type { Json } from "@/lib/database.types";
 
 export const Route = createFileRoute("/admin/content")({
   component: ContentPage,
 });
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function parseBilingual(json: Json): { fr: string; ar: string } {
   if (json && typeof json === "object" && !Array.isArray(json)) {
@@ -34,122 +36,241 @@ function parseBilingual(json: Json): { fr: string; ar: string } {
   return { fr: s, ar: s };
 }
 
-const QUESTION_TEMPLATE = JSON.stringify(
-  [
-    {
-      id: "q1",
-      prompt: { fr: "Question ?", ar: "سؤال؟" },
-      choices: {
-        fr: ["Option A", "Option B", "Option C"],
-        ar: ["خيار أ", "خيار ب", "خيار ج"],
-      },
-      correctIndex: 0,
-      explanation: { fr: "Explication.", ar: "شرح." },
-    },
-  ],
-  null,
-  2
-);
-
-// ─── Category form ────────────────────────────────────────────────────────────
-
-interface CategoryFormData {
-  fr: string;
-  ar: string;
-  color_code: string;
+interface Question {
+  id: string;
+  prompt: { fr: string; ar: string };
+  choices: { fr: string[]; ar: string[] };
+  correctIndex: number;
+  explanation: { fr: string; ar: string };
 }
 
-function CategoryDialog({
+function parseQuestions(json: Json): Question[] {
+  try {
+    const s = typeof json === "string" ? json : JSON.stringify(json);
+    const parsed = JSON.parse(s);
+    if (Array.isArray(parsed)) return parsed as Question[];
+  } catch {}
+  return [];
+}
+
+const BLANK_QUESTION = (): Question => ({
+  id: `q${Date.now()}`,
+  prompt: { fr: "", ar: "" },
+  choices: { fr: ["", "", ""], ar: ["", "", ""] },
+  correctIndex: 0,
+  explanation: { fr: "", ar: "" },
+});
+
+// ─── Questions editor ─────────────────────────────────────────────────────────
+
+function QuestionsEditor({
+  questions,
+  onChange,
+  lang,
+  hideAdd = false,
+}: {
+  questions: Question[];
+  onChange: (qs: Question[]) => void;
+  lang: string;
+  hideAdd?: boolean;
+}) {
+  const update = (i: number, patch: Partial<Question>) =>
+    onChange(questions.map((q, qi) => (qi === i ? { ...q, ...patch } : q)));
+
+  const updateChoice = (qi: number, ci: number, side: "fr" | "ar", val: string) => {
+    const q = questions[qi];
+    update(qi, { choices: { ...q.choices, [side]: q.choices[side].map((c, i) => (i === ci ? val : c)) } });
+  };
+
+  const addChoice = (qi: number) => {
+    const q = questions[qi];
+    update(qi, { choices: { fr: [...q.choices.fr, ""], ar: [...q.choices.ar, ""] } });
+  };
+
+  const removeChoice = (qi: number, ci: number) => {
+    const q = questions[qi];
+    const fr = q.choices.fr.filter((_, i) => i !== ci);
+    const ar = q.choices.ar.filter((_, i) => i !== ci);
+    update(qi, { choices: { fr, ar }, correctIndex: Math.max(0, Math.min(q.correctIndex, fr.length - 1)) });
+  };
+
+  const inp = "flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-[#1E3A8A] transition-colors";
+
+  return (
+    <div className="space-y-3">
+      {questions.map((q, qi) => (
+        <div key={q.id} className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {lang === "fr" ? `Question ${qi + 1}` : `السؤال ${qi + 1}`}
+            </span>
+            {questions.length > 1 && (
+              <button type="button" onClick={() => onChange(questions.filter((_, i) => i !== qi))}
+                className="text-xs font-bold text-rose-400 hover:text-rose-600">
+                {lang === "fr" ? "Supprimer" : "حذف"}
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <input value={q.prompt.fr} onChange={e => update(qi, { prompt: { ...q.prompt, fr: e.target.value } })}
+              placeholder="Question (FR)" className={inp} />
+            <input value={q.prompt.ar} onChange={e => update(qi, { prompt: { ...q.prompt, ar: e.target.value } })}
+              placeholder="سؤال (AR)" dir="rtl" className={`${inp} text-right`} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {lang === "fr" ? "Choix — ● = bonne réponse" : "الخيارات — ● = الإجابة الصحيحة"}
+            </p>
+            {q.choices.fr.map((_, ci) => (
+              <div key={ci} className="flex items-center gap-2">
+                <input type="radio" name={`correct-${q.id}`} checked={q.correctIndex === ci}
+                  onChange={() => update(qi, { correctIndex: ci })} className="h-4 w-4 accent-emerald-500 shrink-0" />
+                <input value={q.choices.fr[ci]} onChange={e => updateChoice(qi, ci, "fr", e.target.value)}
+                  placeholder={`Option ${ci + 1} (FR)`} className={inp} />
+                <input value={q.choices.ar[ci]} onChange={e => updateChoice(qi, ci, "ar", e.target.value)}
+                  placeholder={`خيار ${ci + 1} (AR)`} dir="rtl" className={`${inp} text-right`} />
+                {q.choices.fr.length > 2 && (
+                  <button type="button" onClick={() => removeChoice(qi, ci)}
+                    className="shrink-0 text-rose-400 hover:text-rose-600 font-bold text-lg leading-none">×</button>
+                )}
+              </div>
+            ))}
+            <button type="button" onClick={() => addChoice(qi)} className="text-xs font-bold text-[#1E3A8A] hover:underline">
+              + {lang === "fr" ? "Ajouter un choix" : "إضافة خيار"}
+            </button>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {lang === "fr" ? "Explication" : "الشرح"}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <input value={q.explanation.fr} onChange={e => update(qi, { explanation: { ...q.explanation, fr: e.target.value } })}
+                placeholder="Explication (FR)" className={inp} />
+              <input value={q.explanation.ar} onChange={e => update(qi, { explanation: { ...q.explanation, ar: e.target.value } })}
+                placeholder="شرح (AR)" dir="rtl" className={`${inp} text-right`} />
+            </div>
+          </div>
+        </div>
+      ))}
+      {!hideAdd && (
+        <button type="button" onClick={() => onChange([...questions, BLANK_QUESTION()])}
+          className="w-full rounded-xl border-2 border-dashed border-slate-200 py-3 text-sm font-bold text-slate-400 hover:border-[#1E3A8A] hover:text-[#1E3A8A] transition-colors">
+          + {lang === "fr" ? "Ajouter une question" : "إضافة سؤال"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Question card ────────────────────────────────────────────────────────────
+
+function QuestionCard({
+  q,
+  qi,
+  lang,
+  onEdit,
+  onDelete,
+}: {
+  q: Question;
+  qi: number;
+  lang: string;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const prompt      = lang === "fr" ? q.prompt.fr      : q.prompt.ar;
+  const promptOther = lang === "fr" ? q.prompt.ar      : q.prompt.fr;
+  const choices     = lang === "fr" ? q.choices.fr     : q.choices.ar;
+  const explanation = lang === "fr" ? q.explanation.fr : q.explanation.ar;
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden hover:border-slate-300 transition-colors">
+      <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50/80 border-b border-slate-100">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          {lang === "fr" ? `Q${qi + 1}` : `س${qi + 1}`}
+        </span>
+        <div className="flex gap-1.5">
+          <button onClick={onEdit}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#1E3A8A] bg-blue-50 hover:bg-blue-100 transition-colors">
+            <Pencil className="h-3 w-3" />
+            {lang === "fr" ? "Modifier" : "تعديل"}
+          </button>
+          <button onClick={onDelete}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors">
+            <Trash2 className="h-3 w-3" />
+            {lang === "fr" ? "Supprimer" : "حذف"}
+          </button>
+        </div>
+      </div>
+      <div className="px-5 py-3 space-y-2.5">
+        <div>
+          <p className="text-sm font-semibold text-slate-800 leading-snug" dir={lang === "ar" ? "rtl" : "ltr"}>
+            {prompt || <span className="italic text-slate-300">{lang === "fr" ? "Sans texte" : "بدون نص"}</span>}
+          </p>
+          {promptOther && (
+            <p className="text-xs text-slate-400 mt-0.5 leading-snug" dir={lang === "fr" ? "rtl" : "ltr"}>
+              {promptOther}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-1.5" dir={lang === "ar" ? "rtl" : "ltr"}>
+          {choices.map((c, ci) => (
+            <span key={ci} className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${
+              ci === q.correctIndex
+                ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
+                : "bg-slate-100 text-slate-500"
+            }`}>
+              {ci === q.correctIndex && <span className="font-black text-emerald-500">✓</span>}
+              {c}
+            </span>
+          ))}
+        </div>
+        {explanation && (
+          <p className="text-xs text-slate-400 italic border-t border-slate-100 pt-2" dir={lang === "ar" ? "rtl" : "ltr"}>
+            {explanation}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Single-question edit dialog ──────────────────────────────────────────────
+
+function QuestionEditDialog({
   open,
-  initial,
+  qi,
+  question,
   onClose,
   onSave,
   saving,
   lang,
 }: {
   open: boolean;
-  initial: CategoryFormData;
+  qi: number;
+  question: Question;
   onClose: () => void;
-  onSave: (data: CategoryFormData) => void;
+  onSave: (q: Question) => void;
   saving: boolean;
   lang: string;
 }) {
-  const [fr, setFr] = useState(initial.fr);
-  const [ar, setAr] = useState(initial.ar);
-  const [color, setColor] = useState(initial.color_code || "#3B82F6");
-
-  // reset when dialog opens with new initial values
-  const stableKey = open ? initial.fr + initial.ar : "";
-
+  const [q, setQ] = useState<Question>(question);
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-md rounded-2xl" key={stableKey}>
+      <DialogContent className="max-w-xl rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-[#1E3A8A] font-black">
-            {lang === "fr"
-              ? initial.fr
-                ? "Modifier la catégorie"
-                : "Nouvelle catégorie"
-              : initial.fr
-              ? "تعديل الفئة"
-              : "فئة جديدة"}
+            {lang === "fr" ? `Modifier la question ${qi + 1}` : `تعديل السؤال ${qi + 1}`}
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Nom (Français)" : "الاسم (الفرنسية)"}
-            </Label>
-            <Input
-              value={fr}
-              onChange={e => setFr(e.target.value)}
-              placeholder="ex: Hameçonnage"
-              className="rounded-xl"
-              autoFocus
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Nom (Arabe)" : "الاسم (العربية)"}
-            </Label>
-            <Input
-              value={ar}
-              onChange={e => setAr(e.target.value)}
-              placeholder="مثال: التصيد الاحتيالي"
-              className="rounded-xl text-right"
-              dir="rtl"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Couleur" : "اللون"}
-            </Label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={color}
-                onChange={e => setColor(e.target.value)}
-                className="h-10 w-14 rounded-xl border border-slate-200 cursor-pointer"
-              />
-              <Input
-                value={color}
-                onChange={e => setColor(e.target.value)}
-                placeholder="#3B82F6"
-                className="rounded-xl font-mono flex-1"
-                maxLength={7}
-              />
-            </div>
-          </div>
+        <div className="max-h-[65vh] overflow-y-auto pe-1 py-2">
+          <QuestionsEditor questions={[q]} onChange={qs => setQ(qs[0])} lang={lang} hideAdd />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} className="rounded-xl">
             {lang === "fr" ? "Annuler" : "إلغاء"}
           </Button>
-          <Button
-            onClick={() => onSave({ fr, ar, color_code: color })}
-            disabled={!fr.trim() || !ar.trim() || saving}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black"
-          >
+          <Button onClick={() => onSave(q)} disabled={saving}
+            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
             {lang === "fr" ? "Enregistrer" : "حفظ"}
           </Button>
         </DialogFooter>
@@ -158,138 +279,146 @@ function CategoryDialog({
   );
 }
 
-// ─── Scenario form ────────────────────────────────────────────────────────────
+// ─── Category dialog ──────────────────────────────────────────────────────────
 
-interface ScenarioFormData {
-  title_fr: string;
-  title_ar: string;
-  desc_fr: string;
-  desc_ar: string;
-  questionsJson: string;
-}
+interface CategoryFormData { fr: string; ar: string; color_code: string; }
 
-function ScenarioDialog({
-  open,
-  initial,
-  onClose,
-  onSave,
-  saving,
-  lang,
+function CategoryDialog({
+  open, initial, onClose, onSave, saving, lang,
 }: {
-  open: boolean;
-  initial: ScenarioFormData;
-  onClose: () => void;
-  onSave: (data: ScenarioFormData) => void;
-  saving: boolean;
-  lang: string;
+  open: boolean; initial: CategoryFormData; onClose: () => void;
+  onSave: (d: CategoryFormData) => void; saving: boolean; lang: string;
 }) {
-  const [titleFr, setTitleFr] = useState(initial.title_fr);
-  const [titleAr, setTitleAr] = useState(initial.title_ar);
-  const [descFr, setDescFr] = useState(initial.desc_fr);
-  const [descAr, setDescAr] = useState(initial.desc_ar);
-  const [questions, setQuestions] = useState(initial.questionsJson || QUESTION_TEMPLATE);
-  const [jsonError, setJsonError] = useState("");
-
-  const handleSave = () => {
-    try {
-      JSON.parse(questions);
-      setJsonError("");
-    } catch {
-      setJsonError(lang === "fr" ? "JSON invalide" : "JSON غير صالح");
-      return;
-    }
-    onSave({ title_fr: titleFr, title_ar: titleAr, desc_fr: descFr, desc_ar: descAr, questionsJson: questions });
-  };
-
-  const stableKey = open ? initial.title_fr + initial.title_ar : "";
-
+  const [fr, setFr] = useState(initial.fr);
+  const [ar, setAr] = useState(initial.ar);
+  const [color, setColor] = useState(initial.color_code || "#3B82F6");
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-2xl rounded-2xl" key={stableKey}>
+      <DialogContent className="max-w-md rounded-2xl" key={open ? initial.fr + initial.ar : ""}>
         <DialogHeader>
           <DialogTitle className="text-[#1E3A8A] font-black">
             {lang === "fr"
-              ? initial.title_fr
-                ? "Modifier le scénario"
-                : "Nouveau scénario"
-              : initial.title_fr
-              ? "تعديل السيناريو"
-              : "سيناريو جديد"}
+              ? initial.fr ? "Modifier la catégorie" : "Nouvelle catégorie"
+              : initial.fr ? "تعديل الفئة" : "فئة جديدة"}
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pe-1">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-                {lang === "fr" ? "Titre (FR)" : "العنوان (FR)"}
-              </Label>
-              <Input
-                value={titleFr}
-                onChange={e => setTitleFr(e.target.value)}
-                className="rounded-xl"
-                autoFocus
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-                {lang === "fr" ? "Titre (AR)" : "العنوان (AR)"}
-              </Label>
-              <Input
-                value={titleAr}
-                onChange={e => setTitleAr(e.target.value)}
-                className="rounded-xl text-right"
-                dir="rtl"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-                {lang === "fr" ? "Description (FR)" : "الوصف (FR)"}
-              </Label>
-              <Input
-                value={descFr}
-                onChange={e => setDescFr(e.target.value)}
-                className="rounded-xl"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-                {lang === "fr" ? "Description (AR)" : "الوصف (AR)"}
-              </Label>
-              <Input
-                value={descAr}
-                onChange={e => setDescAr(e.target.value)}
-                className="rounded-xl text-right"
-                dir="rtl"
-              />
-            </div>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+              {lang === "fr" ? "Nom (Français)" : "الاسم (الفرنسية)"}
+            </Label>
+            <Input value={fr} onChange={e => setFr(e.target.value)} placeholder="ex: Hameçonnage"
+              className="rounded-xl" autoFocus />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Questions (JSON)" : "الأسئلة (JSON)"}
+              {lang === "fr" ? "Nom (Arabe)" : "الاسم (العربية)"}
             </Label>
-            <textarea
-              value={questions}
-              onChange={e => { setQuestions(e.target.value); setJsonError(""); }}
-              rows={10}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/30 resize-none"
-              spellCheck={false}
-            />
-            {jsonError && (
-              <p className="text-xs text-rose-600 font-semibold">{jsonError}</p>
-            )}
+            <Input value={ar} onChange={e => setAr(e.target.value)} placeholder="مثال: التصيد الاحتيالي"
+              className="rounded-xl text-right" dir="rtl" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+              {lang === "fr" ? "Couleur" : "اللون"}
+            </Label>
+            <div className="flex items-center gap-3">
+              <input type="color" value={color} onChange={e => setColor(e.target.value)}
+                className="h-10 w-14 rounded-xl border border-slate-200 cursor-pointer" />
+              <Input value={color} onChange={e => setColor(e.target.value)} placeholder="#3B82F6"
+                className="rounded-xl font-mono flex-1" maxLength={7} />
+            </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} className="rounded-xl">
-            {lang === "fr" ? "Annuler" : "إلغاء"}
+          <Button variant="ghost" onClick={onClose} className="rounded-xl">{lang === "fr" ? "Annuler" : "إلغاء"}</Button>
+          <Button onClick={() => onSave({ fr, ar, color_code: color })}
+            disabled={!fr.trim() || !ar.trim() || saving}
+            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
+            {lang === "fr" ? "Enregistrer" : "حفظ"}
           </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Scenario dialog ──────────────────────────────────────────────────────────
+
+interface ScenarioFormData {
+  title_fr: string; title_ar: string;
+  desc_fr: string;  desc_ar: string;
+  questions: Question[];
+}
+
+const SCENARIO_TEMPLATE: ScenarioFormData = {
+  title_fr: "", title_ar: "",
+  desc_fr: "", desc_ar: "",
+  questions: [{
+    id: "q1",
+    prompt: { fr: "", ar: "" },
+    choices: { fr: ["", "", ""], ar: ["", "", ""] },
+    correctIndex: 0,
+    explanation: { fr: "", ar: "" },
+  }],
+};
+
+function ScenarioDialog({
+  open, initial, onClose, onSave, saving, lang,
+}: {
+  open: boolean; initial: ScenarioFormData; onClose: () => void;
+  onSave: (d: ScenarioFormData) => void; saving: boolean; lang: string;
+}) {
+  const [titleFr, setTitleFr] = useState(initial.title_fr);
+  const [titleAr, setTitleAr] = useState(initial.title_ar);
+  const [descFr,  setDescFr]  = useState(initial.desc_fr);
+  const [descAr,  setDescAr]  = useState(initial.desc_ar);
+  const [questions, setQuestions] = useState<Question[]>(
+    initial.questions.length > 0 ? initial.questions : SCENARIO_TEMPLATE.questions
+  );
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-2xl rounded-2xl" key={open ? initial.title_fr + initial.title_ar : ""}>
+        <DialogHeader>
+          <DialogTitle className="text-[#1E3A8A] font-black">
+            {lang === "fr"
+              ? initial.title_fr ? "Modifier le scénario" : "Nouveau scénario"
+              : initial.title_fr ? "تعديل السيناريو" : "سيناريو جديد"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pe-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Titre (FR)</Label>
+              <Input value={titleFr} onChange={e => setTitleFr(e.target.value)} className="rounded-xl" autoFocus />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">العنوان (AR)</Label>
+              <Input value={titleAr} onChange={e => setTitleAr(e.target.value)} className="rounded-xl text-right" dir="rtl" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Description (FR)</Label>
+              <Input value={descFr} onChange={e => setDescFr(e.target.value)} className="rounded-xl" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">الوصف (AR)</Label>
+              <Input value={descAr} onChange={e => setDescAr(e.target.value)} className="rounded-xl text-right" dir="rtl" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+              {lang === "fr" ? "Questions" : "الأسئلة"}
+            </Label>
+            <QuestionsEditor questions={questions} onChange={setQuestions} lang={lang} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} className="rounded-xl">{lang === "fr" ? "Annuler" : "إلغاء"}</Button>
           <Button
-            onClick={handleSave}
+            onClick={() => onSave({ title_fr: titleFr, title_ar: titleAr, desc_fr: descFr, desc_ar: descAr, questions })}
             disabled={!titleFr.trim() || !titleAr.trim() || saving}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black"
-          >
+            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
             {lang === "fr" ? "Enregistrer" : "حفظ"}
           </Button>
         </DialogFooter>
@@ -304,9 +433,11 @@ function ContentPage() {
   const { lang } = useLang();
   const qc = useQueryClient();
 
-  const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
-  const [catDialog, setCatDialog] = useState<{ open: boolean; row?: CategoryRow }>({ open: false });
+  const [selectedCatId,  setSelectedCatId]  = useState<string | null>(null);
+  const [selectedScenId, setSelectedScenId] = useState<string | null>(null);
+  const [catDialog,  setCatDialog]  = useState<{ open: boolean; row?: CategoryRow }>({ open: false });
   const [scenDialog, setScenDialog] = useState<{ open: boolean; row?: ScenarioRow }>({ open: false });
+  const [qDialog,    setQDialog]    = useState<{ scenId: string; qi: number; q: Question } | null>(null);
 
   const { data: categories = [], isLoading: catsLoading } = useQuery({
     queryKey: ["admin-global-categories"],
@@ -320,11 +451,20 @@ function ContentPage() {
     queryKey: ["admin-global-scenarios", selectedCatId],
     queryFn: () => api.adminListGlobalScenarios(selectedCatId ?? undefined),
     enabled: !!selectedCatId,
-  });
+    onSuccess: (scens: ScenarioRow[]) => {
+      if (scens.length > 0 && !selectedScenId) setSelectedScenId(scens[0].id);
+      else if (scens.length === 0) setSelectedScenId(null);
+    },
+  } as any);
+
+  const selectedScen = (scenarios as ScenarioRow[]).find(s => s.id === selectedScenId);
+  const scenQuestions: Question[] = selectedScen ? parseQuestions(selectedScen.questions) : [];
+
+  // ── mutations ────────────────────────────────────────────────────────────────
 
   const catMutation = useMutation({
-    mutationFn: ({ id, data }: { id?: string; data: Partial<CategoryRow> }) =>
-      id ? api.updateCategory(id, data) : api.createCategory(data as CategoryRow),
+    mutationFn: ({ id, name, colorCode }: { id?: string; name: Json; colorCode: string }) =>
+      api.adminSaveCategory(id ?? null, name, colorCode),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-global-categories"] });
       setCatDialog({ open: false });
@@ -334,21 +474,28 @@ function ContentPage() {
   });
 
   const catDelete = useMutation({
-    mutationFn: (id: string) => api.deleteCategory(id),
+    mutationFn: (id: string) => api.adminDeleteCategory(id),
     onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: ["admin-global-categories"] });
-      if (selectedCatId === id) setSelectedCatId(null);
+      if (selectedCatId === id) { setSelectedCatId(null); setSelectedScenId(null); }
       toast.success(lang === "fr" ? "Catégorie supprimée" : "تم حذف الفئة");
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const scenMutation = useMutation({
-    mutationFn: ({ id, data }: { id?: string; data: Partial<ScenarioRow> }) =>
-      id ? api.updateScenario(id, data) : api.createScenario(data as ScenarioRow),
-    onSuccess: () => {
+    mutationFn: ({ id, form }: { id?: string; form: ScenarioFormData }) =>
+      api.adminSaveScenario(
+        id ?? null,
+        selectedCatId!,
+        { fr: form.title_fr, ar: form.title_ar } as unknown as Json,
+        { fr: form.desc_fr,  ar: form.desc_ar  } as unknown as Json,
+        form.questions as unknown as Json,
+      ),
+    onSuccess: (newId, { id }) => {
       qc.invalidateQueries({ queryKey: ["admin-global-scenarios", selectedCatId] });
       setScenDialog({ open: false });
+      if (!id) setSelectedScenId(newId); // auto-select newly created scenario
       toast.success(lang === "fr" ? "Scénario sauvegardé" : "تم حفظ السيناريو");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -356,42 +503,55 @@ function ContentPage() {
 
   const scenDelete = useMutation({
     mutationFn: (id: string) => api.deleteScenario(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: ["admin-global-scenarios", selectedCatId] });
+      if (selectedScenId === id) setSelectedScenId(null);
       toast.success(lang === "fr" ? "Scénario supprimé" : "تم حذف السيناريو");
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const handleSaveCategory = (data: CategoryFormData, id?: string) => {
-    catMutation.mutate({
-      id,
-      data: {
-        name: { fr: data.fr, ar: data.ar } as unknown as Json,
-        color_code: data.color_code,
-        teacher_id: null,
-      },
+  const qSaveMutation = useMutation({
+    mutationFn: ({ scenId, qs }: { scenId: string; qs: Question[] }) =>
+      api.adminUpdateScenarioQuestions(scenId, qs as unknown as Json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-global-scenarios", selectedCatId] });
+      setQDialog(null);
+      toast.success(lang === "fr" ? "Question sauvegardée" : "تم حفظ السؤال");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // ── helpers ──────────────────────────────────────────────────────────────────
+
+  const handleSaveQuestion = (updated: Question) => {
+    if (!qDialog) return;
+    qSaveMutation.mutate({
+      scenId: qDialog.scenId,
+      qs: scenQuestions.map((q, i) => (i === qDialog.qi ? updated : q)),
     });
   };
 
-  const handleSaveScenario = (form: ScenarioFormData, id?: string) => {
-    scenMutation.mutate({
-      id,
-      data: {
-        title: { fr: form.title_fr, ar: form.title_ar } as unknown as Json,
-        description: { fr: form.desc_fr, ar: form.desc_ar } as unknown as Json,
-        questions: JSON.parse(form.questionsJson) as unknown as Json,
-        category_id: selectedCatId!,
-        teacher_id: null,
-        is_public: true,
-      },
-    });
+  const handleDeleteQuestion = (qi: number) => {
+    if (!selectedScenId) return;
+    if (!confirm(lang === "fr" ? "Supprimer cette question ?" : "حذف هذا السؤال؟")) return;
+    qSaveMutation.mutate({ scenId: selectedScenId, qs: scenQuestions.filter((_, i) => i !== qi) });
   };
 
-  const selectedCat = categories.find((c: CategoryRow) => c.id === selectedCatId);
+  const handleAddQuestion = () => {
+    if (!selectedScenId) return;
+    qSaveMutation.mutate({ scenId: selectedScenId, qs: [...scenQuestions, BLANK_QUESTION()] });
+  };
+
+  const selectedCat = (categories as CategoryRow[]).find((c: CategoryRow) => c.id === selectedCatId);
+
+  const colLabel = "text-[10px] font-black uppercase tracking-widest text-slate-400";
+  const colCard  = "border-none shadow-xl shadow-slate-200 bg-white rounded-2xl overflow-hidden flex-1 flex flex-col";
+
+  // ── render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500">
+    <div className="p-8 space-y-8 max-w-[1400px] mx-auto animate-in fade-in duration-500">
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-2xl bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
           <Layers className="h-5 w-5" />
@@ -408,80 +568,63 @@ function ContentPage() {
         </div>
       </div>
 
-      <div className="flex gap-6 min-h-[70vh]">
-        {/* Categories panel */}
-        <div className="w-72 shrink-0 flex flex-col gap-3">
+      <div className="flex gap-5 min-h-[72vh]">
+
+        {/* ── Col 1: Categories ── */}
+        <div className="w-44 shrink-0 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Catégories" : "الفئات"}
-            </span>
-            <Button
-              size="sm"
-              onClick={() => setCatDialog({ open: true })}
-              className="h-7 px-3 rounded-lg bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-xs font-black"
-            >
-              <Plus className="h-3 w-3 me-1" />
-              {lang === "fr" ? "Ajouter" : "إضافة"}
-            </Button>
+            <span className={colLabel}>{lang === "fr" ? "Catégories" : "الفئات"}</span>
+            <button onClick={() => setCatDialog({ open: true })}
+              className="h-6 w-6 rounded-lg bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 flex items-center justify-center text-white transition-colors">
+              <Plus className="h-3.5 w-3.5" />
+            </button>
           </div>
 
-          <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-2xl overflow-hidden flex-1">
+          <Card className={colCard}>
             <div className="h-1.5 bg-[#1E3A8A]" />
-            <CardContent className="p-2">
+            <CardContent className="p-2 overflow-y-auto flex-1">
               {catsLoading ? (
                 <div className="space-y-2 p-2">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-10 bg-slate-100 rounded-xl animate-pulse" />
+                    <div key={i} className="h-9 bg-slate-100 rounded-xl animate-pulse" />
                   ))}
                 </div>
-              ) : categories.length === 0 ? (
-                <p className="text-center text-slate-400 text-sm py-8 font-medium italic">
+              ) : (categories as CategoryRow[]).length === 0 ? (
+                <p className="text-center text-slate-400 text-xs py-6 italic">
                   {lang === "fr" ? "Aucune catégorie." : "لا توجد فئات."}
                 </p>
               ) : (
                 <div className="space-y-0.5">
-                  {categories.map((cat: CategoryRow) => {
-                    const name = parseBilingual(cat.name);
+                  {(categories as CategoryRow[]).map((cat: CategoryRow) => {
+                    const name   = parseBilingual(cat.name);
                     const active = cat.id === selectedCatId;
                     return (
-                      <div
-                        key={cat.id}
-                        onClick={() => setSelectedCatId(cat.id)}
+                      <div key={cat.id}
+                        onClick={() => { setSelectedCatId(cat.id); setSelectedScenId(null); }}
                         className={`flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer group transition-all ${
-                          active
-                            ? "bg-[#1E3A8A] text-white"
-                            : "hover:bg-slate-50 text-slate-700"
-                        }`}
-                      >
-                        <div
-                          className="h-3 w-3 rounded-full shrink-0"
-                          style={{ backgroundColor: cat.color_code || "#94a3b8" }}
-                        />
-                        <span className="text-sm font-semibold flex-1 truncate">
+                          active ? "bg-[#1E3A8A] text-white" : "hover:bg-slate-50 text-slate-700"
+                        }`}>
+                        <div className="h-2 w-2 rounded-full shrink-0"
+                          style={{ backgroundColor: cat.color_code || "#94a3b8" }} />
+                        <span className="text-xs font-semibold flex-1 truncate">
                           {lang === "fr" ? name.fr : name.ar}
                         </span>
-                        {active && <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-70" />}
-                        {!active && (
-                          <div className="hidden group-hover:flex items-center gap-0.5">
-                            <button
-                              onClick={e => { e.stopPropagation(); setCatDialog({ open: true, row: cat }); }}
-                              className="p-1 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-[#1E3A8A]"
-                            >
-                              <Pencil className="h-3 w-3" />
-                            </button>
-                            <button
-                              onClick={e => {
+                        {active
+                          ? <ChevronRight className="h-3 w-3 shrink-0 opacity-60" />
+                          : (
+                            <div className="hidden group-hover:flex gap-0.5">
+                              <button onClick={e => { e.stopPropagation(); setCatDialog({ open: true, row: cat }); }}
+                                className="p-1 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-[#1E3A8A]">
+                                <Pencil className="h-3 w-3" />
+                              </button>
+                              <button onClick={e => {
                                 e.stopPropagation();
-                                if (confirm(lang === "fr" ? "Supprimer cette catégorie ?" : "حذف هذه الفئة؟")) {
-                                  catDelete.mutate(cat.id);
-                                }
-                              }}
-                              className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </div>
-                        )}
+                                if (confirm(lang === "fr" ? "Supprimer cette catégorie ?" : "حذف هذه الفئة؟")) catDelete.mutate(cat.id);
+                              }} className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500">
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
                       </div>
                     );
                   })}
@@ -491,92 +634,85 @@ function ContentPage() {
           </Card>
         </div>
 
-        {/* Scenarios panel */}
-        <div className="flex-1 flex flex-col gap-3">
+        {/* ── Col 2: Scenarios ── */}
+        <div className="w-56 shrink-0 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {selectedCat
-                ? parseBilingual(selectedCat.name)[lang === "fr" ? "fr" : "ar"]
-                : lang === "fr"
-                ? "Scénarios"
-                : "السيناريوهات"}
+            <span className={colLabel}>
+              {lang === "fr" ? "Scénarios" : "السيناريوهات"}
+              {(scenarios as ScenarioRow[]).length > 0 && (
+                <span className="ms-1.5 text-slate-300">— {(scenarios as ScenarioRow[]).length}</span>
+              )}
             </span>
-            <Button
-              size="sm"
-              onClick={() => setScenDialog({ open: true })}
+            <button
+              onClick={() => { if (selectedCatId) setScenDialog({ open: true }); }}
               disabled={!selectedCatId}
-              className="h-7 px-3 rounded-lg bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-xs font-black disabled:opacity-40"
-            >
-              <Plus className="h-3 w-3 me-1" />
-              {lang === "fr" ? "Ajouter" : "إضافة"}
-            </Button>
+              className="h-6 w-6 rounded-lg bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 disabled:opacity-30 flex items-center justify-center text-white transition-colors">
+              <Plus className="h-3.5 w-3.5" />
+            </button>
           </div>
 
-          <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-2xl overflow-hidden flex-1">
-            <div className="h-1.5 bg-emerald-500" />
-            <CardContent className="p-0">
+          <Card className={colCard}>
+            <div className="h-1.5" style={{ backgroundColor: selectedCat?.color_code || "#1E3A8A" }} />
+            <CardContent className="p-2 overflow-y-auto flex-1">
               {!selectedCatId ? (
-                <div className="flex flex-col items-center justify-center h-64 text-slate-400 gap-2">
-                  <BookOpen className="h-10 w-10 opacity-30" />
-                  <p className="font-medium text-sm">
-                    {lang === "fr"
-                      ? "Sélectionnez une catégorie"
-                      : "اختر فئة لعرض سيناريوهاتها"}
-                  </p>
-                </div>
+                <p className="text-center text-slate-400 text-xs py-6 italic">
+                  {lang === "fr" ? "← Choisir une catégorie" : "← اختر فئة"}
+                </p>
               ) : scenLoading ? (
-                <div className="divide-y divide-slate-50">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-4 px-6 py-4">
-                      <div className="flex-1 h-4 bg-slate-100 rounded animate-pulse" />
-                      <div className="w-16 h-4 bg-slate-100 rounded animate-pulse" />
-                    </div>
+                <div className="space-y-2 p-2">
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <div key={i} className="h-16 bg-slate-100 rounded-xl animate-pulse" />
                   ))}
                 </div>
-              ) : scenarios.length === 0 ? (
-                <div className="py-16 text-center text-slate-400 font-bold italic text-sm">
-                  {lang === "fr"
-                    ? "Aucun scénario dans cette catégorie."
-                    : "لا توجد سيناريوهات في هذه الفئة."}
-                </div>
+              ) : (scenarios as ScenarioRow[]).length === 0 ? (
+                <p className="text-center text-slate-400 text-xs py-6 italic">
+                  {lang === "fr" ? "Aucun scénario. Cliquez +." : "لا يوجد سيناريو. انقر +."}
+                </p>
               ) : (
-                <div className="divide-y divide-slate-50 max-h-[calc(70vh-60px)] overflow-y-auto">
-                  {(scenarios as ScenarioRow[]).map((scen) => {
-                    const title = parseBilingual(scen.title);
-                    const desc = parseBilingual(scen.description);
-                    const qCount = Array.isArray(scen.questions) ? scen.questions.length : 0;
+                <div className="space-y-1">
+                  {(scenarios as ScenarioRow[]).map((scen: ScenarioRow) => {
+                    const title  = parseBilingual(scen.title);
+                    const qs     = parseQuestions(scen.questions);
+                    const active = scen.id === selectedScenId;
                     return (
-                      <div
-                        key={scen.id}
-                        className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/60 transition-colors group"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-700 truncate">
-                            {lang === "fr" ? title.fr : title.ar}
-                          </p>
-                          <p className="text-xs text-slate-400 truncate mt-0.5">
-                            {lang === "fr" ? desc.fr : desc.ar}
-                          </p>
+                      <div key={scen.id}
+                        onClick={() => setSelectedScenId(scen.id)}
+                        className={`rounded-xl px-3 py-2.5 cursor-pointer group transition-all ${
+                          active ? "bg-[#1E3A8A] text-white" : "hover:bg-slate-50 text-slate-700 border border-transparent hover:border-slate-200"
+                        }`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold truncate">
+                              {lang === "fr" ? title.fr : title.ar}
+                            </p>
+                            {(lang === "fr" ? title.ar : title.fr) && (
+                              <p className={`text-[10px] truncate mt-0.5 ${active ? "text-blue-200" : "text-slate-400"}`}>
+                                {lang === "fr" ? title.ar : title.fr}
+                              </p>
+                            )}
+                          </div>
+                          <span className={`shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                            active ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"
+                          }`}>
+                            {qs.length}
+                          </span>
                         </div>
-                        <span className="text-xs font-bold text-slate-400 shrink-0">
-                          {qCount} {lang === "fr" ? "Q" : "س"}
-                        </span>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          <button
-                            onClick={() => setScenDialog({ open: true, row: scen })}
-                            className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-[#1E3A8A] transition-colors"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
+                        <div className={`flex gap-1 mt-1.5 ${active ? "" : "opacity-0 group-hover:opacity-100"} transition-opacity`}>
+                          <button onClick={e => { e.stopPropagation(); setScenDialog({ open: true, row: scen }); }}
+                            className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg transition-colors ${
+                              active ? "bg-blue-600 hover:bg-blue-500 text-white" : "bg-slate-100 hover:bg-blue-50 hover:text-[#1E3A8A] text-slate-500"
+                            }`}>
+                            <Pencil className="h-2.5 w-2.5" />
+                            {lang === "fr" ? "Modifier" : "تعديل"}
                           </button>
-                          <button
-                            onClick={() => {
-                              if (confirm(lang === "fr" ? "Supprimer ce scénario ?" : "حذف هذا السيناريو؟")) {
-                                scenDelete.mutate(scen.id);
-                              }
-                            }}
-                            className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
+                          <button onClick={e => {
+                            e.stopPropagation();
+                            if (confirm(lang === "fr" ? "Supprimer ce scénario ?" : "حذف هذا السيناريو؟")) scenDelete.mutate(scen.id);
+                          }} className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg transition-colors ${
+                            active ? "bg-blue-600 hover:bg-rose-500 text-white" : "bg-slate-100 hover:bg-rose-50 hover:text-rose-500 text-slate-500"
+                          }`}>
+                            <Trash2 className="h-2.5 w-2.5" />
+                            {lang === "fr" ? "Supprimer" : "حذف"}
                           </button>
                         </div>
                       </div>
@@ -587,9 +723,64 @@ function ContentPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* ── Col 3: Questions ── */}
+        <div className="flex-1 flex flex-col gap-3 min-w-0">
+          <div className="flex items-center justify-between">
+            <span className={colLabel}>
+              {selectedScen
+                ? parseBilingual(selectedScen.title)[lang === "fr" ? "fr" : "ar"]
+                : lang === "fr" ? "Questions" : "الأسئلة"}
+              {scenQuestions.length > 0 && (
+                <span className="ms-1.5 text-slate-300">— {scenQuestions.length}</span>
+              )}
+            </span>
+            <button
+              onClick={handleAddQuestion}
+              disabled={!selectedScenId || qSaveMutation.isPending}
+              className="h-6 w-6 rounded-lg bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 disabled:opacity-30 flex items-center justify-center text-white transition-colors">
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          <Card className={colCard}>
+            <div className="h-1.5 bg-gradient-to-r from-[#1E3A8A] to-blue-400" />
+            <CardContent className="p-3 overflow-y-auto flex-1">
+              {!selectedScenId ? (
+                <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 py-12">
+                  <BookOpen className="h-10 w-10 opacity-20" />
+                  <p className="text-xs font-medium">
+                    {lang === "fr" ? "← Choisir un scénario" : "← اختر سيناريو"}
+                  </p>
+                </div>
+              ) : scenQuestions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 py-12">
+                  <HelpCircle className="h-10 w-10 opacity-20" />
+                  <p className="text-xs font-medium italic">
+                    {lang === "fr" ? "Aucune question — cliquez sur +" : "لا توجد أسئلة — انقر على +"}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {scenQuestions.map((q, qi) => (
+                    <QuestionCard
+                      key={`${selectedScenId}-${qi}`}
+                      q={q}
+                      qi={qi}
+                      lang={lang}
+                      onEdit={() => setQDialog({ scenId: selectedScenId, qi, q })}
+                      onDelete={() => handleDeleteQuestion(qi)}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
       </div>
 
-      {/* Category dialog */}
+      {/* Dialogs */}
       <CategoryDialog
         open={catDialog.open}
         initial={
@@ -598,12 +789,15 @@ function ContentPage() {
             : { fr: "", ar: "", color_code: "#3B82F6" }
         }
         onClose={() => setCatDialog({ open: false })}
-        onSave={data => handleSaveCategory(data, catDialog.row?.id)}
+        onSave={data => catMutation.mutate({
+          id: catDialog.row?.id,
+          name: { fr: data.fr, ar: data.ar } as unknown as Json,
+          colorCode: data.color_code,
+        })}
         saving={catMutation.isPending}
         lang={lang}
       />
 
-      {/* Scenario dialog */}
       <ScenarioDialog
         open={scenDialog.open}
         initial={
@@ -611,17 +805,29 @@ function ContentPage() {
             ? {
                 title_fr: parseBilingual(scenDialog.row.title).fr,
                 title_ar: parseBilingual(scenDialog.row.title).ar,
-                desc_fr: parseBilingual(scenDialog.row.description).fr,
-                desc_ar: parseBilingual(scenDialog.row.description).ar,
-                questionsJson: JSON.stringify(scenDialog.row.questions, null, 2),
+                desc_fr:  parseBilingual(scenDialog.row.description).fr,
+                desc_ar:  parseBilingual(scenDialog.row.description).ar,
+                questions: parseQuestions(scenDialog.row.questions),
               }
-            : { title_fr: "", title_ar: "", desc_fr: "", desc_ar: "", questionsJson: QUESTION_TEMPLATE }
+            : SCENARIO_TEMPLATE
         }
         onClose={() => setScenDialog({ open: false })}
-        onSave={form => handleSaveScenario(form, scenDialog.row?.id)}
+        onSave={form => scenMutation.mutate({ id: scenDialog.row?.id, form })}
         saving={scenMutation.isPending}
         lang={lang}
       />
+
+      {qDialog && (
+        <QuestionEditDialog
+          open
+          qi={qDialog.qi}
+          question={qDialog.q}
+          onClose={() => setQDialog(null)}
+          onSave={handleSaveQuestion}
+          saving={qSaveMutation.isPending}
+          lang={lang}
+        />
+      )}
     </div>
   );
 }
