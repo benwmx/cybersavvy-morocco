@@ -34,7 +34,7 @@ function GuestLobby() {
             <span>{t("guestMode")}</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-[#1E3A8A]">
-            {lang === "fr" ? "Bac à Sable Public" : "ساحة التجربة الحرة"}
+            {t("freeAccess")}
           </h1>
           <p className="text-lg text-muted-foreground font-medium">{t("guestDesc")}</p>
         </div>
@@ -122,7 +122,7 @@ function GuestLobby() {
           <Button variant="ghost" asChild className="rounded-xl text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50 font-bold">
             <Link to="/">
               <ArrowRight className="h-4 w-4 me-2 rotate-180 rtl:rotate-0" />
-              {lang === "fr" ? "Retour à l'accueil" : "العودة إلى الرئيسية"}
+              {t("backHome")}
             </Link>
           </Button>
         </div>

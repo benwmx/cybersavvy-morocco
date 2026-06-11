@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { liveQuery } from "dexie";
 import { translations, type Lang, type TKey } from "./translations";
 import { getDB } from "@/lib/offline/db";
 
@@ -22,17 +23,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (stored === "fr" || stored === "ar") setLangState(stored);
   }, []);
 
-  // Load translations from Dexie (populated by syncTranslations on first online visit).
+  // Live-query Dexie translations so overrides update immediately after any sync.
   // Falls back silently to the hardcoded translations.ts if Dexie is empty.
   useEffect(() => {
     const db = getDB();
     if (!db) return;
-    db.translations.toArray().then(rows => {
-      if (!rows.length) return;
-      const map: Overrides = {};
-      for (const row of rows) map[row.key] = { fr: row.fr, ar: row.ar };
-      setOverrides(map);
-    }).catch(() => {});
+    const subscription = liveQuery(() => db.translations.toArray()).subscribe({
+      next: (rows) => {
+        if (!rows.length) return;
+        const map: Overrides = {};
+        for (const row of rows) map[row.key] = { fr: row.fr, ar: row.ar };
+        setOverrides(map);
+      },
+      error: () => {},
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {

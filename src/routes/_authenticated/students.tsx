@@ -47,7 +47,7 @@ function StudentsPage() {
     mutationFn: (id: string) => api.removeStudent(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["students", selectedClassId] });
-      toast.success(lang === "fr" ? "Élève retiré" : "تم حذف التلميذ");
+      toast.success(t("studentRemoved"));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -87,9 +87,9 @@ function StudentsPage() {
     setBulkProgress(null);
     setBulkText("");
     if (failed === 0) {
-      toast.success(lang === "fr" ? `${succeeded} élèves ajoutés` : `تمت إضافة ${succeeded} تلاميذ`);
+      toast.success(t("studentsAddedMsg").replace("{n}", succeeded.toString()));
     } else {
-      toast.success(lang === "fr" ? `${succeeded} ajoutés, ${failed} échoués` : `${succeeded} مضاف، ${failed} فشل`);
+      toast.success(t("bulkPartialMsg").replace("{s}", succeeded.toString()).replace("{f}", failed.toString()));
     }
   };
 
@@ -97,10 +97,10 @@ function StudentsPage() {
     <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-700">
       <div className="space-y-1">
         <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-          {lang === "fr" ? "Élèves" : "التلاميذ"}
+          {t("studentsTitle")}
         </h1>
         <p className="text-slate-500 font-medium">
-          {lang === "fr" ? "Registre et gestion des apprenants." : "سجل وإدارة المتعلمين."}
+          {t("studentsSubtitle")}
         </p>
       </div>
 
@@ -115,20 +115,18 @@ function StudentsPage() {
                   onClick={() => setBulkMode(false)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${!bulkMode ? "bg-white text-[#1E3A8A] shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
                 >
-                  {lang === "fr" ? "Individuel" : "فردي"}
+                  {t("individual")}
                 </button>
                 <button
                   onClick={() => setBulkMode(true)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${bulkMode ? "bg-white text-[#1E3A8A] shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
                 >
-                  {lang === "fr" ? "Bulk" : "جماعي"}
+                  {t("bulkImportLabel")}
                 </button>
               </div>
             </div>
             <CardDescription className="mt-2">
-              {bulkMode
-                ? (lang === "fr" ? "Importer plusieurs élèves à la fois via CSV." : "استيراد عدة تلاميذ دفعة واحدة.")
-                : (lang === "fr" ? "Inscrire un nouvel apprenant au registre." : "تسجيل متعلم جديد في السجل.")}
+              {bulkMode ? t("bulkImportDesc") : t("singleImportDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-8 pt-0 space-y-6">
@@ -193,7 +191,7 @@ function StudentsPage() {
               <>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    {lang === "fr" ? "Format : CODE_MASSAR, Nom FR, الاسم بالعربية" : "الصيغة: رمز_مسار، الاسم بالفرنسية، الاسم بالعربية"}
+                    {t("bulkFormat")}
                   </Label>
                   <Textarea
                     value={bulkText}
@@ -205,9 +203,9 @@ function StudentsPage() {
                   />
                   {bulkText.trim() && (
                     <div className="flex items-center gap-3 text-xs font-bold pt-1">
-                      <span className="text-emerald-600">{validRows.length} {lang === "fr" ? "valides" : "صحيح"}</span>
+                      <span className="text-emerald-600">{validRows.length} {t("validRows")}</span>
                       {invalidRows.length > 0 && (
-                        <span className="text-rose-500">{invalidRows.length} {lang === "fr" ? "invalides" : "خطأ"}</span>
+                        <span className="text-rose-500">{invalidRows.length} {t("invalidRows")}</span>
                       )}
                     </div>
                   )}
@@ -216,7 +214,7 @@ function StudentsPage() {
                 {bulkProgress ? (
                   <div className="space-y-3">
                     <div className="flex justify-between text-xs font-bold text-slate-500">
-                      <span>{lang === "fr" ? "Importation en cours…" : "جارٍ الاستيراد…"}</span>
+                      <span>{t("importing")}</span>
                       <span>{bulkProgress.done}/{bulkProgress.total}</span>
                     </div>
                     <Progress value={(bulkProgress.done / bulkProgress.total) * 100} className="h-2 bg-slate-100" />
@@ -228,7 +226,7 @@ function StudentsPage() {
                     onClick={runBulkImport}
                   >
                     <Upload className="h-4 w-4" />
-                    {lang === "fr" ? `Importer ${validRows.length} élève${validRows.length !== 1 ? "s" : ""}` : `استيراد ${validRows.length} تلاميذ`}
+                    {t("importBtn")} {validRows.length}
                   </Button>
                 )}
               </>
@@ -241,7 +239,7 @@ function StudentsPage() {
           <CardHeader className="p-8">
             <CardTitle className="text-2xl font-black text-[#1E3A8A]">{t("studentList")}</CardTitle>
             <CardDescription>
-              {lang === "fr" ? "Registre complet des apprenants par cohorte." : "سجل المتعلمين الكامل حسب الفوج."}
+              {t("studentsRegister")}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-8 pt-0">
@@ -263,11 +261,11 @@ function StudentsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-6 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400">
                   <div className="flex-1">
-                    {lang === "fr" ? "Identité & Code Massar" : "الهوية ورمز مسار"}
+                    {t("studentIdentity")}
                   </div>
                   <div className="flex items-center gap-6">
                     <div className="text-right hidden sm:block w-40">
-                      {lang === "fr" ? "Prénom & Nom (AR)" : "الاسم العائلي والشخصي (FR)"}
+                      {t("studentNameColOther")}
                     </div>
                     <div className="w-10" />
                   </div>
@@ -289,7 +287,7 @@ function StudentsPage() {
                             variant="ghost"
                             className="h-10 w-10 rounded-xl text-rose-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-600 active:scale-90"
                             onClick={() => {
-                              if (confirm(lang === "fr" ? "Voulez-vous vraiment retirer cet élève ?" : "هل تريد حقاً حذف هذا التلميذ؟")) {
+                              if (confirm(t("deleteStudentConfirm"))) {
                                 removeStudent.mutate(s.id);
                               }
                             }}
