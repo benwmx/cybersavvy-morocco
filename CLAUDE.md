@@ -41,6 +41,11 @@ SQL migrations are in `supabase/migrations/` and are numbered sequentially (`001
 - **Types**: Strict TypeScript. Data from Supabase is typed using `database.types.ts`.
 - **Hooks**: Business logic and side effects (data fetching, analytics) MUST be moved to custom hooks.
 - **i18n**: Never hardcode strings. Use the `useLang` hook and the `translations` system.
+  - Every UI string in **every page** (current and future) MUST use `t("key")` from `useLang()`.
+  - Add new keys to BOTH `fr` and `ar` objects in `src/lib/i18n/translations.ts` before using them.
+  - Never use inline `lang === "fr" ? "..." : "..."` patterns for UI labels — that bypasses the admin's wording control.
+  - The only valid use of `lang` directly is for choosing which bilingual *content* to display (e.g., `title.fr` vs `title.ar`, or `student.name_fr` vs `student.name_ar`) or setting `dir` attributes.
+  - The admin translations page (`/admin/translations`) shows all keys from `translations.ts` as defaults, with Supabase overrides highlighted. Editing any entry saves to Supabase → syncs to Dexie → picked up by `t()` on next render.
 
 ## 6. Key Hooks & Services
 ### Hooks (`src/hooks/`)

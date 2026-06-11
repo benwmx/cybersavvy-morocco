@@ -84,7 +84,7 @@ function ScenarioRunner() {
   if (!track) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Track not found</p>
+        <p>{t("trackNotFound")}</p>
       </div>
     );
   }
@@ -181,7 +181,7 @@ function ScenarioRunner() {
                   }}
                 >
                   <RefreshCw className="ms-0 me-2 h-4 w-4" />
-                  {lang === "fr" ? "Recommencer" : "إعادة المحاولة"}
+                  {t("retry")}
                 </Button>
               </div>
             </CardContent>

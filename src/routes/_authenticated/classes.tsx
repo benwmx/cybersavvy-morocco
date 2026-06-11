@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/classes")({
 });
 
 function ClassesPage() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const qc = useQueryClient();
   const [name, setName] = useState("");
 
@@ -47,7 +47,7 @@ function ClassesPage() {
       <div className="space-y-1">
         <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("classes")}</h1>
         <p className="text-slate-500 font-medium">
-          {lang === "fr" ? "Gestion des groupes de suivi." : "إدارة مجموعات المتابعة."}
+          {t("classesSubtitle")}
         </p>
       </div>
 
@@ -59,7 +59,7 @@ function ClassesPage() {
             {t("createClass")}
           </CardTitle>
           <CardDescription className="text-base font-medium">
-            {lang === "fr" ? "Initialiser un nouveau groupe de suivi." : "إنشاء مجموعة متابعة جديدة."}
+            {t("createClassDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-0">
@@ -71,7 +71,7 @@ function ClassesPage() {
             className="flex flex-col sm:flex-row gap-4"
           >
             <Input
-              placeholder="Ex: Classe de 3ème - Année 2026"
+              placeholder={t("classNamePlaceholder")}
               value={name}
               onChange={e => setName(e.target.value)}
               className="flex-1 h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-6 text-lg font-medium focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent transition-all"
