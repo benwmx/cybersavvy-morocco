@@ -504,21 +504,58 @@ export const api = {
   },
 
   async adminListGlobalCategories(): Promise<CategoryRow[]> {
-    const { data, error } = await supabase
-      .from("categories")
-      .select("*")
-      .is("teacher_id", null)
-      .order("id");
+    const { data, error } = await supabase.rpc("admin_list_global_categories");
     if (error) throw error;
-    return data || [];
+    return (data || []) as CategoryRow[];
   },
 
   async adminListGlobalScenarios(categoryId?: string): Promise<ScenarioRow[]> {
-    let query = supabase.from("scenarios").select("*").is("teacher_id", null);
-    if (categoryId) query = query.eq("category_id", categoryId);
-    const { data, error } = await query.order("created_at", { ascending: false });
+    const { data, error } = await supabase.rpc("admin_list_global_scenarios", {
+      p_category_id: categoryId ?? null,
+    });
     if (error) throw error;
-    return data || [];
+    return (data || []) as ScenarioRow[];
+  },
+
+  async adminUpdateScenarioQuestions(id: string, questions: Json): Promise<void> {
+    const { error } = await supabase.rpc("admin_update_scenario_questions", {
+      p_id: id,
+      p_questions: questions,
+    });
+    if (error) throw error;
+  },
+
+  async adminSaveScenario(
+    id: string | null,
+    categoryId: string,
+    title: Json,
+    description: Json,
+    questions: Json,
+  ): Promise<string> {
+    const { data, error } = await supabase.rpc("admin_save_scenario", {
+      p_id: id,
+      p_category_id: categoryId,
+      p_title: title,
+      p_description: description,
+      p_questions: questions,
+    });
+    if (error) throw error;
+    return data as string;
+  },
+
+  async adminSaveCategory(id: string | null, name: Json, colorCode: string): Promise<string> {
+    const { data, error } = await supabase.rpc("admin_save_category", {
+      p_id: id,
+      p_name: name,
+      p_color_code: colorCode,
+    });
+    if (error) throw error;
+    return data as string;
+  },
+
+  async adminDeleteCategory(id: string): Promise<void> {
+    const { error } = await supabase.rpc("admin_delete_category", { p_id: id });
+    if (error) throw error;
   },
 
   async listResultsForTeacher(): Promise<ResultRow[]> {
