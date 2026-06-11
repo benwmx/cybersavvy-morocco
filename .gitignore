@@ -37,6 +37,7 @@ dist-ssr
 .gemini/
 GEMINI.md
 graphify-out/
+.claude/context/
 
 # Sandbox / shell environment artifacts
 .bash_profile
