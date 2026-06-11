@@ -66,14 +66,14 @@ const BLANK_QUESTION = (): Question => ({
 function QuestionsEditor({
   questions,
   onChange,
-  lang,
   hideAdd = false,
 }: {
   questions: Question[];
   onChange: (qs: Question[]) => void;
-  lang: string;
   hideAdd?: boolean;
 }) {
+  const { t } = useLang();
+
   const update = (i: number, patch: Partial<Question>) =>
     onChange(questions.map((q, qi) => (qi === i ? { ...q, ...patch } : q)));
 
@@ -102,12 +102,12 @@ function QuestionsEditor({
         <div key={q.id} className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? `Question ${qi + 1}` : `السؤال ${qi + 1}`}
+              {t("question")} {qi + 1}
             </span>
             {questions.length > 1 && (
               <button type="button" onClick={() => onChange(questions.filter((_, i) => i !== qi))}
                 className="text-xs font-bold text-rose-400 hover:text-rose-600">
-                {lang === "fr" ? "Supprimer" : "حذف"}
+                {t("delete")}
               </button>
             )}
           </div>
@@ -119,7 +119,7 @@ function QuestionsEditor({
           </div>
           <div className="space-y-2">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Choix — ● = bonne réponse" : "الخيارات — ● = الإجابة الصحيحة"}
+              {t("adminChoicesLabel")}
             </p>
             {q.choices.fr.map((_, ci) => (
               <div key={ci} className="flex items-center gap-2">
@@ -136,12 +136,12 @@ function QuestionsEditor({
               </div>
             ))}
             <button type="button" onClick={() => addChoice(qi)} className="text-xs font-bold text-[#1E3A8A] hover:underline">
-              + {lang === "fr" ? "Ajouter un choix" : "إضافة خيار"}
+              + {t("adminAddChoice")}
             </button>
           </div>
           <div className="space-y-1">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Explication" : "الشرح"}
+              {t("adminExplanation")}
             </p>
             <div className="grid grid-cols-2 gap-2">
               <input value={q.explanation.fr} onChange={e => update(qi, { explanation: { ...q.explanation, fr: e.target.value } })}
@@ -155,7 +155,7 @@ function QuestionsEditor({
       {!hideAdd && (
         <button type="button" onClick={() => onChange([...questions, BLANK_QUESTION()])}
           className="w-full rounded-xl border-2 border-dashed border-slate-200 py-3 text-sm font-bold text-slate-400 hover:border-[#1E3A8A] hover:text-[#1E3A8A] transition-colors">
-          + {lang === "fr" ? "Ajouter une question" : "إضافة سؤال"}
+          + {t("addQuestion")}
         </button>
       )}
     </div>
@@ -177,6 +177,7 @@ function QuestionCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useLang();
   const prompt      = lang === "fr" ? q.prompt.fr      : q.prompt.ar;
   const promptOther = lang === "fr" ? q.prompt.ar      : q.prompt.fr;
   const choices     = lang === "fr" ? q.choices.fr     : q.choices.ar;
@@ -186,25 +187,25 @@ function QuestionCard({
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden hover:border-slate-300 transition-colors">
       <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50/80 border-b border-slate-100">
         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-          {lang === "fr" ? `Q${qi + 1}` : `س${qi + 1}`}
+          {t("question")} {qi + 1}
         </span>
         <div className="flex gap-1.5">
           <button onClick={onEdit}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#1E3A8A] bg-blue-50 hover:bg-blue-100 transition-colors">
             <Pencil className="h-3 w-3" />
-            {lang === "fr" ? "Modifier" : "تعديل"}
+            {t("adminModify")}
           </button>
           <button onClick={onDelete}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors">
             <Trash2 className="h-3 w-3" />
-            {lang === "fr" ? "Supprimer" : "حذف"}
+            {t("delete")}
           </button>
         </div>
       </div>
       <div className="px-5 py-3 space-y-2.5">
         <div>
           <p className="text-sm font-semibold text-slate-800 leading-snug" dir={lang === "ar" ? "rtl" : "ltr"}>
-            {prompt || <span className="italic text-slate-300">{lang === "fr" ? "Sans texte" : "بدون نص"}</span>}
+            {prompt || <span className="italic text-slate-300">{t("adminQNoText")}</span>}
           </p>
           {promptOther && (
             <p className="text-xs text-slate-400 mt-0.5 leading-snug" dir={lang === "fr" ? "rtl" : "ltr"}>
@@ -243,7 +244,6 @@ function QuestionEditDialog({
   onClose,
   onSave,
   saving,
-  lang,
 }: {
   open: boolean;
   qi: number;
@@ -251,27 +251,27 @@ function QuestionEditDialog({
   onClose: () => void;
   onSave: (q: Question) => void;
   saving: boolean;
-  lang: string;
 }) {
+  const { t } = useLang();
   const [q, setQ] = useState<Question>(question);
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent className="max-w-xl rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-[#1E3A8A] font-black">
-            {lang === "fr" ? `Modifier la question ${qi + 1}` : `تعديل السؤال ${qi + 1}`}
+            {t("adminEditQuestion")} {qi + 1}
           </DialogTitle>
         </DialogHeader>
         <div className="max-h-[65vh] overflow-y-auto pe-1 py-2">
-          <QuestionsEditor questions={[q]} onChange={qs => setQ(qs[0])} lang={lang} hideAdd />
+          <QuestionsEditor questions={[q]} onChange={qs => setQ(qs[0])} hideAdd />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} className="rounded-xl">
-            {lang === "fr" ? "Annuler" : "إلغاء"}
+            {t("adminCancel")}
           </Button>
           <Button onClick={() => onSave(q)} disabled={saving}
             className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
-            {lang === "fr" ? "Enregistrer" : "حفظ"}
+            {t("save")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -284,42 +284,41 @@ function QuestionEditDialog({
 interface CategoryFormData { fr: string; ar: string; color_code: string; }
 
 function CategoryDialog({
-  open, initial, onClose, onSave, saving, lang,
+  open, initial, onClose, onSave, saving,
 }: {
   open: boolean; initial: CategoryFormData; onClose: () => void;
-  onSave: (d: CategoryFormData) => void; saving: boolean; lang: string;
+  onSave: (d: CategoryFormData) => void; saving: boolean;
 }) {
+  const { t } = useLang();
   const [fr, setFr] = useState(initial.fr);
   const [ar, setAr] = useState(initial.ar);
   const [color, setColor] = useState(initial.color_code || "#3B82F6");
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-md rounded-2xl" key={open ? initial.fr + initial.ar : ""}>
+      <DialogContent className="max-w-md rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-[#1E3A8A] font-black">
-            {lang === "fr"
-              ? initial.fr ? "Modifier la catégorie" : "Nouvelle catégorie"
-              : initial.fr ? "تعديل الفئة" : "فئة جديدة"}
+            {initial.fr ? t("adminEditCategory") : t("adminNewCategory")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
             <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Nom (Français)" : "الاسم (الفرنسية)"}
+              {t("adminNameFr")}
             </Label>
             <Input value={fr} onChange={e => setFr(e.target.value)} placeholder="ex: Hameçonnage"
               className="rounded-xl" autoFocus />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Nom (Arabe)" : "الاسم (العربية)"}
+              {t("adminNameAr")}
             </Label>
             <Input value={ar} onChange={e => setAr(e.target.value)} placeholder="مثال: التصيد الاحتيالي"
               className="rounded-xl text-right" dir="rtl" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Couleur" : "اللون"}
+              {t("adminColor")}
             </Label>
             <div className="flex items-center gap-3">
               <input type="color" value={color} onChange={e => setColor(e.target.value)}
@@ -330,11 +329,11 @@ function CategoryDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} className="rounded-xl">{lang === "fr" ? "Annuler" : "إلغاء"}</Button>
+          <Button variant="ghost" onClick={onClose} className="rounded-xl">{t("adminCancel")}</Button>
           <Button onClick={() => onSave({ fr, ar, color_code: color })}
             disabled={!fr.trim() || !ar.trim() || saving}
             className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
-            {lang === "fr" ? "Enregistrer" : "حفظ"}
+            {t("save")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -363,11 +362,12 @@ const SCENARIO_TEMPLATE: ScenarioFormData = {
 };
 
 function ScenarioDialog({
-  open, initial, onClose, onSave, saving, lang,
+  open, initial, onClose, onSave, saving,
 }: {
   open: boolean; initial: ScenarioFormData; onClose: () => void;
-  onSave: (d: ScenarioFormData) => void; saving: boolean; lang: string;
+  onSave: (d: ScenarioFormData) => void; saving: boolean;
 }) {
+  const { t } = useLang();
   const [titleFr, setTitleFr] = useState(initial.title_fr);
   const [titleAr, setTitleAr] = useState(initial.title_ar);
   const [descFr,  setDescFr]  = useState(initial.desc_fr);
@@ -377,49 +377,47 @@ function ScenarioDialog({
   );
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-2xl rounded-2xl" key={open ? initial.title_fr + initial.title_ar : ""}>
+      <DialogContent className="max-w-2xl rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-[#1E3A8A] font-black">
-            {lang === "fr"
-              ? initial.title_fr ? "Modifier le scénario" : "Nouveau scénario"
-              : initial.title_fr ? "تعديل السيناريو" : "سيناريو جديد"}
+            {initial.title_fr ? t("adminEditScenario") : t("adminNewScenario")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pe-1">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Titre (FR)</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{t("adminTitleFrField")}</Label>
               <Input value={titleFr} onChange={e => setTitleFr(e.target.value)} className="rounded-xl" autoFocus />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">العنوان (AR)</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{t("adminTitleArField")}</Label>
               <Input value={titleAr} onChange={e => setTitleAr(e.target.value)} className="rounded-xl text-right" dir="rtl" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Description (FR)</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{t("adminDescFrField")}</Label>
               <Input value={descFr} onChange={e => setDescFr(e.target.value)} className="rounded-xl" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">الوصف (AR)</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{t("adminDescArField")}</Label>
               <Input value={descAr} onChange={e => setDescAr(e.target.value)} className="rounded-xl text-right" dir="rtl" />
             </div>
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Questions" : "الأسئلة"}
+              {t("adminQuestionsLabel")}
             </Label>
-            <QuestionsEditor questions={questions} onChange={setQuestions} lang={lang} />
+            <QuestionsEditor questions={questions} onChange={setQuestions} />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} className="rounded-xl">{lang === "fr" ? "Annuler" : "إلغاء"}</Button>
+          <Button variant="ghost" onClick={onClose} className="rounded-xl">{t("adminCancel")}</Button>
           <Button
             onClick={() => onSave({ title_fr: titleFr, title_ar: titleAr, desc_fr: descFr, desc_ar: descAr, questions })}
             disabled={!titleFr.trim() || !titleAr.trim() || saving}
             className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
-            {lang === "fr" ? "Enregistrer" : "حفظ"}
+            {t("save")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -430,7 +428,7 @@ function ScenarioDialog({
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function ContentPage() {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const qc = useQueryClient();
 
   const [selectedCatId,  setSelectedCatId]  = useState<string | null>(null);
@@ -468,7 +466,7 @@ function ContentPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-global-categories"] });
       setCatDialog({ open: false });
-      toast.success(lang === "fr" ? "Catégorie sauvegardée" : "تم حفظ الفئة");
+      toast.success(t("adminCatSaved"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -478,7 +476,7 @@ function ContentPage() {
     onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: ["admin-global-categories"] });
       if (selectedCatId === id) { setSelectedCatId(null); setSelectedScenId(null); }
-      toast.success(lang === "fr" ? "Catégorie supprimée" : "تم حذف الفئة");
+      toast.success(t("adminCatDeleted"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -496,7 +494,7 @@ function ContentPage() {
       qc.invalidateQueries({ queryKey: ["admin-global-scenarios", selectedCatId] });
       setScenDialog({ open: false });
       if (!id) setSelectedScenId(newId); // auto-select newly created scenario
-      toast.success(lang === "fr" ? "Scénario sauvegardé" : "تم حفظ السيناريو");
+      toast.success(t("adminScenSaved"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -506,7 +504,7 @@ function ContentPage() {
     onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: ["admin-global-scenarios", selectedCatId] });
       if (selectedScenId === id) setSelectedScenId(null);
-      toast.success(lang === "fr" ? "Scénario supprimé" : "تم حذف السيناريو");
+      toast.success(t("adminScenDeleted"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -517,7 +515,7 @@ function ContentPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-global-scenarios", selectedCatId] });
       setQDialog(null);
-      toast.success(lang === "fr" ? "Question sauvegardée" : "تم حفظ السؤال");
+      toast.success(t("adminQSaved"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -534,7 +532,7 @@ function ContentPage() {
 
   const handleDeleteQuestion = (qi: number) => {
     if (!selectedScenId) return;
-    if (!confirm(lang === "fr" ? "Supprimer cette question ?" : "حذف هذا السؤال؟")) return;
+    if (!confirm(t("adminDeleteQConfirm"))) return;
     qSaveMutation.mutate({ scenId: selectedScenId, qs: scenQuestions.filter((_, i) => i !== qi) });
   };
 
@@ -558,12 +556,10 @@ function ContentPage() {
         </div>
         <div>
           <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {lang === "fr" ? "Contenu global" : "المحتوى العام"}
+            {t("adminContentTitle")}
           </h1>
           <p className="text-slate-500 font-medium text-sm">
-            {lang === "fr"
-              ? "Catégories et scénarios partagés avec tous les enseignants"
-              : "الفئات والسيناريوهات المشتركة مع جميع المعلمين"}
+            {t("adminContentSubtitle")}
           </p>
         </div>
       </div>
@@ -573,7 +569,7 @@ function ContentPage() {
         {/* ── Col 1: Categories ── */}
         <div className="w-44 shrink-0 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className={colLabel}>{lang === "fr" ? "Catégories" : "الفئات"}</span>
+            <span className={colLabel}>{t("adminCategories")}</span>
             <button onClick={() => setCatDialog({ open: true })}
               className="h-6 w-6 rounded-lg bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 flex items-center justify-center text-white transition-colors">
               <Plus className="h-3.5 w-3.5" />
@@ -591,7 +587,7 @@ function ContentPage() {
                 </div>
               ) : (categories as CategoryRow[]).length === 0 ? (
                 <p className="text-center text-slate-400 text-xs py-6 italic">
-                  {lang === "fr" ? "Aucune catégorie." : "لا توجد فئات."}
+                  {t("adminNoCategories")}
                 </p>
               ) : (
                 <div className="space-y-0.5">
@@ -619,7 +615,7 @@ function ContentPage() {
                               </button>
                               <button onClick={e => {
                                 e.stopPropagation();
-                                if (confirm(lang === "fr" ? "Supprimer cette catégorie ?" : "حذف هذه الفئة؟")) catDelete.mutate(cat.id);
+                                if (confirm(t("adminDeleteCatConfirm"))) catDelete.mutate(cat.id);
                               }} className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500">
                                 <Trash2 className="h-3 w-3" />
                               </button>
@@ -638,7 +634,7 @@ function ContentPage() {
         <div className="w-56 shrink-0 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className={colLabel}>
-              {lang === "fr" ? "Scénarios" : "السيناريوهات"}
+              {t("adminScenarios")}
               {(scenarios as ScenarioRow[]).length > 0 && (
                 <span className="ms-1.5 text-slate-300">— {(scenarios as ScenarioRow[]).length}</span>
               )}
@@ -656,7 +652,7 @@ function ContentPage() {
             <CardContent className="p-2 overflow-y-auto flex-1">
               {!selectedCatId ? (
                 <p className="text-center text-slate-400 text-xs py-6 italic">
-                  {lang === "fr" ? "← Choisir une catégorie" : "← اختر فئة"}
+                  {t("adminPickCategory")}
                 </p>
               ) : scenLoading ? (
                 <div className="space-y-2 p-2">
@@ -666,7 +662,7 @@ function ContentPage() {
                 </div>
               ) : (scenarios as ScenarioRow[]).length === 0 ? (
                 <p className="text-center text-slate-400 text-xs py-6 italic">
-                  {lang === "fr" ? "Aucun scénario. Cliquez +." : "لا يوجد سيناريو. انقر +."}
+                  {t("adminNoScenarios")}
                 </p>
               ) : (
                 <div className="space-y-1">
@@ -703,16 +699,16 @@ function ContentPage() {
                               active ? "bg-blue-600 hover:bg-blue-500 text-white" : "bg-slate-100 hover:bg-blue-50 hover:text-[#1E3A8A] text-slate-500"
                             }`}>
                             <Pencil className="h-2.5 w-2.5" />
-                            {lang === "fr" ? "Modifier" : "تعديل"}
+                            {t("adminModify")}
                           </button>
                           <button onClick={e => {
                             e.stopPropagation();
-                            if (confirm(lang === "fr" ? "Supprimer ce scénario ?" : "حذف هذا السيناريو؟")) scenDelete.mutate(scen.id);
+                            if (confirm(t("adminDeleteScenConfirm"))) scenDelete.mutate(scen.id);
                           }} className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg transition-colors ${
                             active ? "bg-blue-600 hover:bg-rose-500 text-white" : "bg-slate-100 hover:bg-rose-50 hover:text-rose-500 text-slate-500"
                           }`}>
                             <Trash2 className="h-2.5 w-2.5" />
-                            {lang === "fr" ? "Supprimer" : "حذف"}
+                            {t("delete")}
                           </button>
                         </div>
                       </div>
@@ -730,7 +726,7 @@ function ContentPage() {
             <span className={colLabel}>
               {selectedScen
                 ? parseBilingual(selectedScen.title)[lang === "fr" ? "fr" : "ar"]
-                : lang === "fr" ? "Questions" : "الأسئلة"}
+                : t("adminQuestionsLabel")}
               {scenQuestions.length > 0 && (
                 <span className="ms-1.5 text-slate-300">— {scenQuestions.length}</span>
               )}
@@ -750,14 +746,14 @@ function ContentPage() {
                 <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 py-12">
                   <BookOpen className="h-10 w-10 opacity-20" />
                   <p className="text-xs font-medium">
-                    {lang === "fr" ? "← Choisir un scénario" : "← اختر سيناريو"}
+                    {t("adminPickScenario")}
                   </p>
                 </div>
               ) : scenQuestions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 py-12">
                   <HelpCircle className="h-10 w-10 opacity-20" />
                   <p className="text-xs font-medium italic">
-                    {lang === "fr" ? "Aucune question — cliquez sur +" : "لا توجد أسئلة — انقر على +"}
+                    {t("adminNoQuestions")}
                   </p>
                 </div>
               ) : (
@@ -782,6 +778,7 @@ function ContentPage() {
 
       {/* Dialogs */}
       <CategoryDialog
+        key={catDialog.open ? (catDialog.row?.id ?? "new") : "closed"}
         open={catDialog.open}
         initial={
           catDialog.row
@@ -795,10 +792,10 @@ function ContentPage() {
           colorCode: data.color_code,
         })}
         saving={catMutation.isPending}
-        lang={lang}
       />
 
       <ScenarioDialog
+        key={scenDialog.open ? (scenDialog.row?.id ?? "new") : "closed"}
         open={scenDialog.open}
         initial={
           scenDialog.row
@@ -814,7 +811,6 @@ function ContentPage() {
         onClose={() => setScenDialog({ open: false })}
         onSave={form => scenMutation.mutate({ id: scenDialog.row?.id, form })}
         saving={scenMutation.isPending}
-        lang={lang}
       />
 
       {qDialog && (
@@ -825,7 +821,6 @@ function ContentPage() {
           onClose={() => setQDialog(null)}
           onSave={handleSaveQuestion}
           saving={qSaveMutation.isPending}
-          lang={lang}
         />
       )}
     </div>

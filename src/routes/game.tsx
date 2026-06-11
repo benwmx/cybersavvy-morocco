@@ -95,10 +95,10 @@ function GameLobby() {
         <div className="mb-12 max-w-4xl space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#1E3A8A] text-xs font-bold border border-blue-100 uppercase tracking-widest">
             <ShieldCheck className="h-3.5 w-3.5" />
-            <span>{lang === 'fr' ? 'Ma Classe' : 'قسمي'}</span>
+            <span>{t("myClass")}</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-[#1E3A8A]">
-            {lang === "fr" ? `Bonjour, ${student.name_fr}` : `مرحباً، ${student.name_ar}`}
+            {t("greetingName").replace("{name}", lang === "fr" ? student.name_fr : student.name_ar)}
           </h1>
           <p className="text-lg text-muted-foreground font-medium">{t("chooseTrack")}</p>
         </div>
@@ -109,7 +109,7 @@ function GameLobby() {
               <Layout className="h-8 w-8" />
             </div>
             <p className="text-muted-foreground font-medium italic">
-              {lang === "fr" ? "Aucun parcours n'est encore disponible pour votre classe." : "لا توجد مسارات متاحة لقسمك حالياً."}
+              {t("noTracksAvailable")}
             </p>
           </Card>
         ) : (
@@ -158,7 +158,7 @@ function GameLobby() {
           <Button variant="ghost" asChild className="rounded-xl text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50 font-bold">
             <Link to="/">
               <ArrowRight className="h-4 w-4 me-2 rotate-180 rtl:rotate-0" />
-              {lang === "fr" ? "Retour à l'accueil" : "العودة إلى الرئيسية"}
+              {t("backHome")}
             </Link>
           </Button>
         </div>

@@ -102,15 +102,15 @@ function AnalyticsPage() {
         <div className="space-y-1">
           <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("analytics")}</h1>
           <p className="text-slate-500 font-medium">
-            {lang === "fr" ? "Performance globale des cohortes." : "الأداء العام للأفواج."}
+            {t("analyticsSubtitle")}
           </p>
         </div>
         <Select value={selectedClassId} onValueChange={setSelectedClassId}>
           <SelectTrigger className="w-full sm:w-64 h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold">
-            <SelectValue placeholder={lang === "fr" ? "Toutes les classes" : "جميع الأقسام"} />
+            <SelectValue placeholder={t("allClasses")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{lang === "fr" ? "Toutes les classes" : "جميع الأقسام"}</SelectItem>
+            <SelectItem value="all">{t("allClasses")}</SelectItem>
             {classes.map(c => (
               <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
             ))}
@@ -124,17 +124,17 @@ function AnalyticsPage() {
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 border border-blue-100">
             <Users className="h-4 w-4 text-[#1E3A8A]" />
             <span className="text-xs font-black text-[#1E3A8A] uppercase tracking-wider">{stats.uniqueStudents}</span>
-            <span className="text-xs font-medium text-slate-500">{lang === "fr" ? "élèves" : "تلاميذ"}</span>
+            <span className="text-xs font-medium text-slate-500">{t("studentsLabel")}</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-100">
             <TrendingUp className="h-4 w-4 text-emerald-600" />
             <span className="text-xs font-black text-emerald-700 uppercase tracking-wider">{stats.totalAttempts}</span>
-            <span className="text-xs font-medium text-slate-500">{lang === "fr" ? "tentatives" : "محاولات"}</span>
+            <span className="text-xs font-medium text-slate-500">{t("attempts")}</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-50 border border-violet-100">
             <BookOpen className="h-4 w-4 text-violet-600" />
             <span className="text-xs font-black text-violet-700 uppercase tracking-wider">{stats.uniqueScenarios}</span>
-            <span className="text-xs font-medium text-slate-500">{lang === "fr" ? "parcours couverts" : "مسارات مغطاة"}</span>
+            <span className="text-xs font-medium text-slate-500">{t("tracksCovered")}</span>
           </div>
         </div>
       )}
@@ -156,7 +156,7 @@ function AnalyticsPage() {
                     <TrendingUp className="h-6 w-6" />
                   </div>
                   <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">
-                    {lang === "fr" ? "Moyenne Globale" : "المعدل العام"}
+                    {t("avgGeneral")}
                   </h3>
                 </div>
                 <div className="space-y-2">
@@ -165,7 +165,7 @@ function AnalyticsPage() {
                 </div>
               </div>
               <p className="text-sm font-medium text-slate-500 mt-6">
-                {lang === "fr" ? `Basé sur ${stats.totalAttempts} tentatives complétées.` : `بناءً على ${stats.totalAttempts} محاولة مكتملة.`}
+                {t("basedOnAttempts").replace("{n}", stats.totalAttempts.toString())}
               </p>
             </Card>
 
@@ -175,7 +175,7 @@ function AnalyticsPage() {
                   <Layout className="h-6 w-6" />
                 </div>
                 <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">
-                  {lang === "fr" ? "Performance par Catégorie" : "الأداء حسب المحور"}
+                  {t("perfByCategory")}
                 </h3>
               </div>
               <div className="grid sm:grid-cols-2 gap-8">
@@ -200,13 +200,13 @@ function AnalyticsPage() {
                   <AlertCircle className="h-6 w-6" />
                 </div>
                 <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">
-                  {lang === "fr" ? "Points de Vigilance" : "نقاط اليقظة"}
+                  {t("vigilancePoints")}
                 </h3>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {stats.commonMistakes.length === 0 ? (
                   <p className="text-slate-400 italic font-medium">
-                    {lang === "fr" ? "Aucune erreur fréquente identifiée." : "لا توجد أخطاء شائعة محددة."}
+                    {t("noFrequentErrors")}
                   </p>
                 ) : (
                   stats.commonMistakes.map(([mistakeId, count], i) => (
@@ -216,7 +216,7 @@ function AnalyticsPage() {
                           Question ID: {mistakeId.substring(0, 8)}
                         </p>
                         <p className="font-bold text-slate-700">
-                          {count} {lang === "fr" ? "élèves ont échoué" : "تلاميذ تعثروا"}
+                          {count} {t("studentsFailed")}
                         </p>
                       </div>
                     </div>
@@ -233,7 +233,7 @@ function AnalyticsPage() {
                   <BarChart3 className="h-6 w-6" />
                 </div>
                 <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">
-                  {lang === "fr" ? "Performance par Parcours" : "الأداء حسب المسار"}
+                  {t("perfByTrack")}
                 </h3>
               </div>
               <ResponsiveContainer width="100%" height={260}>
@@ -252,7 +252,7 @@ function AnalyticsPage() {
                     tickFormatter={v => `${v}%`}
                   />
                   <Tooltip
-                    formatter={(value: number) => [`${value}%`, lang === "fr" ? "Moyenne" : "المعدل"]}
+                    formatter={(value: number) => [`${value}%`, t("average")]}
                     contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 24px #1e3a8a18", fontSize: 13, fontWeight: 700 }}
                     cursor={{ fill: "#e0e7ff", radius: 8 }}
                   />
