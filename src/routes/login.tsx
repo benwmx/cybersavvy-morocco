@@ -24,7 +24,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const { role } = Route.useSearch();
 
   return (
@@ -34,10 +34,10 @@ function LoginPage() {
         <div className="mx-auto max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-extrabold text-[#1E3A8A] tracking-tight">
-              {lang === "fr" ? "Accès à la Plateforme" : "الدخول إلى المنصة"}
+              {t("platformAccess")}
             </h1>
             <p className="text-muted-foreground font-medium">
-              {lang === "fr" ? "Veuillez vous identifier pour continuer" : "يرجى تسجيل الدخول للمتابعة"}
+              {t("loginSubtitle")}
             </p>
           </div>
 
@@ -89,13 +89,13 @@ function StudentForm() {
     try {
       const cls = await api.verifyClassCode(accessCode.trim());
       if (!cls) {
-        toast.error(lang === 'fr' ? 'Code d\'accès invalide' : 'رمز الدخول غير صحيح');
+        toast.error(t("invalidAccessCode"));
         return;
       }
       
       const student = await api.verifyStudent(cls.id, massarCode.trim());
       if (!student) {
-        toast.error(lang === 'fr' ? 'Code Massar non trouvé dans cette classe' : 'رمز مسار غير موجود في هذا القسم');
+        toast.error(t("massarNotFound"));
         return;
       }
 
@@ -105,11 +105,11 @@ function StudentForm() {
         name_fr: student.name_fr,
         name_ar: student.name_ar
       });
-      toast.success(lang === 'fr' ? `Bienvenue, ${student.name_fr}` : `مرحباً بك، ${student.name_ar}`);
+      toast.success(`${t("welcome")}, ${lang === "fr" ? student.name_fr : student.name_ar}`);
       navigate({ to: "/dashboard" });
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(lang === 'fr' ? 'Une erreur est survenue' : 'حدث خطأ ما');
+      toast.error(t("loginError"));
     } finally {
       setLoading(false);
     }

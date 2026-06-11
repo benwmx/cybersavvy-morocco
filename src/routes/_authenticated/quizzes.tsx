@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/quizzes")({
 });
 
 function QuizzesPage() {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const qc = useQueryClient();
 
   const [creatingCategory, setCreatingCategory] = useState(false);
@@ -60,7 +60,7 @@ function QuizzesPage() {
     mutationFn: (id: string) => api.deleteScenario(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scenarios"] });
-      toast.success(lang === "fr" ? "Parcours supprimé" : "تم حذف المسار");
+      toast.success(t("scenarioDeleted"));
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -71,7 +71,7 @@ function QuizzesPage() {
       setNewCategoryId(newCategory.id);
       qc.invalidateQueries({ queryKey: ["categories"] });
       qc.invalidateQueries({ queryKey: ["scenarios"] });
-      toast.success(lang === "fr" ? "Catégorie personnalisée créée" : "تم إنشاء نسخة مخصصة");
+      toast.success(t("categoryCustomCreated"));
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -80,7 +80,7 @@ function QuizzesPage() {
     mutationFn: (privateCategoryId: string) => api.resetCategoryToDefault(privateCategoryId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scenarios"] });
-      toast.success(lang === "fr" ? "Parcours réinitialisés" : "تمت إعادة التعيين");
+      toast.success(t("trackResetSuccess"));
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -90,7 +90,7 @@ function QuizzesPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["categories"] });
       qc.invalidateQueries({ queryKey: ["scenarios"] });
-      toast.success(lang === "fr" ? "Catégorie supprimée" : "تم حذف المحور");
+      toast.success(t("categoryDeleted"));
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -109,10 +109,10 @@ function QuizzesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200 border border-slate-100">
         <div className="space-y-1">
           <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {lang === "fr" ? "Catégories & Parcours" : "المحاور والمسارات"}
+            {t("quizzesTitle")}
           </h1>
           <p className="text-slate-500 font-medium">
-            {lang === "fr" ? "Gérez les contenus et assignez-les par cohorte." : "أدر المحتوى وخصصه لكل فوج."}
+            {t("quizzesSubtitle")}
           </p>
         </div>
         <Button
@@ -121,7 +121,7 @@ function QuizzesPage() {
           className="h-14 px-8 rounded-2xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black shadow-lg active:scale-95 transition-all"
         >
           <Plus className="h-5 w-5 me-2" />
-          {lang === "fr" ? "Nouvelle catégorie" : "محور جديد"}
+          {t("newCategoryBtn")}
         </Button>
       </div>
 
@@ -172,16 +172,10 @@ function QuizzesPage() {
           onForkCategory={() => forkCategory.mutate(category.id)}
           onEditCategory={() => { closePanel(); setEditingCategory(category); }}
           onResetCategory={() => {
-            if (confirm(lang === "fr"
-              ? "Réinitialiser les parcours de cette catégorie aux contenus d'origine ?"
-              : "إعادة تعيين مسارات هذا المحور إلى المحتوى الأصلي؟"
-            )) resetCategory.mutate(category.id);
+            if (confirm(t("confirmReset"))) resetCategory.mutate(category.id);
           }}
           onDeleteCategory={() => {
-            if (confirm(lang === "fr"
-              ? "Supprimer cette catégorie et tous ses parcours ?"
-              : "حذف هذا المحور وجميع مساراته؟"
-            )) deleteCategory.mutate(category.id);
+            if (confirm(t("confirmDeleteCategory"))) deleteCategory.mutate(category.id);
           }}
           onAddScenario={() => { closePanel(); setCreatingInCategory(category.id); }}
           onEditScenario={s => { closePanel(); setEditingScenario(s); }}
@@ -213,7 +207,7 @@ function CategoryCard({
   onEditScenario: (s: ScenarioRow) => void;
   onDeleteScenario: (id: string) => void;
 }) {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const { translate } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -257,17 +251,17 @@ function CategoryCard({
                 <h3 className="font-extrabold text-slate-900 text-lg leading-tight">{translate(category.name)}</h3>
                 {isGlobal && (
                   <span className="text-[9px] font-black uppercase tracking-widest bg-blue-50 text-[#1E3A8A] px-2 py-0.5 rounded-full shrink-0">
-                    {lang === "fr" ? "Global" : "عام"}
+                    {t("categoryGlobal")}
                   </span>
                 )}
                 {isFork && (
                   <span className="text-[9px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full shrink-0">
-                    {lang === "fr" ? "Ma version" : "نسختي"}
+                    {t("categoryMyVersion")}
                   </span>
                 )}
               </div>
               <p className="text-xs text-slate-400 font-medium">
-                {scenarios.length} {lang === "fr" ? "parcours" : "مسار"}
+                {scenarios.length} {t("trackCount")}
               </p>
             </div>
           </div>
@@ -277,7 +271,7 @@ function CategoryCard({
               <Button size="sm" variant="ghost" disabled={panelOpen} onClick={onForkCategory}
                 className="h-8 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
                 <Plus className="h-3.5 w-3.5 me-1" />
-                {lang === "fr" ? "Créer ma version" : "إنشاء نسختي"}
+                {t("createMyVersion")}
               </Button>
             )}
             {isFork && (
@@ -285,16 +279,16 @@ function CategoryCard({
                 <Button size="sm" variant="ghost" disabled={panelOpen} onClick={onEditCategory}
                   className="h-8 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
                   <Pencil className="h-3.5 w-3.5 me-1" />
-                  {lang === "fr" ? "Modifier" : "تعديل"}
+                  {t("adminModify")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={onResetCategory}
                   className="h-8 px-3 rounded-xl text-xs font-bold text-amber-500 hover:text-amber-600 hover:bg-amber-50">
-                  {lang === "fr" ? "↺ Réinitialiser" : "↺ إعادة تعيين"}
+                  {t("resetCategory")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={onDeleteCategory}
                   className="h-8 px-3 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-600 hover:bg-rose-50">
                   <Trash2 className="h-3.5 w-3.5 me-1" />
-                  {lang === "fr" ? "Supprimer" : "حذف"}
+                  {t("delete")}
                 </Button>
               </>
             )}
@@ -303,20 +297,20 @@ function CategoryCard({
                 <Button size="sm" variant="ghost" disabled={panelOpen} onClick={onEditCategory}
                   className="h-8 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
                   <Pencil className="h-3.5 w-3.5 me-1" />
-                  {lang === "fr" ? "Modifier" : "تعديل"}
+                  {t("adminModify")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={onDeleteCategory}
                   className="h-8 px-3 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-600 hover:bg-rose-50">
                   <Trash2 className="h-3.5 w-3.5 me-1" />
-                  {lang === "fr" ? "Supprimer" : "حذف"}
+                  {t("delete")}
                 </Button>
               </>
             )}
             <Button size="sm" variant="ghost" onClick={() => setExpanded(v => !v)}
               className="h-8 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
               {expanded
-                ? <><ChevronUp className="h-3.5 w-3.5 me-1" />{lang === "fr" ? "Masquer" : "إخفاء"}</>
-                : <><ChevronDown className="h-3.5 w-3.5 me-1" />{lang === "fr" ? "Gérer les parcours" : "إدارة المسارات"}</>
+                ? <><ChevronUp className="h-3.5 w-3.5 me-1" />{t("hideBtn")}</>
+                : <><ChevronDown className="h-3.5 w-3.5 me-1" />{t("manageTracksBtn")}</>
               }
             </Button>
           </div>
@@ -351,20 +345,20 @@ function CategoryCard({
         <div className="border-t border-slate-100 px-6 pb-6 pt-5 space-y-3">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {lang === "fr" ? "Parcours dans cette catégorie" : "المسارات في هذا المحور"}
+              {t("tracksInCategory")}
             </p>
             {!isGlobal && (
               <Button size="sm" variant="outline" disabled={panelOpen} onClick={onAddScenario}
                 className="h-8 px-3 rounded-xl text-xs font-bold border-[#1E3A8A] text-[#1E3A8A] hover:bg-blue-50">
                 <Plus className="h-3.5 w-3.5 me-1" />
-                {lang === "fr" ? "Ajouter" : "إضافة"}
+                {t("adminAdd")}
               </Button>
             )}
           </div>
 
           {scenarios.length === 0 ? (
             <p className="text-slate-400 italic text-sm text-center py-6">
-              {lang === "fr" ? "Aucun parcours dans cette catégorie." : "لا توجد مسارات في هذا المحور."}
+              {t("noTracksInCategory")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -378,7 +372,7 @@ function CategoryCard({
                         <div className="shrink-0 h-12 w-12 rounded-2xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-sm">
                           <span className="text-lg font-black text-[#1E3A8A] leading-none">{questions.length}</span>
                           <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider leading-none mt-0.5">
-                            {lang === "fr" ? "Q." : "سؤال"}
+                            {t("questionAbbr")}
                           </span>
                         </div>
                         <div className="min-w-0">
@@ -392,7 +386,7 @@ function CategoryCard({
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
                           <Button size="sm" variant="ghost"
-                            onClick={() => { if (confirm(lang === "fr" ? "Supprimer ce parcours ?" : "حذف هذا المسار؟")) onDeleteScenario(scenario.id); }}
+                            onClick={() => { if (confirm(t("confirmDeleteTrack"))) onDeleteScenario(scenario.id); }}
                             className="h-8 w-8 p-0 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50">
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -425,7 +419,7 @@ function CategoryCard({
 }
 
 function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSuccess: () => void }) {
-  const { lang } = useLang();
+  const { t } = useLang();
   const [name, setName] = useState({ fr: "", ar: "" });
 
   const save = useMutation({
@@ -434,7 +428,7 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
       if (!session) throw new Error("Not authenticated");
       return api.createCategory({ teacher_id: session.id, name });
     },
-    onSuccess: () => { toast.success(lang === "fr" ? "Catégorie créée" : "تم إنشاء المحور"); onSuccess(); },
+    onSuccess: () => { toast.success(t("categoryCreated")); onSuccess(); },
     onError: (err: any) => toast.error(err.message),
   });
 
@@ -443,24 +437,24 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
       <div className="h-2 bg-[#1E3A8A]" />
       <CardHeader className="p-10 pb-6">
         <CardTitle className="text-3xl font-black text-[#1E3A8A]">
-          {lang === "fr" ? "Nouvelle catégorie" : "محور جديد"}
+          {t("newCategoryBtn")}
         </CardTitle>
         <CardDescription>
-          {lang === "fr" ? "Créer un thème pour regrouper vos parcours." : "أنشئ محوراً لتجميع مساراتك."}
+          {t("newCategoryDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-10 pt-0 space-y-8">
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              {lang === "fr" ? "Nom (FR)" : "الاسم (FR)"}
+              {t("adminNameFr")}
             </Label>
             <Input value={name.fr} onChange={e => setName({ ...name, fr: e.target.value })}
               placeholder="Ex: Sécurité mobile" className="h-12 rounded-xl bg-slate-50" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              {lang === "fr" ? "Nom (AR)" : "الاسم (AR)"}
+              {t("adminNameAr")}
             </Label>
             <Input value={name.ar} onChange={e => setName({ ...name, ar: e.target.value })}
               placeholder="مثال: أمان الهاتف" className="h-12 rounded-xl bg-slate-50 text-right font-bold" dir="rtl" />
@@ -468,11 +462,11 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
         </div>
         <div className="flex justify-end gap-4">
           <Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold px-8 h-12 text-slate-500">
-            {lang === "fr" ? "Annuler" : "إلغاء"}
+            {t("adminCancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!name.fr.trim() || !name.ar.trim() || save.isPending}
             className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black px-10 h-12 shadow-xl shadow-blue-900/10 transition-all active:scale-95">
-            {lang === "fr" ? "Créer" : "إنشاء"}
+            {t("create")}
           </Button>
         </div>
       </CardContent>
@@ -481,12 +475,12 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
 }
 
 function CategoryEditor({ category, onCancel, onSuccess }: { category: CategoryRow; onCancel: () => void; onSuccess: () => void }) {
-  const { lang } = useLang();
+  const { t } = useLang();
   const [name, setName] = useState(category.name as { fr: string; ar: string });
 
   const save = useMutation({
     mutationFn: () => api.updateCategory(category.id, { name }),
-    onSuccess: () => { toast.success(lang === "fr" ? "Catégorie mise à jour" : "تم تحديث المحور"); onSuccess(); },
+    onSuccess: () => { toast.success(t("categoryUpdated")); onSuccess(); },
     onError: (err: any) => toast.error(err.message),
   });
 
@@ -495,27 +489,27 @@ function CategoryEditor({ category, onCancel, onSuccess }: { category: CategoryR
       <div className="h-2 bg-[#1E3A8A]/60" />
       <CardHeader className="p-10 pb-6">
         <CardTitle className="text-3xl font-black text-[#1E3A8A]">
-          {lang === "fr" ? "Modifier la catégorie" : "تعديل المحور"}
+          {t("editCategoryTitle")}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-10 pt-0 space-y-8">
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Nom (FR)</Label>
+            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminNameFr")}</Label>
             <Input value={name.fr} onChange={e => setName({ ...name, fr: e.target.value })} className="h-12 rounded-xl bg-slate-50" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Nom (AR)</Label>
+            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminNameAr")}</Label>
             <Input value={name.ar} onChange={e => setName({ ...name, ar: e.target.value })} className="h-12 rounded-xl bg-slate-50 text-right font-bold" dir="rtl" />
           </div>
         </div>
         <div className="flex justify-end gap-4">
           <Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold px-8 h-12 text-slate-500">
-            {lang === "fr" ? "Annuler" : "إلغاء"}
+            {t("adminCancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!name.fr.trim() || !name.ar.trim() || save.isPending}
             className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black px-10 h-12 shadow-xl shadow-blue-900/10 transition-all active:scale-95">
-            {lang === "fr" ? "Enregistrer" : "حفظ"}
+            {t("save")}
           </Button>
         </div>
       </CardContent>
@@ -571,15 +565,15 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
       <CardHeader className="p-10 pb-6">
         <CardTitle className="text-3xl font-black text-[#1E3A8A]">{t("createScenario")}</CardTitle>
         <CardDescription>
-          {lang === "fr" ? "Concevoir une simulation personnalisée pour vos cohortes." : "تصميم محاكاة مخصصة لأفواجك."}
+          {t("scenarioCustomDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-10 pt-0 space-y-10">
         <div className="space-y-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{lang === "fr" ? "Catégorie" : "المحور"}</Label>
+          <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("categorySelect")}</Label>
           <Select value={categoryId} onValueChange={setCategoryId}>
             <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200">
-              <SelectValue placeholder={lang === "fr" ? "Choisir une catégorie..." : "اختر محوراً..."} />
+              <SelectValue placeholder={t("categorySelectPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {availableCategories.map(c => (
@@ -602,11 +596,11 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
 
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Description (FR)</Label>
+            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminDescFrField")}</Label>
             <Input value={desc.fr} onChange={e => setDesc({ ...desc, fr: e.target.value })} className="h-12 rounded-xl bg-slate-50" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Description (AR)</Label>
+            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminDescArField")}</Label>
             <Input value={desc.ar} onChange={e => setDesc({ ...desc, ar: e.target.value })} className="h-12 rounded-xl bg-slate-50 text-right font-medium" dir="rtl" />
           </div>
         </div>
@@ -637,7 +631,7 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
 
         <div className="flex justify-end gap-4 pt-6">
           <Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold px-8 h-12 text-slate-500">
-            {lang === "fr" ? "Annuler" : "إلغاء"}
+            {t("adminCancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!categoryId || questions.length === 0 || save.isPending}
             className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black px-10 h-12 shadow-xl shadow-blue-900/10 transition-all active:scale-95">
@@ -679,13 +673,13 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
       <div className="h-2 bg-[#1E3A8A]/60" />
       <CardHeader className="p-10 pb-6">
         <CardTitle className="text-3xl font-black text-[#1E3A8A]">
-          {lang === "fr" ? "Modifier le parcours" : "تعديل المسار"}
+          {t("editTrackTitle")}
         </CardTitle>
         <CardDescription>{translate(scenario.title)}</CardDescription>
       </CardHeader>
       <CardContent className="p-10 pt-0 space-y-10">
         <div className="space-y-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{lang === "fr" ? "Catégorie" : "المحور"}</Label>
+          <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("categorySelect")}</Label>
           <Select value={categoryId} onValueChange={setCategoryId}>
             <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -709,11 +703,11 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
 
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Description (FR)</Label>
+            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminDescFrField")}</Label>
             <Input value={desc.fr} onChange={e => setDesc({ ...desc, fr: e.target.value })} className="h-12 rounded-xl bg-slate-50" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Description (AR)</Label>
+            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminDescArField")}</Label>
             <Input value={desc.ar} onChange={e => setDesc({ ...desc, ar: e.target.value })} className="h-12 rounded-xl bg-slate-50 text-right font-medium" dir="rtl" />
           </div>
         </div>
@@ -746,11 +740,11 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
 
         <div className="flex justify-end gap-4 pt-6">
           <Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold px-8 h-12 text-slate-500">
-            {lang === "fr" ? "Annuler" : "إلغاء"}
+            {t("adminCancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!categoryId || save.isPending}
             className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black px-10 h-12 shadow-xl shadow-blue-900/10 transition-all active:scale-95">
-            {lang === "fr" ? "Enregistrer" : "حفظ"}
+            {t("save")}
           </Button>
         </div>
       </CardContent>
