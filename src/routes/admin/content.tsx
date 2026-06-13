@@ -16,7 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, Layers, BookOpen, ChevronRight, HelpCircle } from "lucide-react";
+import { Pencil, Trash2, Plus, Layers, BookOpen, ChevronRight, HelpCircle, ImageIcon } from "lucide-react";
 import type { Json } from "@/lib/database.types";
 import { ImageUpload } from "@/components/ImageUpload";
 
@@ -43,6 +43,7 @@ interface Question {
   choices: { fr: string[]; ar: string[] };
   correctIndex: number;
   explanation: { fr: string; ar: string };
+  media_url?: string | null;
 }
 
 function parseQuestions(json: Json): Question[] {
@@ -60,6 +61,7 @@ const BLANK_QUESTION = (): Question => ({
   choices: { fr: ["", "", ""], ar: ["", "", ""] },
   correctIndex: 0,
   explanation: { fr: "", ar: "" },
+  media_url: null,
 });
 
 // ─── Questions editor ─────────────────────────────────────────────────────────
@@ -68,10 +70,12 @@ function QuestionsEditor({
   questions,
   onChange,
   hideAdd = false,
+  userId = "",
 }: {
   questions: Question[];
   onChange: (qs: Question[]) => void;
   hideAdd?: boolean;
+  userId?: string;
 }) {
   const { t } = useLang();
 
@@ -118,6 +122,15 @@ function QuestionsEditor({
             <input value={q.prompt.ar} onChange={e => update(qi, { prompt: { ...q.prompt, ar: e.target.value } })}
               placeholder="سؤال (AR)" dir="rtl" className={`${inp} text-right`} />
           </div>
+          {userId && (
+            <ImageUpload
+              value={q.media_url ?? null}
+              onChange={url => update(qi, { media_url: url })}
+              userId={userId}
+              folder="questions"
+              label={t("mediaUrl")}
+            />
+          )}
           <div className="space-y-2">
             <p className="text-xs font-medium text-slate-500">
               {t("adminChoicesLabel")}
@@ -187,9 +200,17 @@ function QuestionCard({
   return (
     <div className="rounded border border-slate-200 bg-white shadow-none overflow-hidden hover:border-slate-300 transition-colors">
       <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50/80 border-b border-slate-100">
-        <span className="text-xs font-medium text-slate-500">
-          {t("question")} {qi + 1}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-500">
+            {t("question")} {qi + 1}
+          </span>
+          {q.media_url && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
+              <ImageIcon className="h-2.5 w-2.5" />
+              {/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(q.media_url) ? "vidéo" : "image"}
+            </span>
+          )}
+        </div>
         <div className="flex gap-1.5">
           <button onClick={onEdit}
             className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium text-[#1E3A8A] bg-blue-50 hover:bg-blue-100 transition-colors">
@@ -242,6 +263,7 @@ function QuestionEditDialog({
   open,
   qi,
   question,
+  userId,
   onClose,
   onSave,
   saving,
@@ -249,6 +271,7 @@ function QuestionEditDialog({
   open: boolean;
   qi: number;
   question: Question;
+  userId: string;
   onClose: () => void;
   onSave: (q: Question) => void;
   saving: boolean;
@@ -264,7 +287,7 @@ function QuestionEditDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="max-h-[65vh] overflow-y-auto pe-1 py-2">
-          <QuestionsEditor questions={[q]} onChange={qs => setQ(qs[0])} hideAdd />
+          <QuestionsEditor questions={[q]} onChange={qs => setQ(qs[0])} hideAdd userId={userId} />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} className="rounded text-sm font-medium">
@@ -421,7 +444,7 @@ function ScenarioDialog({
             <Label className="text-xs text-slate-500">
               {t("adminQuestionsLabel")}
             </Label>
-            <QuestionsEditor questions={questions} onChange={setQuestions} />
+            <QuestionsEditor questions={questions} onChange={setQuestions} userId={userId} />
           </div>
         </div>
         <DialogFooter>
@@ -836,6 +859,7 @@ function ContentPage() {
           open
           qi={qDialog.qi}
           question={qDialog.q}
+          userId={session?.id ?? ""}
           onClose={() => setQDialog(null)}
           onSave={handleSaveQuestion}
           saving={qSaveMutation.isPending}
