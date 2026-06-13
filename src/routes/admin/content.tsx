@@ -99,14 +99,14 @@ function QuestionsEditor({
   return (
     <div className="space-y-3">
       {questions.map((q, qi) => (
-        <div key={q.id} className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
+        <div key={q.id} className="rounded border border-slate-200 bg-slate-50/50 p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span className="text-xs font-medium text-slate-500">
               {t("question")} {qi + 1}
             </span>
             {questions.length > 1 && (
               <button type="button" onClick={() => onChange(questions.filter((_, i) => i !== qi))}
-                className="text-xs font-bold text-rose-400 hover:text-rose-600">
+                className="text-xs font-medium text-rose-400 hover:text-rose-600">
                 {t("delete")}
               </button>
             )}
@@ -118,7 +118,7 @@ function QuestionsEditor({
               placeholder="سؤال (AR)" dir="rtl" className={`${inp} text-right`} />
           </div>
           <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <p className="text-xs font-medium text-slate-500">
               {t("adminChoicesLabel")}
             </p>
             {q.choices.fr.map((_, ci) => (
@@ -140,7 +140,7 @@ function QuestionsEditor({
             </button>
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <p className="text-xs font-medium text-slate-500">
               {t("adminExplanation")}
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -154,7 +154,7 @@ function QuestionsEditor({
       ))}
       {!hideAdd && (
         <button type="button" onClick={() => onChange([...questions, BLANK_QUESTION()])}
-          className="w-full rounded-xl border-2 border-dashed border-slate-200 py-3 text-sm font-bold text-slate-400 hover:border-[#1E3A8A] hover:text-[#1E3A8A] transition-colors">
+          className="w-full rounded border-2 border-dashed border-slate-200 py-2.5 text-sm font-medium text-slate-400 hover:border-[#1E3A8A] hover:text-[#1E3A8A] transition-colors">
           + {t("addQuestion")}
         </button>
       )}
@@ -184,19 +184,19 @@ function QuestionCard({
   const explanation = lang === "fr" ? q.explanation.fr : q.explanation.ar;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden hover:border-slate-300 transition-colors">
+    <div className="rounded border border-slate-200 bg-white shadow-none overflow-hidden hover:border-slate-300 transition-colors">
       <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50/80 border-b border-slate-100">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+        <span className="text-xs font-medium text-slate-500">
           {t("question")} {qi + 1}
         </span>
         <div className="flex gap-1.5">
           <button onClick={onEdit}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#1E3A8A] bg-blue-50 hover:bg-blue-100 transition-colors">
+            className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium text-[#1E3A8A] bg-blue-50 hover:bg-blue-100 transition-colors">
             <Pencil className="h-3 w-3" />
             {t("adminModify")}
           </button>
           <button onClick={onDelete}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors">
+            className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors">
             <Trash2 className="h-3 w-3" />
             {t("delete")}
           </button>
@@ -256,9 +256,9 @@ function QuestionEditDialog({
   const [q, setQ] = useState<Question>(question);
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-xl rounded-2xl">
+      <DialogContent className="max-w-xl rounded-sm">
         <DialogHeader>
-          <DialogTitle className="text-[#1E3A8A] font-black">
+          <DialogTitle className="text-slate-800 font-semibold">
             {t("adminEditQuestion")} {qi + 1}
           </DialogTitle>
         </DialogHeader>
@@ -266,11 +266,11 @@ function QuestionEditDialog({
           <QuestionsEditor questions={[q]} onChange={qs => setQ(qs[0])} hideAdd />
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} className="rounded-xl">
+          <Button variant="ghost" onClick={onClose} className="rounded text-sm font-medium">
             {t("adminCancel")}
           </Button>
           <Button onClick={() => onSave(q)} disabled={saving}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
+            className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium">
             {t("save")}
           </Button>
         </DialogFooter>
@@ -295,44 +295,44 @@ function CategoryDialog({
   const [color, setColor] = useState(initial.color_code || "#3B82F6");
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-md rounded-2xl">
+      <DialogContent className="max-w-md rounded-sm">
         <DialogHeader>
-          <DialogTitle className="text-[#1E3A8A] font-black">
+          <DialogTitle className="text-slate-800 font-semibold">
             {initial.fr ? t("adminEditCategory") : t("adminNewCategory")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+            <Label className="text-xs text-slate-500">
               {t("adminNameFr")}
             </Label>
             <Input value={fr} onChange={e => setFr(e.target.value)} placeholder="ex: Hameçonnage"
-              className="rounded-xl" autoFocus />
+              className="rounded" autoFocus />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+            <Label className="text-xs text-slate-500">
               {t("adminNameAr")}
             </Label>
             <Input value={ar} onChange={e => setAr(e.target.value)} placeholder="مثال: التصيد الاحتيالي"
-              className="rounded-xl text-right" dir="rtl" />
+              className="rounded text-right" dir="rtl" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+            <Label className="text-xs text-slate-500">
               {t("adminColor")}
             </Label>
             <div className="flex items-center gap-3">
               <input type="color" value={color} onChange={e => setColor(e.target.value)}
-                className="h-10 w-14 rounded-xl border border-slate-200 cursor-pointer" />
+                className="h-8 w-12 rounded border border-slate-200 cursor-pointer" />
               <Input value={color} onChange={e => setColor(e.target.value)} placeholder="#3B82F6"
-                className="rounded-xl font-mono flex-1" maxLength={7} />
+                className="rounded font-mono flex-1" maxLength={7} />
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} className="rounded-xl">{t("adminCancel")}</Button>
+          <Button variant="ghost" onClick={onClose} className="rounded text-sm font-medium">{t("adminCancel")}</Button>
           <Button onClick={() => onSave({ fr, ar, color_code: color })}
             disabled={!fr.trim() || !ar.trim() || saving}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
+            className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium">
             {t("save")}
           </Button>
         </DialogFooter>
@@ -377,46 +377,46 @@ function ScenarioDialog({
   );
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-2xl rounded-2xl">
+      <DialogContent className="max-w-2xl rounded-sm">
         <DialogHeader>
-          <DialogTitle className="text-[#1E3A8A] font-black">
+          <DialogTitle className="text-slate-800 font-semibold">
             {initial.title_fr ? t("adminEditScenario") : t("adminNewScenario")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pe-1">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{t("adminTitleFrField")}</Label>
-              <Input value={titleFr} onChange={e => setTitleFr(e.target.value)} className="rounded-xl" autoFocus />
+              <Label className="text-xs text-slate-500">{t("adminTitleFrField")}</Label>
+              <Input value={titleFr} onChange={e => setTitleFr(e.target.value)} className="rounded" autoFocus />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{t("adminTitleArField")}</Label>
-              <Input value={titleAr} onChange={e => setTitleAr(e.target.value)} className="rounded-xl text-right" dir="rtl" />
+              <Label className="text-xs text-slate-500">{t("adminTitleArField")}</Label>
+              <Input value={titleAr} onChange={e => setTitleAr(e.target.value)} className="rounded text-right" dir="rtl" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{t("adminDescFrField")}</Label>
-              <Input value={descFr} onChange={e => setDescFr(e.target.value)} className="rounded-xl" />
+              <Label className="text-xs text-slate-500">{t("adminDescFrField")}</Label>
+              <Input value={descFr} onChange={e => setDescFr(e.target.value)} className="rounded" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{t("adminDescArField")}</Label>
-              <Input value={descAr} onChange={e => setDescAr(e.target.value)} className="rounded-xl text-right" dir="rtl" />
+              <Label className="text-xs text-slate-500">{t("adminDescArField")}</Label>
+              <Input value={descAr} onChange={e => setDescAr(e.target.value)} className="rounded text-right" dir="rtl" />
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+            <Label className="text-xs text-slate-500">
               {t("adminQuestionsLabel")}
             </Label>
             <QuestionsEditor questions={questions} onChange={setQuestions} />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} className="rounded-xl">{t("adminCancel")}</Button>
+          <Button variant="ghost" onClick={onClose} className="rounded">{t("adminCancel")}</Button>
           <Button
             onClick={() => onSave({ title_fr: titleFr, title_ar: titleAr, desc_fr: descFr, desc_ar: descAr, questions })}
             disabled={!titleFr.trim() || !titleAr.trim() || saving}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black">
+            className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium">
             {t("save")}
           </Button>
         </DialogFooter>
@@ -543,22 +543,22 @@ function ContentPage() {
 
   const selectedCat = (categories as CategoryRow[]).find((c: CategoryRow) => c.id === selectedCatId);
 
-  const colLabel = "text-[10px] font-black uppercase tracking-widest text-slate-400";
-  const colCard  = "border-none shadow-xl shadow-slate-200 bg-white rounded-2xl overflow-hidden flex-1 flex flex-col";
+  const colLabel = "text-xs font-medium text-slate-500";
+  const colCard  = "border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden flex-1 flex flex-col";
 
   // ── render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-8 space-y-8 max-w-[1400px] mx-auto animate-in fade-in duration-500">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
-          <Layers className="h-5 w-5" />
+    <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
+      <div className="flex items-center gap-2.5">
+        <div className="h-6 w-6 rounded-sm bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
+          <Layers className="h-3.5 w-3.5" />
         </div>
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
+          <h1 className="text-xl font-semibold text-slate-900">
             {t("adminContentTitle")}
           </h1>
-          <p className="text-slate-500 font-medium text-sm">
+          <p className="text-sm text-slate-500">
             {t("adminContentSubtitle")}
           </p>
         </div>
@@ -571,18 +571,18 @@ function ContentPage() {
           <div className="flex items-center justify-between">
             <span className={colLabel}>{t("adminCategories")}</span>
             <button onClick={() => setCatDialog({ open: true })}
-              className="h-6 w-6 rounded-lg bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 flex items-center justify-center text-white transition-colors">
-              <Plus className="h-3.5 w-3.5" />
+              className="h-5 w-5 rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 flex items-center justify-center text-white transition-colors">
+              <Plus className="h-3 w-3" />
             </button>
           </div>
 
           <Card className={colCard}>
-            <div className="h-1.5 bg-[#1E3A8A]" />
+            <div className="h-0.5 bg-[#1E3A8A]" />
             <CardContent className="p-2 overflow-y-auto flex-1">
               {catsLoading ? (
                 <div className="space-y-2 p-2">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-9 bg-slate-100 rounded-xl animate-pulse" />
+                    <div key={i} className="h-9 bg-slate-100 rounded animate-pulse" />
                   ))}
                 </div>
               ) : (categories as CategoryRow[]).length === 0 ? (
@@ -597,7 +597,7 @@ function ContentPage() {
                     return (
                       <div key={cat.id}
                         onClick={() => { setSelectedCatId(cat.id); setSelectedScenId(null); }}
-                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer group transition-all ${
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded cursor-pointer group transition-all ${
                           active ? "bg-[#1E3A8A] text-white" : "hover:bg-slate-50 text-slate-700"
                         }`}>
                         <div className="h-2 w-2 rounded-full shrink-0"
@@ -610,13 +610,13 @@ function ContentPage() {
                           : (
                             <div className="hidden group-hover:flex gap-0.5">
                               <button onClick={e => { e.stopPropagation(); setCatDialog({ open: true, row: cat }); }}
-                                className="p-1 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-[#1E3A8A]">
+                                className="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-[#1E3A8A]">
                                 <Pencil className="h-3 w-3" />
                               </button>
                               <button onClick={e => {
                                 e.stopPropagation();
                                 if (confirm(t("adminDeleteCatConfirm"))) catDelete.mutate(cat.id);
-                              }} className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500">
+                              }} className="p-1 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-500">
                                 <Trash2 className="h-3 w-3" />
                               </button>
                             </div>
@@ -642,13 +642,13 @@ function ContentPage() {
             <button
               onClick={() => { if (selectedCatId) setScenDialog({ open: true }); }}
               disabled={!selectedCatId}
-              className="h-6 w-6 rounded-lg bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 disabled:opacity-30 flex items-center justify-center text-white transition-colors">
-              <Plus className="h-3.5 w-3.5" />
+              className="h-5 w-5 rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 disabled:opacity-30 flex items-center justify-center text-white transition-colors">
+              <Plus className="h-3 w-3" />
             </button>
           </div>
 
           <Card className={colCard}>
-            <div className="h-1.5" style={{ backgroundColor: selectedCat?.color_code || "#1E3A8A" }} />
+            <div className="h-0.5" style={{ backgroundColor: selectedCat?.color_code || "#1E3A8A" }} />
             <CardContent className="p-2 overflow-y-auto flex-1">
               {!selectedCatId ? (
                 <p className="text-center text-slate-400 text-xs py-6 italic">
@@ -657,7 +657,7 @@ function ContentPage() {
               ) : scenLoading ? (
                 <div className="space-y-2 p-2">
                   {Array.from({ length: 2 }).map((_, i) => (
-                    <div key={i} className="h-16 bg-slate-100 rounded-xl animate-pulse" />
+                    <div key={i} className="h-16 bg-slate-100 rounded animate-pulse" />
                   ))}
                 </div>
               ) : (scenarios as ScenarioRow[]).length === 0 ? (
@@ -673,7 +673,7 @@ function ContentPage() {
                     return (
                       <div key={scen.id}
                         onClick={() => setSelectedScenId(scen.id)}
-                        className={`rounded-xl px-3 py-2.5 cursor-pointer group transition-all ${
+                        className={`rounded px-3 py-2.5 cursor-pointer group transition-all ${
                           active ? "bg-[#1E3A8A] text-white" : "hover:bg-slate-50 text-slate-700 border border-transparent hover:border-slate-200"
                         }`}>
                         <div className="flex items-start justify-between gap-2">
@@ -687,7 +687,7 @@ function ContentPage() {
                               </p>
                             )}
                           </div>
-                          <span className={`shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                          <span className={`shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded ${
                             active ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"
                           }`}>
                             {qs.length}
@@ -695,7 +695,7 @@ function ContentPage() {
                         </div>
                         <div className={`flex gap-1 mt-1.5 ${active ? "" : "opacity-0 group-hover:opacity-100"} transition-opacity`}>
                           <button onClick={e => { e.stopPropagation(); setScenDialog({ open: true, row: scen }); }}
-                            className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg transition-colors ${
+                            className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded transition-colors ${
                               active ? "bg-blue-600 hover:bg-blue-500 text-white" : "bg-slate-100 hover:bg-blue-50 hover:text-[#1E3A8A] text-slate-500"
                             }`}>
                             <Pencil className="h-2.5 w-2.5" />
@@ -704,7 +704,7 @@ function ContentPage() {
                           <button onClick={e => {
                             e.stopPropagation();
                             if (confirm(t("adminDeleteScenConfirm"))) scenDelete.mutate(scen.id);
-                          }} className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg transition-colors ${
+                          }} className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded transition-colors ${
                             active ? "bg-blue-600 hover:bg-rose-500 text-white" : "bg-slate-100 hover:bg-rose-50 hover:text-rose-500 text-slate-500"
                           }`}>
                             <Trash2 className="h-2.5 w-2.5" />
@@ -740,7 +740,7 @@ function ContentPage() {
           </div>
 
           <Card className={colCard}>
-            <div className="h-1.5 bg-gradient-to-r from-[#1E3A8A] to-blue-400" />
+            <div className="h-0.5 bg-gradient-to-r from-[#1E3A8A] to-blue-400" />
             <CardContent className="p-3 overflow-y-auto flex-1">
               {!selectedScenId ? (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 py-12">

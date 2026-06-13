@@ -65,28 +65,28 @@ function SettingsPage() {
   }
 
   return (
-    <div className="p-8 space-y-8 max-w-2xl mx-auto animate-in fade-in duration-500">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
-          <Settings className="h-5 w-5" />
+    <div className="p-6 space-y-6 max-w-2xl mx-auto">
+      <div className="flex items-center gap-2.5">
+        <div className="h-6 w-6 rounded-sm bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
+          <Settings className="h-3.5 w-3.5" />
         </div>
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("settings")}</h1>
-          <p className="text-slate-500 font-medium text-sm">{t("adminSettingsSubtitle")}</p>
+          <h1 className="text-xl font-semibold text-slate-900">{t("settings")}</h1>
+          <p className="text-sm text-slate-500">{t("adminSettingsSubtitle")}</p>
         </div>
       </div>
 
       {/* Email card */}
-      <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden">
-        <div className="h-2 bg-[#1E3A8A]" />
-        <CardHeader className="p-8 pb-4 flex flex-row items-center gap-3">
-          <Mail className="h-5 w-5 text-[#1E3A8A] shrink-0" />
-          <CardTitle className="text-xl font-black text-[#1E3A8A]">{t("adminChangeEmail")}</CardTitle>
+      <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+        <div className="h-0.5 bg-[#1E3A8A]" />
+        <CardHeader className="p-5 pb-3 flex flex-row items-center gap-2">
+          <Mail className="h-4 w-4 text-[#1E3A8A] shrink-0" />
+          <CardTitle className="text-base font-semibold text-slate-800">{t("adminChangeEmail")}</CardTitle>
         </CardHeader>
-        <CardContent className="p-8 pt-2">
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
+        <CardContent className="p-5 pt-0">
+          <form onSubmit={handleEmailSubmit} className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-black uppercase tracking-widest text-slate-400">
+              <label className="text-xs text-slate-500">
                 {t("adminNewEmail")}
               </label>
               <input
@@ -94,7 +94,7 @@ function SettingsPage() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:border-[#1E3A8A] focus:bg-white transition-colors"
+                className="w-full rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#1E3A8A] focus:bg-white transition-colors"
                 placeholder="admin@example.com"
               />
             </div>
@@ -102,7 +102,7 @@ function SettingsPage() {
             <button
               type="submit"
               disabled={emailLoading}
-              className="w-full rounded-xl bg-[#1E3A8A] text-white text-sm font-black py-2.5 hover:bg-[#1E3A8A]/90 disabled:opacity-50 transition-all"
+              className="w-full rounded bg-[#1E3A8A] text-white text-sm font-medium py-2 hover:bg-[#1E3A8A]/90 disabled:opacity-50 transition-all"
             >
               {emailLoading ? t("adminSending") : t("adminUpdateEmail")}
             </button>
@@ -111,14 +111,14 @@ function SettingsPage() {
       </Card>
 
       {/* Password card */}
-      <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden">
-        <div className="h-2 bg-[#1E3A8A]" />
-        <CardHeader className="p-8 pb-4 flex flex-row items-center gap-3">
-          <Lock className="h-5 w-5 text-[#1E3A8A] shrink-0" />
-          <CardTitle className="text-xl font-black text-[#1E3A8A]">{t("adminChangePassword")}</CardTitle>
+      <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+        <div className="h-0.5 bg-[#1E3A8A]" />
+        <CardHeader className="p-5 pb-3 flex flex-row items-center gap-2">
+          <Lock className="h-4 w-4 text-[#1E3A8A] shrink-0" />
+          <CardTitle className="text-base font-semibold text-slate-800">{t("adminChangePassword")}</CardTitle>
         </CardHeader>
-        <CardContent className="p-8 pt-2">
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+        <CardContent className="p-5 pt-0">
+          <form onSubmit={handlePasswordSubmit} className="space-y-3">
             <Field label={t("adminCurrentPassword")} value={currentPw} onChange={setCurrentPw} />
             <Field label={t("adminNewPassword")}     value={newPw}     onChange={setNewPw}     />
             <Field label={t("adminConfirmPassword")} value={confirmPw} onChange={setConfirmPw} />
@@ -126,7 +126,7 @@ function SettingsPage() {
             <button
               type="submit"
               disabled={pwLoading}
-              className="w-full rounded-xl bg-[#1E3A8A] text-white text-sm font-black py-2.5 hover:bg-[#1E3A8A]/90 disabled:opacity-50 transition-all"
+              className="w-full rounded bg-[#1E3A8A] text-white text-sm font-medium py-2 hover:bg-[#1E3A8A]/90 disabled:opacity-50 transition-all"
             >
               {pwLoading ? t("adminUpdating") : t("adminUpdatePassword")}
             </button>
@@ -140,13 +140,13 @@ function SettingsPage() {
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-black uppercase tracking-widest text-slate-400">{label}</label>
+      <label className="text-xs text-slate-500">{label}</label>
       <input
         type="password"
         required
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:border-[#1E3A8A] focus:bg-white transition-colors"
+        className="w-full rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#1E3A8A] focus:bg-white transition-colors"
       />
     </div>
   );
@@ -154,7 +154,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 
 function StatusBanner({ status }: { status: { ok: boolean; msg: string } }) {
   return (
-    <div className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
+    <div className={`flex items-center gap-2 rounded px-3 py-2.5 text-sm font-medium ${
       status.ok ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
     }`}>
       {status.ok

@@ -63,54 +63,54 @@ function SettingsPage() {
   };
 
   return (
-    <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-700">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("settings")}</h1>
-        <p className="text-slate-500 font-medium">{t("settingsSubtitle")}</p>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="space-y-0.5">
+        <h1 className="text-xl font-semibold text-slate-900">{t("settings")}</h1>
+        <p className="text-sm text-slate-500">{t("settingsSubtitle")}</p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         {/* Profile card */}
-        <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden">
-          <div className="h-2 bg-[#1E3A8A]" />
-          <CardHeader className="p-8">
-            <CardTitle className="flex items-center gap-3 text-2xl font-black text-[#1E3A8A]">
-              <User className="h-6 w-6" />
+        <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+          <div className="h-0.5 bg-[#1E3A8A]" />
+          <CardHeader className="p-5">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-800">
+              <User className="h-4 w-4" />
               {t("account")}
             </CardTitle>
-            <CardDescription className="text-base">{t("profileDesc")}</CardDescription>
+            <CardDescription className="text-xs">{t("profileDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="p-8 pt-0 space-y-6">
-            <div className="space-y-2 p-6 rounded-2xl bg-slate-50 border border-slate-100">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("email")}</Label>
-              <p className="font-bold text-lg text-slate-700 select-all">{session?.email || "..."}</p>
+          <CardContent className="p-5 pt-0 space-y-4">
+            <div className="p-3 rounded bg-slate-50 border border-slate-100">
+              <Label className="text-xs text-slate-500">{t("email")}</Label>
+              <p className="font-medium text-sm text-slate-700 mt-1 select-all">{session?.email || "..."}</p>
             </div>
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            <form onSubmit={handleUpdateProfile} className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="firstName" className="text-xs text-slate-500">
                     {t("firstName")}
                   </Label>
                   <Input
                     id="firstName"
                     value={firstName}
                     onChange={e => setFirstName(e.target.value)}
-                    className="h-11 rounded-xl bg-slate-50/50 border-slate-200"
+                    className="h-8 rounded bg-slate-50/50 border-slate-200 text-sm"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                <div className="space-y-1.5">
+                  <Label htmlFor="lastName" className="text-xs text-slate-500">
                     {t("lastName")}
                   </Label>
                   <Input
                     id="lastName"
                     value={lastName}
                     onChange={e => setLastName(e.target.value)}
-                    className="h-11 rounded-xl bg-slate-50/50 border-slate-200"
+                    className="h-8 rounded bg-slate-50/50 border-slate-200 text-sm"
                   />
                 </div>
               </div>
-              <Button type="submit" disabled={nameLoading} className="h-11 px-8 rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black shadow-lg shadow-blue-900/10 active:scale-95 transition-all">
+              <Button type="submit" disabled={nameLoading} className="h-8 px-4 rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium">
                 {t("save")}
               </Button>
             </form>
@@ -118,19 +118,19 @@ function SettingsPage() {
         </Card>
 
         {/* Password card */}
-        <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden">
-          <div className="h-2 bg-rose-500" />
-          <CardHeader className="p-8">
-            <CardTitle className="flex items-center gap-3 text-2xl font-black text-rose-600">
-              <KeyRound className="h-6 w-6" />
+        <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+          <div className="h-0.5 bg-rose-500" />
+          <CardHeader className="p-5">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold text-rose-600">
+              <KeyRound className="h-4 w-4" />
               {t("updatePassword")}
             </CardTitle>
-            <CardDescription className="text-base">{t("updatePasswordDesc")}</CardDescription>
+            <CardDescription className="text-xs">{t("updatePasswordDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="p-8 pt-0">
-            <form onSubmit={handleUpdatePassword} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="new-password" className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("newPassword")}</Label>
+          <CardContent className="p-5 pt-0">
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="new-password" className="text-xs text-slate-500">{t("newPassword")}</Label>
                 <Input
                   id="new-password"
                   type="password"
@@ -138,10 +138,10 @@ function SettingsPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-6 text-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
+                  className="h-8 rounded border-slate-200 bg-slate-50/50 text-sm"
                 />
               </div>
-              <Button type="submit" disabled={pwLoading || !password} className="h-14 px-10 rounded-2xl bg-rose-600 hover:bg-rose-700 text-lg font-black shadow-lg shadow-rose-900/10 active:scale-95 transition-all">
+              <Button type="submit" disabled={pwLoading || !password} className="h-8 px-4 rounded bg-rose-600 hover:bg-rose-700 text-sm font-medium">
                 {t("update")}
               </Button>
             </form>
