@@ -1,24 +1,79 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
-import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2 } from "lucide-react";
+import { useAIRecommendations } from "@/hooks/useAIRecommendations";
+import { getGeminiKey } from "@/lib/gemini";
+import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2, Sparkles, Settings } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   component: AnalyticsPage,
 });
+
+function GeminiMarkdown({ text }: { text: string }) {
+  const lines = text.split("\n");
+  const elements: React.ReactNode[] = [];
+  let listItems: string[] = [];
+
+  const flushList = () => {
+    if (listItems.length) {
+      elements.push(
+        <ul key={elements.length} className="list-disc list-inside space-y-1 ms-1">
+          {listItems.map((item, i) => (
+            <li key={i} className="text-sm text-slate-700">{item}</li>
+          ))}
+        </ul>
+      );
+      listItems = [];
+    }
+  };
+
+  const renderInline = (s: string) => {
+    const parts = s.split(/\*\*(.*?)\*\*/g);
+    return parts.map((p, i) =>
+      i % 2 === 1 ? <strong key={i} className="font-semibold text-slate-900">{p}</strong> : p
+    );
+  };
+
+  lines.forEach((line, i) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushList();
+      return;
+    }
+    if (trimmed.startsWith("- ") || trimmed.startsWith("• ") || trimmed.startsWith("* ")) {
+      listItems.push(trimmed.slice(2));
+      return;
+    }
+    flushList();
+    if (trimmed.startsWith("### ")) {
+      elements.push(<h3 key={i} className="text-xs font-bold uppercase tracking-wider text-slate-500 mt-3">{trimmed.slice(4)}</h3>);
+    } else if (trimmed.startsWith("## ") || trimmed.startsWith("# ")) {
+      elements.push(<h2 key={i} className="text-sm font-semibold text-slate-800 mt-4">{trimmed.replace(/^#{1,2} /, "")}</h2>);
+    } else if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
+      elements.push(<p key={i} className="text-sm font-semibold text-violet-700 mt-3">{trimmed.slice(2, -2)}</p>);
+    } else {
+      elements.push(<p key={i} className="text-sm text-slate-700">{renderInline(trimmed)}</p>);
+    }
+  });
+  flushList();
+
+  return <div className="space-y-1.5">{elements}</div>;
+}
 
 function AnalyticsPage() {
   const { t, lang } = useLang();
   const { translate } = useI18n();
   const [selectedClassId, setSelectedClassId] = useState<string>("all");
 
+  const { data: session } = useQuery({ queryKey: ["session"], queryFn: () => api.getSession() });
   const { data: classes = [] } = useQuery({ queryKey: ["classes"], queryFn: () => api.listMyClasses() });
   const { data: results = [], isLoading } = useQuery({ queryKey: ["results-teacher"], queryFn: () => api.listResultsForTeacher() });
   const { data: scenarios = [] } = useQuery({ queryKey: ["scenarios"], queryFn: () => api.listScenarios() });
@@ -88,6 +143,9 @@ function AnalyticsPage() {
       scenarioChartData,
     };
   }, [filteredResults, scenarios, categories, translate]);
+
+  const geminiKey = session?.id ? getGeminiKey(session.id) : null;
+  const aiMutation = useAIRecommendations(geminiKey, stats, lang);
 
   if (isLoading) return (
     <div className="py-20 flex flex-col items-center gap-3">
@@ -261,6 +319,82 @@ function AnalyticsPage() {
           )}
         </>
       )}
+
+      {/* AI Recommendations */}
+      <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+        <div className="h-0.5 bg-violet-500" />
+        <div className="p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-7 w-7 rounded-sm bg-violet-50 text-violet-600 flex items-center justify-center">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <h3 className="text-xs font-medium text-slate-600">{t("aiRecommendations")}</h3>
+          </div>
+          <p className="text-xs text-slate-400 mb-4 ms-9">{t("aiRecommendationsDesc")}</p>
+
+          {!geminiKey ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded border border-violet-100 bg-violet-50/50">
+              <div>
+                <p className="text-sm font-medium text-slate-700">{t("noApiKeyTitle")}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{t("noApiKeyDesc")}</p>
+              </div>
+              <Link to="/settings">
+                <Button variant="outline" size="sm" className="h-7 px-3 text-xs rounded border-violet-200 text-violet-700 hover:bg-violet-50 shrink-0">
+                  <Settings className="h-3 w-3 me-1.5" />
+                  {t("goToSettings")}
+                </Button>
+              </Link>
+            </div>
+          ) : !stats ? (
+            <p className="text-xs text-slate-400 p-3 rounded border border-dashed border-slate-200">{t("noDataForAI")}</p>
+          ) : (
+            <div className="space-y-4">
+              {!aiMutation.data && !aiMutation.isPending && (
+                <Button
+                  onClick={() => aiMutation.mutate()}
+                  className="h-8 px-4 rounded bg-violet-600 hover:bg-violet-700 text-sm font-medium"
+                >
+                  <Sparkles className="h-3.5 w-3.5 me-1.5" />
+                  {t("generateRecommendations")}
+                </Button>
+              )}
+
+              {aiMutation.isPending && (
+                <div className="flex items-center gap-2 text-sm text-violet-600">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("generating")}
+                </div>
+              )}
+
+              {aiMutation.isError && (
+                <p className="text-xs text-rose-500 p-3 rounded border border-rose-100 bg-rose-50">
+                  {(aiMutation.error as Error)?.message}
+                </p>
+              )}
+
+              {aiMutation.data && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded border border-violet-100 bg-violet-50/30">
+                    <GeminiMarkdown text={aiMutation.data} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-slate-400 italic">{t("aiDisclaimer")}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => aiMutation.mutate()}
+                      disabled={aiMutation.isPending}
+                      className="h-7 px-3 text-xs text-violet-600 hover:bg-violet-50 rounded"
+                    >
+                      {t("regenerate")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
     </div>
   );
 }
