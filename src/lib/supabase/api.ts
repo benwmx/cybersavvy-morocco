@@ -558,6 +558,29 @@ export const api = {
     if (error) throw error;
   },
 
+  // ---- STORAGE ----
+  getMediaUrl(path: string): string {
+    const { data } = supabase.storage.from("cybersafe-media").getPublicUrl(path);
+    return data.publicUrl;
+  },
+
+  async uploadMedia(userId: string, folder: string, file: File): Promise<string> {
+    const ext = file.name.split(".").pop();
+    const path = `${userId}/${folder}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("cybersafe-media")
+      .upload(path, file, { upsert: false });
+    if (error) throw error;
+    return path;
+  },
+
+  async deleteMedia(path: string): Promise<void> {
+    const { error } = await supabase.storage
+      .from("cybersafe-media")
+      .remove([path]);
+    if (error) throw error;
+  },
+
   async listResultsForTeacher(): Promise<ResultRow[]> {
     const session = await api.getSession();
     if (!session) return [];
