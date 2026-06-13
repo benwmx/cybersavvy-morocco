@@ -125,11 +125,19 @@ function GameLobby() {
                   style={{ animationDelay: `${idx * 100}ms` }}
                 >
                   <Card className="h-full border-none shadow-lg shadow-slate-200 bg-white transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 rounded-3xl overflow-hidden">
-                    <div className="h-2 bg-gradient-to-r from-[#1E3A8A] to-blue-500" />
-                    <CardHeader className="p-6">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 border border-blue-100 text-[#1E3A8A] mb-4 transition-transform group-hover:scale-110 duration-300">
-                        <Icon className="h-6 w-6" />
+                    {tr.image_url ? (
+                      <div className="h-40 overflow-hidden">
+                        <img src={tr.image_url} alt="" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                       </div>
+                    ) : (
+                      <div className="h-2 bg-gradient-to-r from-[#1E3A8A] to-blue-500" />
+                    )}
+                    <CardHeader className="p-6">
+                      {!tr.image_url && (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 border border-blue-100 text-[#1E3A8A] mb-4 transition-transform group-hover:scale-110 duration-300">
+                          <Icon className="h-6 w-6" />
+                        </div>
+                      )}
                       <CardTitle className="text-xl font-extrabold tracking-tight text-slate-900">
                         {translate(tr.title)}
                       </CardTitle>
