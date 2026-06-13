@@ -74,8 +74,13 @@ function ScenarioRunner() {
   const [saveState, setSaveState] = useState<"idle" | "online" | "queued" | "guest">("idle");
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center font-bold text-[#1E3A8A] animate-pulse">
-      {t("syncing")}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50/60 to-white">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-12 w-12 rounded-2xl bg-blue-100 flex items-center justify-center animate-pulse">
+          <PlayCircle className="h-6 w-6 text-[#1E3A8A]" />
+        </div>
+        <p className="font-extrabold text-[#1E3A8A] tracking-widest uppercase text-xs">{t("syncing")}</p>
+      </div>
     </div>
   );
 
@@ -128,7 +133,7 @@ function ScenarioRunner() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-slate-50/50">
+      <div className="min-h-screen bg-gradient-to-b from-amber-50/60 via-white to-white">
         <Navbar />
         <main className="container mx-auto px-4 py-12 lg:py-20">
           <Card className="max-w-xl mx-auto text-center border-none shadow-2xl shadow-slate-200 bg-white rounded-3xl overflow-hidden animate-in zoom-in duration-700">
@@ -194,13 +199,13 @@ function ScenarioRunner() {
   const isCorrect = selected === q.correctIndex;
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50/60 via-white to-white">
       <Navbar />
       <main className="container mx-auto px-4 py-8 lg:py-12">
         <div className="max-w-3xl mx-auto space-y-8">
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs font-black uppercase tracking-[0.2em] text-[#1E3A8A]">
-              <span className="bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">{track.title[lang]}</span>
+            <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-[0.2em] text-[#1E3A8A]">
+              <span className="bg-blue-100/80 px-3 py-1.5 rounded-full border border-blue-200">{track.title[lang]}</span>
               <span className="text-slate-400">
                 {t("question")} {idx + 1} / {total}
               </span>

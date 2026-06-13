@@ -49,11 +49,11 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" side="left">
       <SidebarHeader>
         <Link to="/dashboard" className="flex items-center gap-2 px-2 py-2 min-h-[48px] justify-center lg:justify-start">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1E3A8A] text-white shadow-lg shadow-blue-900/20 shrink-0 mx-auto lg:mx-0">
-            <Shield className="h-4 w-4" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-[#1E3A8A] text-white shrink-0 mx-auto lg:mx-0">
+            <Shield className="h-3.5 w-3.5" />
           </div>
           {state === "expanded" && (
-            <span className="font-semibold truncate animate-in fade-in duration-300 ms-2 text-[#1E3A8A]">
+            <span className="font-semibold truncate ms-2 text-slate-800 text-sm">
               {t("appName")}
             </span>
           )}
@@ -67,12 +67,12 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <div className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-slate-700">
-                    <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[#1E3A8A] shrink-0">
-                      <User className="h-4 w-4" />
+                  <div className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600">
+                    <div className="h-6 w-6 rounded-sm bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+                      <User className="h-3.5 w-3.5" />
                     </div>
                     {state === "expanded" && (
-                      <span className="truncate">
+                      <span className="truncate text-xs font-medium">
                         {student
                           ? (lang === "fr" ? student.name_fr : student.name_ar)
                           : session
@@ -96,11 +96,11 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={path === item.url}
-                    className="data-[active=true]:bg-blue-50 data-[active=true]:text-[#1E3A8A]"
+                    className="data-[active=true]:bg-slate-100 data-[active=true]:text-slate-900 rounded-sm"
                   >
                     <Link to={item.url} className="flex items-center gap-3">
                       <item.icon className="h-4 w-4" />
-                      <span className="font-medium">{item.label}</span>
+                      <span className="font-medium text-sm">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -111,14 +111,14 @@ export function AppSidebar() {
 
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-slate-100">
+      <SidebarFooter className="p-3 border-t border-slate-200">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={logout}
-              className="w-full justify-start text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl h-10 px-3 font-bold"
+              className="w-full justify-start text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded h-8 px-3 font-medium text-sm"
             >
-              <LogOut className="h-4 w-4 ms-0 me-3" />
+              <LogOut className="h-4 w-4 ms-0 me-2.5" />
               <span>{t("logout")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

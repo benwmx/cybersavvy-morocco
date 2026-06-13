@@ -24,15 +24,15 @@ function StatCard({
   iconText: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-xl shadow-slate-200 overflow-hidden">
-      <div className={`h-1.5 ${barColor}`} />
-      <div className="p-6 flex items-center justify-between gap-4">
+    <div className="bg-white rounded-sm border border-slate-200 shadow-none overflow-hidden">
+      <div className={`h-0.5 ${barColor}`} />
+      <div className="p-4 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 truncate">{label}</p>
-          <p className="text-4xl font-black text-[#0f172a] mt-1">{value}</p>
+          <p className="text-xs text-slate-500 truncate">{label}</p>
+          <p className="text-2xl font-mono font-semibold text-slate-900 mt-0.5">{value}</p>
         </div>
-        <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 ${iconBg}`}>
-          <Icon className={`h-7 w-7 ${iconText}`} />
+        <div className={`h-8 w-8 rounded-sm flex items-center justify-center shrink-0 ${iconBg}`}>
+          <Icon className={`h-4 w-4 ${iconText}`} />
         </div>
       </div>
     </div>
@@ -60,21 +60,21 @@ function OverviewPage() {
   ];
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
-          <LayoutDashboard className="h-5 w-5" />
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center gap-2.5">
+        <div className="h-6 w-6 rounded-sm bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
+          <LayoutDashboard className="h-3.5 w-3.5" />
         </div>
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">{t("overview")}</h1>
-          <p className="text-slate-500 font-medium text-sm">{t("adminOverviewSubtitle")}</p>
+          <h1 className="text-xl font-semibold text-slate-900">{t("overview")}</h1>
+          <p className="text-sm text-slate-500">{t("adminOverviewSubtitle")}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-36 bg-slate-100 rounded-2xl animate-pulse" />
+              <div key={i} className="h-24 bg-slate-100 rounded animate-pulse" />
             ))
           : cards.map(card => <StatCard key={card.label} {...card} />)}
       </div>

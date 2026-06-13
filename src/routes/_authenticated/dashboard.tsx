@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { GraduationCap, Users, BookOpen, BarChart3, TrendingUp, BookMarked, ArrowRight, User } from "lucide-react";
+import { GraduationCap, Users, BookOpen, BarChart3, TrendingUp, BookMarked, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -51,30 +51,27 @@ function DashboardPage() {
     : null;
 
   return (
-    <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-700">
-      <div className="flex items-center gap-4">
-        <div className="h-14 w-14 rounded-2xl bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
-          <User className="h-7 w-7" />
-        </div>
-        <div className="space-y-0.5">
-          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-900">
             {fullName ? `${t("greeting")}, ${fullName}` : t("overview")}
           </h1>
-          <p className="text-slate-500 font-medium">{t("dashboardSubtitle")}</p>
+          <p className="text-sm text-slate-500">{t("dashboardSubtitle")}</p>
         </div>
       </div>
 
       {/* KPI row */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(s => (
           <Link key={s.to} to={s.to}>
-            <Card className="border-none shadow-lg shadow-slate-200 bg-white rounded-[1.5rem] p-6 flex items-center gap-5 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group">
-              <div className={`h-14 w-14 shrink-0 rounded-2xl flex items-center justify-center ${s.color} group-hover:scale-110 transition-transform`}>
-                <s.icon className="h-7 w-7" />
+            <Card className="border border-slate-200 shadow-none bg-white rounded-sm p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors group">
+              <div className={`h-8 w-8 shrink-0 rounded-sm flex items-center justify-center ${s.color}`}>
+                <s.icon className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-3xl font-black text-slate-900">{s.value}</p>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{s.label}</p>
+                <p className="text-2xl font-mono font-semibold text-slate-900">{s.value}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
               </div>
             </Card>
           </Link>
@@ -83,25 +80,25 @@ function DashboardPage() {
 
       {/* Shortcuts */}
       <div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">
+        <p className="text-xs text-slate-500 font-medium mb-3">
           {t("quickAccess")}
         </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shortcuts.map(s => (
             <Link key={s.to} to={s.to}>
-              <Card className="border-none shadow-lg shadow-slate-200 bg-white rounded-[1.5rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group">
-                <div className={`h-1.5 ${s.accent}`} />
-                <div className="flex items-center justify-between p-6">
-                  <div className="flex items-center gap-4">
-                    <div className={`h-11 w-11 rounded-2xl flex items-center justify-center ${s.accent} text-white`}>
-                      <s.icon className="h-5 w-5" />
+              <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden hover:bg-slate-50 transition-colors group">
+                <div className={`h-0.5 ${s.accent}`} />
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-7 w-7 rounded-sm flex items-center justify-center ${s.accent} text-white`}>
+                      <s.icon className="h-3.5 w-3.5" />
                     </div>
                     <div>
-                      <p className="font-extrabold text-slate-900">{s.label}</p>
-                      <p className="text-xs text-slate-400 font-medium">{s.desc}</p>
+                      <p className="font-semibold text-sm text-slate-900">{s.label}</p>
+                      <p className="text-xs text-slate-500">{s.desc}</p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all" />
+                  <ArrowRight className="h-3.5 w-3.5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
                 </div>
               </Card>
             </Link>
