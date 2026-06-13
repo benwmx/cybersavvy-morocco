@@ -76,10 +76,10 @@ function GameLobby() {
   }, [student, navigate]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50/60 to-white">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 text-[#1E3A8A] animate-spin" />
-        <p className="font-bold text-[#1E3A8A] tracking-widest uppercase text-xs">
+        <Loader2 className="w-10 h-10 text-[#1E3A8A] animate-spin" />
+        <p className="font-extrabold text-[#1E3A8A] tracking-widest uppercase text-xs">
           {t("syncing")}
         </p>
       </div>
@@ -89,11 +89,11 @@ function GameLobby() {
   if (!student) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50/60 via-white to-white">
       <Navbar />
       <main className="container mx-auto px-4 py-12 lg:py-16">
         <div className="mb-12 max-w-4xl space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#1E3A8A] text-xs font-bold border border-blue-100 uppercase tracking-widest">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100/80 text-[#1E3A8A] text-xs font-extrabold border border-blue-200 uppercase tracking-widest">
             <ShieldCheck className="h-3.5 w-3.5" />
             <span>{t("myClass")}</span>
           </div>
@@ -104,8 +104,8 @@ function GameLobby() {
         </div>
 
         {assignedScenarios.length === 0 ? (
-          <Card className="max-w-md border-none shadow-xl shadow-slate-200 bg-white p-8 rounded-2xl text-center space-y-4 animate-in zoom-in duration-500">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
+          <Card className="max-w-md border-none shadow-xl shadow-slate-200 bg-white p-8 rounded-3xl text-center space-y-4 animate-in zoom-in duration-500">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-[#1E3A8A]">
               <Layout className="h-8 w-8" />
             </div>
             <p className="text-muted-foreground font-medium italic">
@@ -117,20 +117,20 @@ function GameLobby() {
             {assignedScenarios.map((tr, idx) => {
               const Icon = Layout;
               return (
-                <Link 
-                  key={tr.id} 
-                  to="/game/$trackId" 
-                  params={{ trackId: tr.id }} 
+                <Link
+                  key={tr.id}
+                  to="/game/$trackId"
+                  params={{ trackId: tr.id }}
                   className="group block animate-in fade-in slide-in-from-bottom-4"
                   style={{ animationDelay: `${idx * 100}ms` }}
                 >
-                  <Card className="h-full border-none shadow-lg shadow-slate-200 bg-white transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 rounded-2xl overflow-hidden">
-                    <div className="h-1.5 bg-[#1E3A8A]" />
+                  <Card className="h-full border-none shadow-lg shadow-slate-200 bg-white transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 rounded-3xl overflow-hidden">
+                    <div className="h-2 bg-gradient-to-r from-[#1E3A8A] to-blue-500" />
                     <CardHeader className="p-6">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 text-[#1E3A8A] mb-4 transition-transform group-hover:scale-110 duration-300">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 border border-blue-100 text-[#1E3A8A] mb-4 transition-transform group-hover:scale-110 duration-300">
                         <Icon className="h-6 w-6" />
                       </div>
-                      <CardTitle className="text-xl font-bold tracking-tight text-slate-900">
+                      <CardTitle className="text-xl font-extrabold tracking-tight text-slate-900">
                         {translate(tr.title)}
                       </CardTitle>
                       <CardDescription className="line-clamp-2 mt-1">
@@ -139,10 +139,10 @@ function GameLobby() {
                     </CardHeader>
                     <CardContent className="p-6 pt-0 mt-auto">
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center text-sm font-bold text-[#1E3A8A]">
+                        <span className="inline-flex items-center text-sm font-extrabold text-[#1E3A8A]">
                           {Array.isArray(tr.questions) ? tr.questions.length : 0} {t("question").toLowerCase()}s
                         </span>
-                        <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-[#1E3A8A] group-hover:text-white transition-colors duration-300">
+                        <div className="h-9 w-9 rounded-full bg-blue-50 flex items-center justify-center text-[#1E3A8A] group-hover:bg-[#1E3A8A] group-hover:text-white transition-colors duration-300">
                           <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                         </div>
                       </div>

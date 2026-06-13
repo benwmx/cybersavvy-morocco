@@ -25,11 +25,11 @@ function GuestLobby() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/60 via-white to-white">
       <Navbar />
       <main className="container mx-auto px-4 py-12 lg:py-16">
         <div className="mb-12 max-w-4xl space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100/80 text-emerald-700 text-xs font-extrabold border border-emerald-200 uppercase tracking-wider">
             <PlayCircle className="h-3.5 w-3.5" />
             <span>{t("guestMode")}</span>
           </div>
@@ -52,21 +52,21 @@ function GuestLobby() {
                     className="group block animate-in fade-in slide-in-from-bottom-4"
                     style={{ animationDelay: `${idx * 100}ms` }}
                   >
-                    <Card className="h-full border-none shadow-lg shadow-slate-200 bg-white transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 rounded-2xl overflow-hidden">
-                      <div className={`h-1.5 ${tr.color ? tr.color.replace('text-', 'bg-') : 'bg-primary'}`} />
+                    <Card className="h-full border-none shadow-lg shadow-slate-200 bg-white transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 rounded-3xl overflow-hidden">
+                      <div className={`h-2 ${tr.color ? tr.color.replace('text-', 'bg-') : 'bg-primary'}`} />
                       <CardHeader className="p-6">
-                        <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 ${tr.color} mb-4 transition-transform group-hover:scale-110 duration-300`}>
+                        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 ${tr.color} mb-4 transition-transform group-hover:scale-110 duration-300`}>
                           <Icon className="h-6 w-6" />
                         </div>
-                        <CardTitle className="text-xl font-bold tracking-tight text-slate-900">{tr.title[lang]}</CardTitle>
+                        <CardTitle className="text-xl font-extrabold tracking-tight text-slate-900">{tr.title[lang]}</CardTitle>
                         <CardDescription className="line-clamp-2 mt-1">{tr.description[lang]}</CardDescription>
                       </CardHeader>
                       <CardContent className="p-6 pt-0 mt-auto">
                         <div className="flex items-center justify-between">
-                          <span className="inline-flex items-center text-sm font-bold text-[#1E3A8A]">
+                          <span className="inline-flex items-center text-sm font-extrabold text-[#1E3A8A]">
                             {tr.questions.length} {t("question").toLowerCase()}s
                           </span>
-                          <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-[#1E3A8A] group-hover:text-white transition-colors duration-300">
+                          <div className="h-9 w-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-[#1E3A8A] group-hover:text-white transition-colors duration-300">
                             <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                           </div>
                         </div>
@@ -80,16 +80,16 @@ function GuestLobby() {
 
           <aside className="space-y-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-2xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-[#1E3A8A]">
+              <div className="h-10 w-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
                 <History className="h-5 w-5" />
               </div>
-              <h2 className="text-xl font-extrabold text-[#1E3A8A] tracking-tight">
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
                 {t("guestHistory")}
               </h2>
             </div>
             
             {history.length === 0 ? (
-              <Card className="border-dashed border-2 border-slate-200 bg-transparent p-8 text-center rounded-2xl">
+              <Card className="border-dashed border-2 border-slate-200 bg-transparent p-8 text-center rounded-3xl">
                 <p className="text-muted-foreground font-medium text-sm italic">{t("noData")}</p>
               </Card>
             ) : (
@@ -97,7 +97,7 @@ function GuestLobby() {
                 {history.map((h, i) => {
                   const tr = TRACKS.find(t => t.id === h.trackId);
                   return (
-                    <Card key={i} className="border-none shadow-md shadow-slate-100 bg-white rounded-2xl p-4 transition-all hover:shadow-lg">
+                    <Card key={i} className="border-none shadow-md shadow-slate-100 bg-white rounded-2xl p-4 transition-all hover:shadow-lg hover:-translate-y-0.5 duration-200">
                       <div className="flex justify-between items-center">
                         <div className="space-y-1">
                           <p className="font-bold text-[#1E3A8A] text-sm">{tr ? tr.title[lang] : h.trackId}</p>
