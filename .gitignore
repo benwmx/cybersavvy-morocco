@@ -39,6 +39,9 @@ GEMINI.md
 graphify-out/
 .claude/context/
 
+# Report / UML generation artifacts
+report/
+
 # Sandbox / shell environment artifacts
 .bash_profile
 .bashrc
