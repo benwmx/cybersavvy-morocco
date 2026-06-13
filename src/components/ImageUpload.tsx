@@ -3,6 +3,8 @@ import { Upload, X, Loader2, Image } from "lucide-react";
 import { api } from "@/lib/supabase/api";
 import { toast } from "sonner";
 
+const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+
 interface ImageUploadProps {
   value: string | null;
   onChange: (url: string | null) => void;
@@ -37,13 +39,17 @@ export function ImageUpload({ value, onChange, userId, folder = "scenarios", lab
       <input
         ref={fileRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
         className="hidden"
         onChange={handleFile}
       />
       {value ? (
         <div className="relative rounded overflow-hidden border border-slate-200 aspect-video bg-slate-50">
-          <img src={value} alt="" className="w-full h-full object-cover" />
+          {isVideo(value) ? (
+            <video src={value} controls className="w-full h-full object-cover" />
+          ) : (
+            <img src={value} alt="" className="w-full h-full object-cover" />
+          )}
           <button
             type="button"
             onClick={() => onChange(null)}
@@ -74,7 +80,7 @@ export function ImageUpload({ value, onChange, userId, folder = "scenarios", lab
             <>
               <Image className="h-5 w-5" />
               <span className="text-xs font-medium">Cliquer pour uploader</span>
-              <span className="text-[10px] text-slate-300">JPEG · PNG · WebP · GIF</span>
+              <span className="text-[10px] text-slate-300">JPEG · PNG · WebP · GIF · MP4 · WebM</span>
             </>
           )}
         </button>

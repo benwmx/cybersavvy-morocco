@@ -257,9 +257,14 @@ export function ScenarioVisuals({ trackId, questionId, imageUrl }: VisualsProps)
   }
 
   if (imageUrl) {
+    const isVideo = /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(imageUrl);
     return (
       <div className="aspect-video w-full rounded-xl overflow-hidden bg-muted/40">
-        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+        {isVideo ? (
+          <video src={imageUrl} controls className="w-full h-full object-cover" />
+        ) : (
+          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+        )}
       </div>
     );
   }

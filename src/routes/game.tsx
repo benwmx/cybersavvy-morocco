@@ -127,7 +127,11 @@ function GameLobby() {
                   <Card className="h-full border-none shadow-lg shadow-slate-200 bg-white transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 rounded-3xl overflow-hidden">
                     {tr.image_url ? (
                       <div className="h-40 overflow-hidden">
-                        <img src={tr.image_url} alt="" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        {/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(tr.image_url) ? (
+                          <video src={tr.image_url} autoPlay muted loop playsInline className="w-full h-full object-cover" />
+                        ) : (
+                          <img src={tr.image_url} alt="" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        )}
                       </div>
                     ) : (
                       <div className="h-2 bg-gradient-to-r from-[#1E3A8A] to-blue-500" />
