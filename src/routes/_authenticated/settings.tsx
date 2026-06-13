@@ -9,7 +9,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { KeyRound, User, Sparkles, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getGeminiKey, saveGeminiKey, removeGeminiKey, callGemini } from "@/lib/gemini";
+import { getGeminiKey, saveGeminiKey, removeGeminiKey, callGemini, GeminiError } from "@/lib/gemini";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -70,9 +70,19 @@ function SettingsPage() {
       setKeyStatus("valid");
       toast.success(t("apiKeySaved"));
       setTimeout(() => setKeyStatus("idle"), 3000);
-    } catch {
-      setKeyStatus("invalid");
-      setTimeout(() => setKeyStatus("idle"), 3000);
+    } catch (err) {
+      // 429 = rate-limited but the key IS valid — save it
+      if (err instanceof GeminiError && err.status === 429) {
+        saveGeminiKey(session.id, trimmed);
+        setHasSavedKey(true);
+        setGeminiKey("");
+        setKeyStatus("valid");
+        toast.success(t("apiKeySaved"));
+        setTimeout(() => setKeyStatus("idle"), 3000);
+      } else {
+        setKeyStatus("invalid");
+        setTimeout(() => setKeyStatus("idle"), 3000);
+      }
     }
   };
 
