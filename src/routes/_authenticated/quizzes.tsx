@@ -104,23 +104,19 @@ function QuizzesPage() {
   };
 
   return (
-    <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-700">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200 border border-slate-100">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {t("quizzesTitle")}
-          </h1>
-          <p className="text-slate-500 font-medium">
-            {t("quizzesSubtitle")}
-          </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-sm border border-slate-200">
+        <div className="space-y-0.5">
+          <h1 className="text-xl font-semibold text-slate-900">{t("quizzesTitle")}</h1>
+          <p className="text-sm text-slate-500">{t("quizzesSubtitle")}</p>
         </div>
         <Button
           disabled={panelOpen}
           onClick={() => { closePanel(); setCreatingCategory(true); }}
-          className="h-14 px-8 rounded-2xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black shadow-lg active:scale-95 transition-all"
+          className="h-8 px-4 rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium"
         >
-          <Plus className="h-5 w-5 me-2" />
+          <Plus className="h-3.5 w-3.5 me-1.5" />
           {t("newCategoryBtn")}
         </Button>
       </div>
@@ -234,60 +230,60 @@ function CategoryCard({
   return (
     <Card
       ref={cardRef}
-      className={`border-none shadow-xl bg-white rounded-[2rem] overflow-hidden transition-shadow duration-700 ${
-        isNew ? "shadow-indigo-300 ring-2 ring-indigo-400 ring-offset-2" : "shadow-slate-200"
+      className={`border bg-white rounded-sm overflow-hidden shadow-none transition-colors ${
+        isNew ? "border-indigo-300 ring-1 ring-indigo-300" : "border-slate-200"
       }`}
     >
-      <div className={`h-1 ${isGlobal ? "bg-[#1E3A8A]" : isFork ? "bg-indigo-400" : "bg-slate-300"}`} />
+      <div className={`h-0.5 ${isGlobal ? "bg-[#1E3A8A]" : isFork ? "bg-indigo-400" : "bg-slate-300"}`} />
 
-      <div className="flex flex-col md:flex-row md:items-center p-6 gap-6">
-        <div className="flex-1 min-w-0 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className={`h-11 w-11 shrink-0 rounded-2xl flex items-center justify-center ${isGlobal ? "bg-blue-50 text-[#1E3A8A]" : "bg-slate-100 text-slate-500"}`}>
-              <Layout className="h-5 w-5" />
+      <div className="flex flex-col md:flex-row md:items-center p-4 gap-4">
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex items-center gap-2.5">
+            <div className={`h-7 w-7 shrink-0 rounded-sm flex items-center justify-center ${isGlobal ? "bg-blue-50 text-[#1E3A8A]" : "bg-slate-100 text-slate-500"}`}>
+              <Layout className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-extrabold text-slate-900 text-lg leading-tight">{translate(category.name)}</h3>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3 className="text-sm font-semibold text-slate-900 leading-tight">{translate(category.name)}</h3>
                 {isGlobal && (
-                  <span className="text-[9px] font-black uppercase tracking-widest bg-blue-50 text-[#1E3A8A] px-2 py-0.5 rounded-full shrink-0">
+                  <span className="text-[9px] font-medium uppercase tracking-wide bg-blue-50 text-[#1E3A8A] px-1.5 py-0.5 rounded shrink-0">
                     {t("categoryGlobal")}
                   </span>
                 )}
                 {isFork && (
-                  <span className="text-[9px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full shrink-0">
+                  <span className="text-[9px] font-medium uppercase tracking-wide bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded shrink-0">
                     {t("categoryMyVersion")}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 font-medium">
+              <p className="text-xs text-slate-400">
                 {scenarios.length} {t("trackCount")}
               </p>
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap ms-14">
+          <div className="flex gap-1.5 flex-wrap ms-9">
             {isGlobal && (
               <Button size="sm" variant="ghost" disabled={panelOpen} onClick={onForkCategory}
-                className="h-8 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
-                <Plus className="h-3.5 w-3.5 me-1" />
+                className="h-7 px-2.5 rounded text-xs font-medium text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
+                <Plus className="h-3 w-3 me-1" />
                 {t("createMyVersion")}
               </Button>
             )}
             {isFork && (
               <>
                 <Button size="sm" variant="ghost" disabled={panelOpen} onClick={onEditCategory}
-                  className="h-8 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
-                  <Pencil className="h-3.5 w-3.5 me-1" />
+                  className="h-7 px-2.5 rounded text-xs font-medium text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
+                  <Pencil className="h-3 w-3 me-1" />
                   {t("adminModify")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={onResetCategory}
-                  className="h-8 px-3 rounded-xl text-xs font-bold text-amber-500 hover:text-amber-600 hover:bg-amber-50">
+                  className="h-7 px-2.5 rounded text-xs font-medium text-amber-500 hover:text-amber-600 hover:bg-amber-50">
                   {t("resetCategory")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={onDeleteCategory}
-                  className="h-8 px-3 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-600 hover:bg-rose-50">
-                  <Trash2 className="h-3.5 w-3.5 me-1" />
+                  className="h-7 px-2.5 rounded text-xs font-medium text-rose-400 hover:text-rose-600 hover:bg-rose-50">
+                  <Trash2 className="h-3 w-3 me-1" />
                   {t("delete")}
                 </Button>
               </>
@@ -295,29 +291,29 @@ function CategoryCard({
             {isCustom && (
               <>
                 <Button size="sm" variant="ghost" disabled={panelOpen} onClick={onEditCategory}
-                  className="h-8 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
-                  <Pencil className="h-3.5 w-3.5 me-1" />
+                  className="h-7 px-2.5 rounded text-xs font-medium text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
+                  <Pencil className="h-3 w-3 me-1" />
                   {t("adminModify")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={onDeleteCategory}
-                  className="h-8 px-3 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-600 hover:bg-rose-50">
-                  <Trash2 className="h-3.5 w-3.5 me-1" />
+                  className="h-7 px-2.5 rounded text-xs font-medium text-rose-400 hover:text-rose-600 hover:bg-rose-50">
+                  <Trash2 className="h-3 w-3 me-1" />
                   {t("delete")}
                 </Button>
               </>
             )}
             <Button size="sm" variant="ghost" onClick={() => setExpanded(v => !v)}
-              className="h-8 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
+              className="h-7 px-2.5 rounded text-xs font-medium text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50">
               {expanded
-                ? <><ChevronUp className="h-3.5 w-3.5 me-1" />{t("hideBtn")}</>
-                : <><ChevronDown className="h-3.5 w-3.5 me-1" />{t("manageTracksBtn")}</>
+                ? <><ChevronUp className="h-3 w-3 me-1" />{t("hideBtn")}</>
+                : <><ChevronDown className="h-3 w-3 me-1" />{t("manageTracksBtn")}</>
               }
             </Button>
           </div>
         </div>
 
         {classes.length > 0 && (
-          <div className="flex flex-wrap gap-2 shrink-0">
+          <div className="flex flex-wrap gap-1.5 shrink-0">
             {classes.map(cls => {
               const state = getClassState(cls.id);
               return (
@@ -325,9 +321,9 @@ function CategoryCard({
                   key={cls.id}
                   size="sm"
                   onClick={() => onToggleClass(cls.id, state !== "all")}
-                  className={`rounded-xl font-bold h-9 px-4 text-xs transition-all ${
+                  className={`rounded font-medium h-7 px-3 text-xs transition-all ${
                     state === "all"
-                      ? "bg-[#1E3A8A] text-white shadow hover:bg-[#1E3A8A]/90"
+                      ? "bg-[#1E3A8A] text-white shadow-none hover:bg-[#1E3A8A]/90"
                       : state === "some"
                       ? "border border-[#1E3A8A] text-[#1E3A8A] bg-blue-50 hover:bg-blue-100"
                       : "border border-slate-200 text-slate-400 bg-white hover:text-[#1E3A8A] hover:bg-blue-50"
@@ -342,62 +338,62 @@ function CategoryCard({
       </div>
 
       {expanded && (
-        <div className="border-t border-slate-100 px-6 pb-6 pt-5 space-y-3">
+        <div className="border-t border-slate-100 px-4 pb-4 pt-3 space-y-2">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <p className="text-xs font-medium text-slate-500">
               {t("tracksInCategory")}
             </p>
             {!isGlobal && (
               <Button size="sm" variant="outline" disabled={panelOpen} onClick={onAddScenario}
-                className="h-8 px-3 rounded-xl text-xs font-bold border-[#1E3A8A] text-[#1E3A8A] hover:bg-blue-50">
-                <Plus className="h-3.5 w-3.5 me-1" />
+                className="h-7 px-2.5 rounded text-xs font-medium border-[#1E3A8A] text-[#1E3A8A] hover:bg-blue-50">
+                <Plus className="h-3 w-3 me-1" />
                 {t("adminAdd")}
               </Button>
             )}
           </div>
 
           {scenarios.length === 0 ? (
-            <p className="text-slate-400 italic text-sm text-center py-6">
+            <p className="text-slate-400 text-xs text-center py-4">
               {t("noTracksInCategory")}
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {scenarios.map(scenario => {
                 const isOwn = scenario.teacher_id !== null;
                 const questions = Array.isArray(scenario.questions) ? (scenario.questions as any[]) : [];
                 return (
-                  <div key={scenario.id} className="bg-slate-50 rounded-2xl border border-slate-100">
-                    <div className="flex items-center justify-between gap-4 p-4">
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="shrink-0 h-12 w-12 rounded-2xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-sm">
-                          <span className="text-lg font-black text-[#1E3A8A] leading-none">{questions.length}</span>
-                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider leading-none mt-0.5">
+                  <div key={scenario.id} className="bg-slate-50 rounded border border-slate-100">
+                    <div className="flex items-center justify-between gap-3 p-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="shrink-0 h-8 w-8 rounded bg-white border border-slate-200 flex flex-col items-center justify-center shadow-none">
+                          <span className="text-sm font-semibold text-[#1E3A8A] leading-none">{questions.length}</span>
+                          <span className="text-[8px] text-slate-400 leading-none mt-0.5">
                             {t("questionAbbr")}
                           </span>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm text-slate-600">{translate(scenario.description)}</p>
+                          <p className="text-xs text-slate-600 leading-snug">{translate(scenario.description)}</p>
                         </div>
                       </div>
                       {isOwn && (
                         <div className="flex gap-1 shrink-0">
                           <Button size="sm" variant="ghost" disabled={panelOpen} onClick={() => onEditScenario(scenario)}
-                            className="h-8 w-8 p-0 rounded-xl text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50">
-                            <Pencil className="h-3.5 w-3.5" />
+                            className="h-7 w-7 p-0 rounded text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50">
+                            <Pencil className="h-3 w-3" />
                           </Button>
                           <Button size="sm" variant="ghost"
                             onClick={() => { if (confirm(t("confirmDeleteTrack"))) onDeleteScenario(scenario.id); }}
-                            className="h-8 w-8 p-0 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50">
-                            <Trash2 className="h-3.5 w-3.5" />
+                            className="h-7 w-7 p-0 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50">
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       )}
                     </div>
                     {questions.length > 0 && (
-                      <div className="border-t border-slate-100 px-4 pb-4 pt-3 ms-16 space-y-2">
+                      <div className="border-t border-slate-100 px-3 pb-3 pt-2 ms-11 space-y-1.5">
                         {questions.map((q: any, qi: number) => (
-                          <div key={q.id ?? qi} className="flex items-start gap-2 text-xs">
-                            <span className="shrink-0 h-4 w-4 rounded bg-white border border-slate-200 flex items-center justify-center text-[9px] font-black text-slate-400 mt-0.5">
+                          <div key={q.id ?? qi} className="flex items-start gap-1.5 text-xs">
+                            <span className="shrink-0 h-4 w-4 rounded bg-white border border-slate-200 flex items-center justify-center text-[9px] font-semibold text-slate-400 mt-0.5">
                               {qi + 1}
                             </span>
                             <span className="text-slate-600 leading-relaxed">
@@ -433,39 +429,35 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
   });
 
   return (
-    <Card className="border-none shadow-2xl shadow-blue-900/10 bg-white rounded-[2.5rem] overflow-hidden animate-in zoom-in duration-500">
-      <div className="h-2 bg-[#1E3A8A]" />
-      <CardHeader className="p-10 pb-6">
-        <CardTitle className="text-3xl font-black text-[#1E3A8A]">
+    <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+      <div className="h-0.5 bg-[#1E3A8A]" />
+      <CardHeader className="p-5 pb-3">
+        <CardTitle className="text-base font-semibold text-slate-800">
           {t("newCategoryBtn")}
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs">
           {t("newCategoryDesc")}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-10 pt-0 space-y-8">
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              {t("adminNameFr")}
-            </Label>
+      <CardContent className="p-5 pt-0 space-y-5">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("adminNameFr")}</Label>
             <Input value={name.fr} onChange={e => setName({ ...name, fr: e.target.value })}
-              placeholder="Ex: Sécurité mobile" className="h-12 rounded-xl bg-slate-50" />
+              placeholder="Ex: Sécurité mobile" className="h-8 rounded bg-slate-50 text-sm" />
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              {t("adminNameAr")}
-            </Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("adminNameAr")}</Label>
             <Input value={name.ar} onChange={e => setName({ ...name, ar: e.target.value })}
-              placeholder="مثال: أمان الهاتف" className="h-12 rounded-xl bg-slate-50 text-right font-bold" dir="rtl" />
+              placeholder="مثال: أمان الهاتف" className="h-8 rounded bg-slate-50 text-sm text-right font-medium" dir="rtl" />
           </div>
         </div>
-        <div className="flex justify-end gap-4">
-          <Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold px-8 h-12 text-slate-500">
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onCancel} className="rounded text-sm font-medium px-4 h-8 text-slate-500">
             {t("adminCancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!name.fr.trim() || !name.ar.trim() || save.isPending}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black px-10 h-12 shadow-xl shadow-blue-900/10 transition-all active:scale-95">
+            className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium px-4 h-8">
             {t("create")}
           </Button>
         </div>
@@ -485,30 +477,30 @@ function CategoryEditor({ category, onCancel, onSuccess }: { category: CategoryR
   });
 
   return (
-    <Card className="border-none shadow-2xl shadow-blue-900/10 bg-white rounded-[2.5rem] overflow-hidden animate-in zoom-in duration-500">
-      <div className="h-2 bg-[#1E3A8A]/60" />
-      <CardHeader className="p-10 pb-6">
-        <CardTitle className="text-3xl font-black text-[#1E3A8A]">
+    <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+      <div className="h-0.5 bg-[#1E3A8A]/60" />
+      <CardHeader className="p-5 pb-3">
+        <CardTitle className="text-base font-semibold text-slate-800">
           {t("editCategoryTitle")}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-10 pt-0 space-y-8">
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminNameFr")}</Label>
-            <Input value={name.fr} onChange={e => setName({ ...name, fr: e.target.value })} className="h-12 rounded-xl bg-slate-50" />
+      <CardContent className="p-5 pt-0 space-y-5">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("adminNameFr")}</Label>
+            <Input value={name.fr} onChange={e => setName({ ...name, fr: e.target.value })} className="h-8 rounded bg-slate-50 text-sm" />
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminNameAr")}</Label>
-            <Input value={name.ar} onChange={e => setName({ ...name, ar: e.target.value })} className="h-12 rounded-xl bg-slate-50 text-right font-bold" dir="rtl" />
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("adminNameAr")}</Label>
+            <Input value={name.ar} onChange={e => setName({ ...name, ar: e.target.value })} className="h-8 rounded bg-slate-50 text-sm text-right font-medium" dir="rtl" />
           </div>
         </div>
-        <div className="flex justify-end gap-4">
-          <Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold px-8 h-12 text-slate-500">
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onCancel} className="rounded text-sm font-medium px-4 h-8 text-slate-500">
             {t("adminCancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!name.fr.trim() || !name.ar.trim() || save.isPending}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black px-10 h-12 shadow-xl shadow-blue-900/10 transition-all active:scale-95">
+            className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium px-4 h-8">
             {t("save")}
           </Button>
         </div>
@@ -560,19 +552,17 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
   });
 
   return (
-    <Card className="border-none shadow-2xl shadow-blue-900/10 bg-white rounded-[2.5rem] overflow-hidden animate-in zoom-in duration-500">
-      <div className="h-2 bg-[#1E3A8A]" />
-      <CardHeader className="p-10 pb-6">
-        <CardTitle className="text-3xl font-black text-[#1E3A8A]">{t("createScenario")}</CardTitle>
-        <CardDescription>
-          {t("scenarioCustomDesc")}
-        </CardDescription>
+    <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+      <div className="h-0.5 bg-[#1E3A8A]" />
+      <CardHeader className="p-5 pb-3">
+        <CardTitle className="text-base font-semibold text-slate-800">{t("createScenario")}</CardTitle>
+        <CardDescription className="text-xs">{t("scenarioCustomDesc")}</CardDescription>
       </CardHeader>
-      <CardContent className="p-10 pt-0 space-y-10">
-        <div className="space-y-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("categorySelect")}</Label>
+      <CardContent className="p-5 pt-0 space-y-5">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-slate-500">{t("categorySelect")}</Label>
           <Select value={categoryId} onValueChange={setCategoryId}>
-            <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200">
+            <SelectTrigger className="h-8 rounded bg-slate-50 border-slate-200 text-sm">
               <SelectValue placeholder={t("categorySelectPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
@@ -583,37 +573,37 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
           </Select>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("scenarioTitleFr")}</Label>
-            <Input value={title.fr} onChange={e => setTitle({ ...title, fr: e.target.value })} className="h-12 rounded-xl bg-slate-50" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("scenarioTitleFr")}</Label>
+            <Input value={title.fr} onChange={e => setTitle({ ...title, fr: e.target.value })} className="h-8 rounded bg-slate-50 text-sm" />
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("scenarioTitleAr")}</Label>
-            <Input value={title.ar} onChange={e => setTitle({ ...title, ar: e.target.value })} className="h-12 rounded-xl bg-slate-50 text-right font-bold" dir="rtl" />
-          </div>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminDescFrField")}</Label>
-            <Input value={desc.fr} onChange={e => setDesc({ ...desc, fr: e.target.value })} className="h-12 rounded-xl bg-slate-50" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminDescArField")}</Label>
-            <Input value={desc.ar} onChange={e => setDesc({ ...desc, ar: e.target.value })} className="h-12 rounded-xl bg-slate-50 text-right font-medium" dir="rtl" />
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("scenarioTitleAr")}</Label>
+            <Input value={title.ar} onChange={e => setTitle({ ...title, ar: e.target.value })} className="h-8 rounded bg-slate-50 text-sm text-right font-medium" dir="rtl" />
           </div>
         </div>
 
-        <div className="space-y-6 pt-6 border-t border-slate-100">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("adminDescFrField")}</Label>
+            <Input value={desc.fr} onChange={e => setDesc({ ...desc, fr: e.target.value })} className="h-8 rounded bg-slate-50 text-sm" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("adminDescArField")}</Label>
+            <Input value={desc.ar} onChange={e => setDesc({ ...desc, ar: e.target.value })} className="h-8 rounded bg-slate-50 text-sm text-right" dir="rtl" />
+          </div>
+        </div>
+
+        <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-black text-[#1E3A8A]">{t("question")}s</h3>
-            <Button size="sm" variant="outline" onClick={addQuestion} className="rounded-xl border-[#1E3A8A] text-[#1E3A8A] font-bold hover:bg-blue-50">
-              <Plus className="h-4 w-4 me-2" />
+            <h3 className="text-sm font-semibold text-slate-700">{t("question")}s</h3>
+            <Button size="sm" variant="outline" onClick={addQuestion} className="rounded border-[#1E3A8A] text-[#1E3A8A] text-xs font-medium hover:bg-blue-50 h-7 px-2.5">
+              <Plus className="h-3 w-3 me-1.5" />
               {t("addQuestion")}
             </Button>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {questions.map((q, idx) => (
               <QuestionEditor key={q.id} q={q} idx={idx}
                 onUpdate={data => updateQuestion(idx, data)}
@@ -629,12 +619,12 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
           </div>
         </div>
 
-        <div className="flex justify-end gap-4 pt-6">
-          <Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold px-8 h-12 text-slate-500">
+        <div className="flex justify-end gap-2 pt-4">
+          <Button variant="ghost" onClick={onCancel} className="rounded text-sm font-medium px-4 h-8 text-slate-500">
             {t("adminCancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!categoryId || questions.length === 0 || save.isPending}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black px-10 h-12 shadow-xl shadow-blue-900/10 transition-all active:scale-95">
+            className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium px-4 h-8">
             {t("saveScenario")}
           </Button>
         </div>
@@ -669,19 +659,19 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
   });
 
   return (
-    <Card className="border-none shadow-2xl shadow-blue-900/10 bg-white rounded-[2.5rem] overflow-hidden animate-in zoom-in duration-500">
-      <div className="h-2 bg-[#1E3A8A]/60" />
-      <CardHeader className="p-10 pb-6">
-        <CardTitle className="text-3xl font-black text-[#1E3A8A]">
+    <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+      <div className="h-0.5 bg-[#1E3A8A]/60" />
+      <CardHeader className="p-5 pb-3">
+        <CardTitle className="text-base font-semibold text-slate-800">
           {t("editTrackTitle")}
         </CardTitle>
-        <CardDescription>{translate(scenario.title)}</CardDescription>
+        <CardDescription className="text-xs">{translate(scenario.title)}</CardDescription>
       </CardHeader>
-      <CardContent className="p-10 pt-0 space-y-10">
-        <div className="space-y-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("categorySelect")}</Label>
+      <CardContent className="p-5 pt-0 space-y-5">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-slate-500">{t("categorySelect")}</Label>
           <Select value={categoryId} onValueChange={setCategoryId}>
-            <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-8 rounded bg-slate-50 border-slate-200 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               {categories.map(c => (
                 <SelectItem key={c.id} value={c.id}>{translate(c.name)}</SelectItem>
@@ -690,39 +680,39 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
           </Select>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("scenarioTitleFr")}</Label>
-            <Input value={title.fr} onChange={e => setTitle({ ...title, fr: e.target.value })} className="h-12 rounded-xl bg-slate-50" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("scenarioTitleFr")}</Label>
+            <Input value={title.fr} onChange={e => setTitle({ ...title, fr: e.target.value })} className="h-8 rounded bg-slate-50 text-sm" />
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("scenarioTitleAr")}</Label>
-            <Input value={title.ar} onChange={e => setTitle({ ...title, ar: e.target.value })} className="h-12 rounded-xl bg-slate-50 text-right font-bold" dir="rtl" />
-          </div>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminDescFrField")}</Label>
-            <Input value={desc.fr} onChange={e => setDesc({ ...desc, fr: e.target.value })} className="h-12 rounded-xl bg-slate-50" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("adminDescArField")}</Label>
-            <Input value={desc.ar} onChange={e => setDesc({ ...desc, ar: e.target.value })} className="h-12 rounded-xl bg-slate-50 text-right font-medium" dir="rtl" />
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("scenarioTitleAr")}</Label>
+            <Input value={title.ar} onChange={e => setTitle({ ...title, ar: e.target.value })} className="h-8 rounded bg-slate-50 text-sm text-right font-medium" dir="rtl" />
           </div>
         </div>
 
-        <div className="space-y-6 pt-6 border-t border-slate-100">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("adminDescFrField")}</Label>
+            <Input value={desc.fr} onChange={e => setDesc({ ...desc, fr: e.target.value })} className="h-8 rounded bg-slate-50 text-sm" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-slate-500">{t("adminDescArField")}</Label>
+            <Input value={desc.ar} onChange={e => setDesc({ ...desc, ar: e.target.value })} className="h-8 rounded bg-slate-50 text-sm text-right" dir="rtl" />
+          </div>
+        </div>
+
+        <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-black text-[#1E3A8A]">{t("question")}s</h3>
+            <h3 className="text-sm font-semibold text-slate-700">{t("question")}s</h3>
             <Button size="sm" variant="outline"
               onClick={() => setQuestions([...questions, { id: crypto.randomUUID(), prompt: { fr: "", ar: "" }, choices: { fr: ["", "", ""], ar: ["", "", ""] }, correctIndex: 0, explanation: { fr: "", ar: "" }, media_url: "" }])}
-              className="rounded-xl border-[#1E3A8A] text-[#1E3A8A] font-bold hover:bg-blue-50">
-              <Plus className="h-4 w-4 me-2" />
+              className="rounded border-[#1E3A8A] text-[#1E3A8A] text-xs font-medium hover:bg-blue-50 h-7 px-2.5">
+              <Plus className="h-3 w-3 me-1.5" />
               {t("addQuestion")}
             </Button>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {questions.map((q, idx) => (
               <QuestionEditor key={q.id} q={q} idx={idx}
                 onUpdate={data => updateQuestion(idx, data)}
@@ -738,12 +728,12 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
           </div>
         </div>
 
-        <div className="flex justify-end gap-4 pt-6">
-          <Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold px-8 h-12 text-slate-500">
+        <div className="flex justify-end gap-2 pt-4">
+          <Button variant="ghost" onClick={onCancel} className="rounded text-sm font-medium px-4 h-8 text-slate-500">
             {t("adminCancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!categoryId || save.isPending}
-            className="rounded-xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-black px-10 h-12 shadow-xl shadow-blue-900/10 transition-all active:scale-95">
+            className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium px-4 h-8">
             {t("save")}
           </Button>
         </div>
@@ -761,8 +751,8 @@ function QuestionEditor({ q, idx, onUpdate, onRemove, onReorder }: {
 }) {
   const { t } = useLang();
   return (
-    <Card className="bg-slate-50/50 border-none shadow-sm rounded-2xl">
-      <CardContent className="p-8 space-y-6">
+    <Card className="bg-slate-50/50 border border-slate-100 shadow-none rounded">
+      <CardContent className="p-4 space-y-4">
         <div className="flex items-center justify-between"
           draggable
           onDragStart={e => e.dataTransfer.setData("text/plain", idx.toString())}
@@ -772,58 +762,58 @@ function QuestionEditor({ q, idx, onUpdate, onRemove, onReorder }: {
             if (from !== idx) onReorder(from, idx);
           }}
         >
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white border border-slate-200 text-xs font-black text-[#1E3A8A] cursor-move shadow-sm">
-            <GripVertical className="h-4 w-4" />Q{idx + 1}
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border border-slate-200 text-xs font-medium text-[#1E3A8A] cursor-move">
+            <GripVertical className="h-3.5 w-3.5" />Q{idx + 1}
           </span>
-          <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-rose-500 hover:bg-rose-50" onClick={onRemove}>
-            <Trash2 className="h-4 w-4" />
+          <Button size="icon" variant="ghost" className="h-7 w-7 rounded text-rose-500 hover:bg-rose-50" onClick={onRemove}>
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase text-slate-400">{t("question")} (FR)</Label>
-            <Input value={q.prompt.fr} onChange={e => onUpdate({ prompt: { ...q.prompt, fr: e.target.value } })} className="bg-white rounded-xl" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] text-slate-400">{t("question")} (FR)</Label>
+            <Input value={q.prompt.fr} onChange={e => onUpdate({ prompt: { ...q.prompt, fr: e.target.value } })} className="bg-white rounded h-8 text-sm" />
           </div>
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase text-slate-400">{t("question")} (AR)</Label>
-            <Input value={q.prompt.ar} onChange={e => onUpdate({ prompt: { ...q.prompt, ar: e.target.value } })} className="bg-white rounded-xl text-right font-bold" dir="rtl" />
+          <div className="space-y-1.5">
+            <Label className="text-[10px] text-slate-400">{t("question")} (AR)</Label>
+            <Input value={q.prompt.ar} onChange={e => onUpdate({ prompt: { ...q.prompt, ar: e.target.value } })} className="bg-white rounded h-8 text-sm text-right font-medium" dir="rtl" />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-[10px] font-black uppercase text-slate-400">{t("mediaUrl")}</Label>
+        <div className="space-y-1.5">
+          <Label className="text-[10px] text-slate-400">{t("mediaUrl")}</Label>
           <div className="flex gap-2">
-            <Input placeholder="https://..." value={q.media_url ?? ""} onChange={e => onUpdate({ media_url: e.target.value })} className="bg-white rounded-xl h-11" />
+            <Input placeholder="https://..." value={q.media_url ?? ""} onChange={e => onUpdate({ media_url: e.target.value })} className="bg-white rounded h-8 text-sm" />
             <div className="flex gap-1 shrink-0">
-              <Button size="icon" variant="outline" className="h-11 w-11 rounded-xl"><ImageIcon className="h-4 w-4" /></Button>
-              <Button size="icon" variant="outline" className="h-11 w-11 rounded-xl"><Video className="h-4 w-4" /></Button>
+              <Button size="icon" variant="outline" className="h-8 w-8 rounded"><ImageIcon className="h-3.5 w-3.5" /></Button>
+              <Button size="icon" variant="outline" className="h-8 w-8 rounded"><Video className="h-3.5 w-3.5" /></Button>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-3">
-            <Label className="text-[10px] font-black uppercase text-slate-400">Choix (FR)</Label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400">Choix (FR)</Label>
             {q.choices.fr.map((c: string, ci: number) => (
-              <div key={ci} className="flex gap-3 items-center">
-                <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })} className="h-5 w-5 accent-[#1E3A8A]" />
+              <div key={ci} className="flex gap-2 items-center">
+                <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })} className="h-4 w-4 accent-[#1E3A8A]" />
                 <Input value={c} onChange={e => {
                   const next = [...q.choices.fr]; next[ci] = e.target.value;
                   onUpdate({ choices: { ...q.choices, fr: next } });
-                }} className="bg-white rounded-xl h-10 text-sm" />
+                }} className="bg-white rounded h-8 text-sm" />
               </div>
             ))}
           </div>
-          <div className="space-y-3">
-            <Label className="text-[10px] font-black uppercase text-slate-400">الاختيارات (AR)</Label>
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400">الاختيارات (AR)</Label>
             {q.choices.ar.map((c: string, ci: number) => (
-              <div key={ci} className="flex gap-3 items-center">
+              <div key={ci} className="flex gap-2 items-center">
                 <Input value={c} onChange={e => {
                   const next = [...q.choices.ar]; next[ci] = e.target.value;
                   onUpdate({ choices: { ...q.choices, ar: next } });
-                }} className="bg-white rounded-xl h-10 text-sm text-right font-medium" dir="rtl" />
-                <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })} className="h-5 w-5 accent-[#1E3A8A]" />
+                }} className="bg-white rounded h-8 text-sm text-right" dir="rtl" />
+                <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })} className="h-4 w-4 accent-[#1E3A8A]" />
               </div>
             ))}
           </div>

@@ -25,44 +25,38 @@ function UsersPage() {
     });
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
-          <Users className="h-5 w-5" />
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center gap-2.5">
+        <div className="h-6 w-6 rounded-sm bg-[#1E3A8A] flex items-center justify-center text-white shrink-0">
+          <Users className="h-3.5 w-3.5" />
         </div>
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-[#1E3A8A]">
-            {t("adminUsersTitle")}
-          </h1>
-          <p className="text-slate-500 font-medium text-sm">{t("adminUsersSubtitle")}</p>
+          <h1 className="text-xl font-semibold text-slate-900">{t("adminUsersTitle")}</h1>
+          <p className="text-sm text-slate-500">{t("adminUsersSubtitle")}</p>
         </div>
       </div>
 
       {error && (
-        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-5">
-          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded p-4">
+          <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold text-amber-800">
-              {t("migrationRequired")}
-            </p>
-            <p className="text-sm text-amber-700 mt-1">
-              {t("migrationRequiredDesc")}
-            </p>
+            <p className="text-sm font-medium text-amber-800">{t("migrationRequired")}</p>
+            <p className="text-xs text-amber-700 mt-1">{t("migrationRequiredDesc")}</p>
           </div>
         </div>
       )}
 
-      <Card className="border-none shadow-xl shadow-slate-200 bg-white rounded-[2rem] overflow-hidden">
-        <div className="h-2 bg-[#1E3A8A]" />
-        <CardHeader className="p-8 pb-4">
-          <CardTitle className="text-2xl font-black text-[#1E3A8A]">
+      <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+        <div className="h-0.5 bg-[#1E3A8A]" />
+        <CardHeader className="p-5 pb-3">
+          <CardTitle className="text-sm font-semibold text-slate-800">
             {isLoading
               ? "…"
               : `${users.length} ${t("adminUsersTitle").toLowerCase()}`}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-8 py-3 bg-slate-50 border-y border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <div className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-5 py-2.5 bg-slate-50 border-y border-slate-100 text-xs font-medium text-slate-500">
             <span>{t("colName")}</span>
             <span>{t("colEmail")}</span>
             <span>{t("colRegisteredAt")}</span>
@@ -73,7 +67,7 @@ function UsersPage() {
           {isLoading ? (
             <div className="divide-y divide-slate-50">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-8 py-4">
+                <div key={i} className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-5 py-3">
                   {Array.from({ length: 5 }).map((_, j) => (
                     <div key={j} className="h-4 bg-slate-100 rounded animate-pulse" />
                   ))}
@@ -81,7 +75,7 @@ function UsersPage() {
               ))}
             </div>
           ) : users.length === 0 && !error ? (
-            <div className="py-16 text-center text-slate-400 font-bold italic">
+            <div className="py-12 text-center text-sm text-slate-400">
               {t("noUsers")}
             </div>
           ) : (
@@ -91,15 +85,15 @@ function UsersPage() {
                 return (
                   <div
                     key={u.id}
-                    className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-8 py-4 items-center hover:bg-slate-50/60 transition-colors"
+                    className="grid grid-cols-[1fr_1fr_140px_80px_80px] gap-4 px-5 py-3 items-center hover:bg-slate-50/60 transition-colors"
                   >
-                    <p className="text-sm font-semibold text-slate-700 truncate">
-                      {fullName || <span className="text-slate-300 italic">{lang === "fr" ? "—" : "—"}</span>}
+                    <p className="text-sm font-medium text-slate-700 truncate">
+                      {fullName || <span className="text-slate-300 italic">—</span>}
                     </p>
                     <p className="text-sm text-slate-500 truncate">{u.email}</p>
-                    <span className="text-sm text-slate-500">{fmt(u.created_at)}</span>
-                    <span className="text-sm font-bold text-[#1E3A8A] text-center">{u.class_count}</span>
-                    <span className="text-sm font-bold text-emerald-600 text-center">{u.student_count}</span>
+                    <span className="text-xs text-slate-500">{fmt(u.created_at)}</span>
+                    <span className="text-sm font-semibold text-[#1E3A8A] text-center">{u.class_count}</span>
+                    <span className="text-sm font-semibold text-emerald-600 text-center">{u.student_count}</span>
                   </div>
                 );
               })}
