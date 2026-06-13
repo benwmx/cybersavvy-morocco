@@ -531,6 +531,7 @@ export const api = {
     title: Json,
     description: Json,
     questions: Json,
+    imageUrl?: string | null,
   ): Promise<string> {
     const { data, error } = await supabase.rpc("admin_save_scenario", {
       p_id: id,
@@ -538,6 +539,7 @@ export const api = {
       p_title: title,
       p_description: description,
       p_questions: questions,
+      p_image_url: imageUrl ?? null,
     });
     if (error) throw error;
     return data as string;

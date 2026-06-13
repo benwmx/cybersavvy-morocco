@@ -235,7 +235,7 @@ function ScenarioRunner() {
                 </div>
               ) : (
                 <div className="rounded-3xl overflow-hidden border border-slate-100 bg-slate-50/50">
-                  <ScenarioVisuals trackId={track.id} questionId={q.id || idx.toString()} />
+                  <ScenarioVisuals trackId={track.id} questionId={q.id || idx.toString()} imageUrl={'image_url' in track ? (track as ScenarioRow).image_url : null} />
                 </div>
               )}
               

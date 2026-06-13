@@ -25,9 +25,10 @@ import { Button } from "./ui/button";
 interface VisualsProps {
   trackId: string;
   questionId: string;
+  imageUrl?: string | null;
 }
 
-export function ScenarioVisuals({ trackId, questionId }: VisualsProps) {
+export function ScenarioVisuals({ trackId, questionId, imageUrl }: VisualsProps) {
   const { lang } = useLang();
 
   // PHISHING: Email/Browser UI
@@ -251,6 +252,14 @@ export function ScenarioVisuals({ trackId, questionId }: VisualsProps) {
               </Button>
            </div>
         </div>
+      </div>
+    );
+  }
+
+  if (imageUrl) {
+    return (
+      <div className="aspect-video w-full rounded-xl overflow-hidden bg-muted/40">
+        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
       </div>
     );
   }

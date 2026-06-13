@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, Layers, BookOpen, ChevronRight, HelpCircle } from "lucide-react";
 import type { Json } from "@/lib/database.types";
+import { ImageUpload } from "@/components/ImageUpload";
 
 export const Route = createFileRoute("/admin/content")({
   component: ContentPage,
@@ -347,11 +348,13 @@ interface ScenarioFormData {
   title_fr: string; title_ar: string;
   desc_fr: string;  desc_ar: string;
   questions: Question[];
+  image_url: string | null;
 }
 
 const SCENARIO_TEMPLATE: ScenarioFormData = {
   title_fr: "", title_ar: "",
   desc_fr: "", desc_ar: "",
+  image_url: null,
   questions: [{
     id: "q1",
     prompt: { fr: "", ar: "" },
@@ -362,9 +365,9 @@ const SCENARIO_TEMPLATE: ScenarioFormData = {
 };
 
 function ScenarioDialog({
-  open, initial, onClose, onSave, saving,
+  open, initial, userId, onClose, onSave, saving,
 }: {
-  open: boolean; initial: ScenarioFormData; onClose: () => void;
+  open: boolean; initial: ScenarioFormData; userId: string; onClose: () => void;
   onSave: (d: ScenarioFormData) => void; saving: boolean;
 }) {
   const { t } = useLang();
@@ -372,6 +375,7 @@ function ScenarioDialog({
   const [titleAr, setTitleAr] = useState(initial.title_ar);
   const [descFr,  setDescFr]  = useState(initial.desc_fr);
   const [descAr,  setDescAr]  = useState(initial.desc_ar);
+  const [imageUrl, setImageUrl] = useState<string | null>(initial.image_url);
   const [questions, setQuestions] = useState<Question[]>(
     initial.questions.length > 0 ? initial.questions : SCENARIO_TEMPLATE.questions
   );
@@ -404,6 +408,15 @@ function ScenarioDialog({
               <Input value={descAr} onChange={e => setDescAr(e.target.value)} className="rounded text-right" dir="rtl" />
             </div>
           </div>
+          {userId && (
+            <ImageUpload
+              value={imageUrl}
+              onChange={setImageUrl}
+              userId={userId}
+              folder="scenarios"
+              label={t("scenarioCoverImage")}
+            />
+          )}
           <div className="space-y-2">
             <Label className="text-xs text-slate-500">
               {t("adminQuestionsLabel")}
@@ -414,7 +427,7 @@ function ScenarioDialog({
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} className="rounded">{t("adminCancel")}</Button>
           <Button
-            onClick={() => onSave({ title_fr: titleFr, title_ar: titleAr, desc_fr: descFr, desc_ar: descAr, questions })}
+            onClick={() => onSave({ title_fr: titleFr, title_ar: titleAr, desc_fr: descFr, desc_ar: descAr, questions, image_url: imageUrl })}
             disabled={!titleFr.trim() || !titleAr.trim() || saving}
             className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium">
             {t("save")}
@@ -436,6 +449,8 @@ function ContentPage() {
   const [catDialog,  setCatDialog]  = useState<{ open: boolean; row?: CategoryRow }>({ open: false });
   const [scenDialog, setScenDialog] = useState<{ open: boolean; row?: ScenarioRow }>({ open: false });
   const [qDialog,    setQDialog]    = useState<{ scenId: string; qi: number; q: Question } | null>(null);
+
+  const { data: session } = useQuery({ queryKey: ["session"], queryFn: api.getSession });
 
   const { data: categories = [], isLoading: catsLoading } = useQuery({
     queryKey: ["admin-global-categories"],
@@ -489,6 +504,7 @@ function ContentPage() {
         { fr: form.title_fr, ar: form.title_ar } as unknown as Json,
         { fr: form.desc_fr,  ar: form.desc_ar  } as unknown as Json,
         form.questions as unknown as Json,
+        form.image_url,
       ),
     onSuccess: (newId, { id }) => {
       qc.invalidateQueries({ queryKey: ["admin-global-scenarios", selectedCatId] });
@@ -797,6 +813,7 @@ function ContentPage() {
       <ScenarioDialog
         key={scenDialog.open ? (scenDialog.row?.id ?? "new") : "closed"}
         open={scenDialog.open}
+        userId={session?.id ?? ""}
         initial={
           scenDialog.row
             ? {
@@ -805,6 +822,7 @@ function ContentPage() {
                 desc_fr:  parseBilingual(scenDialog.row.description).fr,
                 desc_ar:  parseBilingual(scenDialog.row.description).ar,
                 questions: parseQuestions(scenDialog.row.questions),
+                image_url: scenDialog.row.image_url ?? null,
               }
             : SCENARIO_TEMPLATE
         }
