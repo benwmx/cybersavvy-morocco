@@ -12,6 +12,12 @@ export function removeGeminiKey(userId: string): void {
   localStorage.removeItem(storageKey(userId));
 }
 
+export class GeminiError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+  }
+}
+
 export async function callGemini(apiKey: string, prompt: string): Promise<string> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
@@ -26,7 +32,10 @@ export async function callGemini(apiKey: string, prompt: string): Promise<string
   );
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as any)?.error?.message ?? `Gemini API error ${res.status}`);
+    throw new GeminiError(
+      (err as any)?.error?.message ?? `Gemini API error ${res.status}`,
+      res.status,
+    );
   }
   const data = await res.json();
   return (data as any).candidates?.[0]?.content?.parts?.[0]?.text ?? "";
