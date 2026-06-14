@@ -8,7 +8,7 @@ import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { useAIRecommendations } from "@/hooks/useAIRecommendations";
-import { getGeminiKey } from "@/lib/gemini";
+import { getAIConfig } from "@/lib/ai";
 import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2, Sparkles, Settings } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -144,8 +144,8 @@ function AnalyticsPage() {
     };
   }, [filteredResults, scenarios, categories, translate]);
 
-  const geminiKey = session?.id ? getGeminiKey(session.id) : null;
-  const aiMutation = useAIRecommendations(geminiKey, stats, lang);
+  const aiConfig = session?.id ? getAIConfig(session.id) : null;
+  const aiMutation = useAIRecommendations(aiConfig, stats, lang);
 
   if (isLoading) return (
     <div className="py-20 flex flex-col items-center gap-3">
@@ -332,7 +332,7 @@ function AnalyticsPage() {
           </div>
           <p className="text-xs text-slate-400 mb-4 ms-9">{t("aiRecommendationsDesc")}</p>
 
-          {!geminiKey ? (
+          {!aiConfig ? (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded border border-violet-100 bg-violet-50/50">
               <div>
                 <p className="text-sm font-medium text-slate-700">{t("noApiKeyTitle")}</p>

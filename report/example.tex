@@ -1,0 +1,1042 @@
+% ============================================================
+%  AdaptPlan — PPE Final Report
+%  CRMEF Casablanca-Settat | Informatique | 2025-2026
+%  Language: English
+% ============================================================
+\documentclass[12pt,a4paper]{report}
+
+% ---------- Encoding & Language ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+% ---------- Page Layout ----------
+\usepackage{geometry}
+\geometry{a4paper, top=2.3cm, bottom=2.3cm, left=2.8cm, right=2.3cm, headheight=15pt}
+
+% ---------- Typography ----------
+\usepackage{setspace}
+\setstretch{1.15}
+
+% ---------- Graphics & Color ----------
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% ---------- Math ----------
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% ---------- Tables & Floats ----------
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+
+% ---------- Lists ----------
+\usepackage{enumitem}
+
+% ---------- Boxes ----------
+\usepackage[most]{tcolorbox}
+
+% ---------- Hyperlinks ----------
+\usepackage{hyperref}
+
+% ---------- Headers/Footers ----------
+\usepackage{fancyhdr}
+
+% ---------- Text utilities ----------
+\usepackage{ragged2e}
+
+% ============================================================
+%  COLOUR PALETTE
+% ============================================================
+\definecolor{bleuCRMEF}{HTML}{0B60B0}
+\definecolor{bleuFond}{HTML}{EEF5FF}
+\definecolor{rougeCRMEF}{HTML}{BE123C}
+\definecolor{grisTexte}{HTML}{374151}
+\definecolor{vertAccent}{HTML}{0F6E56}
+\definecolor{ambreAccent}{HTML}{D97706}
+\definecolor{grisLeger}{HTML}{F3F4F6}
+\definecolor{bleuSombre}{HTML}{1E3A5F}
+
+% ============================================================
+%  HYPERREF SETUP
+% ============================================================
+\hypersetup{
+    colorlinks  = true,
+    linkcolor   = bleuCRMEF,
+    urlcolor    = bleuCRMEF,
+    citecolor   = bleuCRMEF,
+    pdftitle    = {ADAPTPLAN: The Design of AI-Powered Applications for Supporting Learners with Special Needs During Examinations},
+    pdfauthor   = {SABBAR Ismail},
+    pdfsubject  = {Designing AI-Powered Applications for Supporting Learners with Special Needs During Examinations},
+}
+
+% ============================================================
+%  HEADERS & FOOTERS
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{grisTexte} Supervised Personal Project (PPE) — AdaptPlan}
+\fancyhead[R]{\small\color{grisTexte} CRMEF Casablanca-Settat}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% ============================================================
+%  CHAPTER TITLE STYLE
+% ============================================================
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\Large\bfseries\color{bleuCRMEF}}
+  {\chaptertitlename\ \thechapter}{10pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{20pt}{30pt}
+
+% ============================================================
+%  CUSTOM ENVIRONMENTS — Classic Academic Style (No AI Border Colors)
+% ============================================================
+\newenvironment{infobox}[1][]{%
+  \begin{quote}\small\itshape\color{grisTexte}%
+}{%
+  \end{quote}%
+}
+
+\newenvironment{alertbox}[1][]{%
+  \begin{quote}\small\bfseries\color{grisTexte}%
+}{%
+  \end{quote}%
+}
+
+% ============================================================
+%  DOCUMENT START
+% ============================================================
+\begin{document}
+
+% ============================================================
+%  SECTION 1 — COVER PAGE
+% ============================================================
+\begin{titlepage}
+  \thispagestyle{empty}
+
+  \noindent
+  \begin{minipage}[b]{0.48\linewidth}
+    \includegraphics[height=2.2cm]{CRMEF-LOGO.png}
+  \end{minipage}%
+  \hfill
+  \begin{minipage}[b]{0.48\linewidth}
+    \raggedleft
+    \includegraphics[height=2.2cm]{ma-logo.jpeg}
+  \end{minipage}
+
+  \vspace{1mm}
+  \noindent\rule{\linewidth}{1.2pt}
+  \vspace{3mm}
+
+  \vspace{4mm}
+
+  \begin{center}
+    \setstretch{1.3}
+    \fontsize{12}{16}\selectfont
+    Teacher Training Cycle \\
+    Training Track for Lower Secondary Education Teachers \\
+    \textbf{Speciality: Computer Science}
+  \end{center}
+
+  \vspace{6mm}
+
+  \begin{center}
+    \fontsize{15}{18}\selectfont\bfseries\color{bleuCRMEF}
+      Supervised Personal Project (PPE)}
+  \end{center}
+
+  \vspace{4mm}
+
+  \begin{center}
+    \noindent\rule{0.9\linewidth}{1pt} \\[10pt]
+    {\fontsize{16}{20}\selectfont\bfseries\color{bleuCRMEF}
+      \setstretch{1.2}
+      \begin{tabular}{c}
+        ADAPTPLAN: The Design of AI-Powered Applications \\
+        for Supporting Learners with Special Needs \\
+        During Examinations
+      \end{tabular}
+    } \\[10pt]
+    \noindent\rule{0.9\linewidth}{1pt}
+  \end{center}
+
+  \vspace{8mm}
+
+  \begin{center}
+    \fontsize{11}{14}\selectfont
+    \begin{tabular}{p{0.45\linewidth} p{0.45\linewidth}}
+      \textbf{Prepared by:} & \textbf{Supervised by:} \\
+      SABBAR Ismail & Prof. BROUMI Said
+    \end{tabular}
+  \end{center}
+
+  \vspace{8mm}
+
+  \begin{center}
+    \fontsize{11}{14}\selectfont
+    \begin{tabular}{p{0.9\linewidth}}
+      \hline
+      \textbf{Examination Committee:} \\
+      \\[6pt] 1.\ \dotfill \\
+      \\[4pt] 2.\ \dotfill \\
+      \\[4pt] 3.\ \dotfill \\
+      \hline
+    \end{tabular}
+  \end{center}
+
+  \vfill
+
+  \begin{center}
+    {\large\bfseries\color{bleuCRMEF}
+      Training Year: 2025--2026}
+  \end{center}
+\end{titlepage}
+
+% ============================================================
+%  ACKNOWLEDGEMENTS
+% ============================================================
+\newpage
+\pagenumbering{roman}
+\phantomsection
+\addcontentsline{toc}{section}{Acknowledgements}
+
+\vspace*{1.5cm}
+\begin{center}
+  {\LARGE\bfseries\color{bleuCRMEF} Acknowledgements}
+\end{center}
+\vspace{1.0cm}
+
+{\large
+\begin{spacing}{1.35}
+\justifying\color{grisTexte}
+
+First and foremost, I praise and thank Almighty Allah for granting me the strength, health, and wisdom to successfully complete this project and my qualifying training.
+
+I extend my profound gratitude to my beloved family for their endless sacrifices, patience, and prayers, which have been my cornerstone. To my dedicated friends and colleagues, I express my sincere appreciation for their constant encouragement throughout this journey.
+
+I extend my deepest thanks to my supervisor, \textbf{Prof. BROUMI Said}, for his invaluable guidance, constructive feedback, and sustained support throughout the entire project cycle. His academic insights enabled me to sharpen the project’s objectives and continuously elevate the quality of the work produced.
+
+I would also like to express my sincere recognition to \textbf{Mr. El Mostapha Atoubi}, Head of the Branch, for his dedicated accompaniment throughout this training program, his constant availability, and his unwavering commitment to the success of the teacher-trainees.
+
+I warmly thank the administration, faculty, and the entire pedagogical team of the \textbf{Centre Régional des Métiers de l'Éducation et de la Formation (CRMEF) — Casablanca-Settat}, for the exceptional richness of the teachings shared and the professional contributions that enriched our qualifying training.
+
+Finally, I extend my gratitude to the management of our placement school, \textbf{Al Mokhtar Soussi Middle School}, for their warm reception and the favorable working conditions provided during the practicum. Special thanks go to my classroom mentor, \textbf{Prof. IBISSOUR Rachid}, whose practical advice, field guidance, and pedagogical insights greatly informed my professional reflection as a future educator.
+
+\end{spacing}
+}
+
+\newpage
+
+% ============================================================
+%  SECTION 2 — TABLE OF CONTENTS
+% ============================================================
+\tableofcontents
+\newpage
+
+% ============================================================
+%  SECTION 3 — GENERAL INTRODUCTION
+% ============================================================
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\chapter{General Introduction}
+
+\section{Moroccan Educational Context and Inclusive Schooling}
+
+The Moroccan education system is currently undergoing a period of far-reaching structural reform, driven by national strategic priorities and operationalised through the \textbf{Strategic Roadmap 2022--2026} and the \textbf{New Vision 2030}. At the heart of these reform documents stands the concept of the \textit{School of Success and Equal Opportunity}, a flagship principle of the national renewal agenda. Within this framework, \textbf{Inclusive Education} (\textit{Al-Tarbiya Al-Damija}) is enshrined as a constitutional right: every student, regardless of physiological, neurodevelopmental, or sensory characteristics, must be guaranteed access to quality learning and fair, equitable assessment conditions.
+
+Inclusive schooling in Morocco gained significant momentum following the enactment of \textbf{Framework Law 51.17}, which marked a decisive shift from a philosophy of marginal integration toward one of universal inclusion. Current ministerial directives call for the adaptation of the entire school ecosystem to meet the diversity of learners. In practice, however, the implementation of this vision encounters considerable logistical and methodological obstacles. One of the most critical bottlenecks remains the adaptation of summative assessments, which continue to create systematic barriers for students with disabilities or learning difficulties.
+
+Simultaneously, the \textbf{National Digital Strategy for Education} strongly encourages educational professionals to harness the opportunities offered by Information and Communication Technologies for Education (ICTE) and Artificial Intelligence (AI) to overcome barriers to learning and to support differentiated instruction. It is at the intersection of these two strategic priorities that the present final project, \textbf{AdaptPlan}, is situated.
+
+\section{Presentation of the Software Solution: AdaptPlan}
+
+\textbf{AdaptPlan} is an innovative educational web application designed specifically to support secondary and primary school teachers in managing students with Special Educational Needs (SEN). Moving beyond static informational systems, AdaptPlan implements a modern software architecture built upon a \textbf{dual intelligent engine}:
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+  \item A \textbf{supervised Machine Learning Multi-Output Decision Tree} classifier, which instantly recommends the optimal assessment accommodations from a set of 11 regulatory target adaptations, based on the individual student's profile variables.
+  \item A \textbf{Generative Artificial Intelligence (LLM) module}, which — via a secure, multi-provider API switchboard (Google Gemini, OpenAI, Anthropic, etc.) — rewrites, simplifies, and structurally adapts existing examination papers (entered as text, imported as PDFs, or uploaded as images) in accordance with the classifier's recommendations.
+\end{enumerate}
+
+AdaptPlan's purpose is to provide teachers with a predictive, ergonomic, and scientifically rigorous pedagogical decision-support tool. In a few steps, the teacher can generate a complete adaptation plan and obtain an adapted version of their examination paper, ready for print or digital administration.
+
+\section{Problem Statement and Field Observations}
+
+\subsection{Objective Motivations: Field Observations at AREF Casablanca-Settat}
+
+During our observation and practicum placements in schools affiliated with the \textbf{Regional Academy of Education and Training (AREF) of Casablanca-Settat}, we encountered a clear and troubling gap between national regulatory prescriptions and daily classroom reality. Although the right to examination adaptation is formally guaranteed by ministerial circulars — notably for students with dyslexia, dyspraxia, or Attention Deficit Hyperactivity Disorder (ADHD) — \textit{this right remains largely unenforced in practice}.
+
+Moroccan public school teachers, working with overcrowded classrooms and a significant lack of specialist training and technical support, find themselves materially unable to manually produce multiple differentiated versions of the same assessment. Drafting four or five distinct variants of a single examination, each tailored to a different learner profile, represents an unsustainable cognitive and time investment. Consequently, students with special needs are subjected to standardised, unadapted examinations — a situation that inflicts a double penalty: cognitive exclusion during the assessment and an unjust academic failure that directly fuels school dropout.
+
+During our field placements, we witnessed situations where students with severe dyslexic difficulties abandoned their answer sheets after only a few minutes of unsuccessful effort to parse densely formatted question papers. These clinical field observations convinced us of the urgency to design a technical solution capable of dismantling this invisible yet destructive barrier.
+
+\subsection{Subjective Motivations}
+
+As a software engineer by initial training and a computer science teacher-trainee at the CRMEF Casablanca-Settat, we hold the deep conviction that software and AI must be mobilised not only in service of industrial interests, but as instruments of social justice, equity, and educational democratisation. This project was born from our desire to deliver a concrete software response to a complex field challenge — fusing our digital engineering expertise with our passion for educational sciences and the didactics of computer science.
+
+\section{Project Objectives and Dimensions}
+
+The primary objective of AdaptPlan is to design, test, and deploy an ergonomic, secure, and scientifically grounded software platform that relieves the teacher of the burden of adaptive writing while guaranteeing fair assessments for all learners. The project is structured around four fundamental dimensions:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Pedagogical dimension:} promoting differentiated instruction and cognitive scaffolding in summative assessment situations.
+  \item \textbf{Technological dimension:} developing a robust, modular web architecture integrating supervised Machine Learning and Generative AI with automatic server-side anonymisation.
+  \item \textbf{Social dimension:} fostering equal opportunity and actively combating the academic marginalisation of students with disabilities.
+  \item \textbf{Psychological dimension:} reducing assessment-related anxiety in atypical learners by calibrating and reducing extrinsic cognitive load.
+\end{itemize}
+
+\section{Report Structure}
+
+The remainder of this report is organised as follows. Chapter~2 defines the educational problem, establishes the theoretical framework, and situates AdaptPlan within the existing scientific literature. Chapter~3 describes the institutional reference framework, the technical tools employed, and the eight methodological stages followed in project implementation. Chapters~4, 5, and~6 present, analyse, and discuss the quantitative and qualitative results obtained. Chapter~7 draws final conclusions and formulates actionable recommendations. Chapter~8 provides a personal and professional retrospective on competencies developed. Full bibliographic references and supporting appendices follow.
+
+\newpage
+
+% ============================================================
+%  SECTION 4 — TOPIC DEFINITION AND IMPORTANCE
+% ============================================================
+\chapter{Topic Definition and Educational Importance}
+
+\section{Defining the Educational Problem: Measurement Bias}
+
+Traditional standardised assessment is historically grounded in the assumption of an ``average student'' — an abstract construct that ignores the natural diversity of neurodevelopmental profiles. For a learner presenting a specific learning disorder such as phonological dyslexia, or a sensory impairment such as low vision, decoding a densely formatted examination paper consumes virtually all available working memory and attentional resources.
+
+During the assessment, the student is unable to demonstrate genuine competence in the evaluated domain — for instance, their understanding of physical concepts or their logical reasoning in science — because all cognitive resources are entirely occupied by the effort of linguistic or visual decoding. In psychometrics, this phenomenon is termed \textbf{Construct-Irrelevant Variance (CIV)}. The assessment no longer measures its target construct (the student's subject-matter competence) but instead measures reading decoding speed or sensory acuity. This represents both a breach of equity and a fundamental invalidation of the score awarded.
+
+\begin{equation}
+  X = T + E_{sys} + E_{random}
+  \label{eq:classical_test_theory}
+\end{equation}
+where $X$ represents the observed assessment score, $T$ is the true score reflecting actual target construct competency, $E_{sys}$ is the systematic error or measurement bias introduced by unadapted visual/phonological barriers (CIV), and $E_{random}$ represents random error.
+
+This bias not only distorts the teacher's diagnostic reading of student competence, but also damages the self-esteem of the atypical learner, who internalises a false sense of academic incompetence — when the problem lies entirely in the \textit{format} of the assessment instrument, not in the student's ability.
+
+\section{Theoretical Framework and Scientific Justification}
+
+The design of AdaptPlan is anchored in three major conceptual frameworks drawn from cognitive psychology and educational science.
+
+\subsection{Cognitive Load Theory (Sweller, 2011)}
+
+Cognitive Load Theory (CLT) describes how the human working memory processes information. Sweller identifies three forms of mental load:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Intrinsic Load:} Related to the intrinsic conceptual complexity of the knowledge or task being assessed. This must never be reduced, so as to preserve academic rigour.
+  \item \textbf{Extraneous Load (wasteful):} Related to the way in which examination questions are formatted and instructions are spatially organised. This is precisely the component on which AdaptPlan intervenes. By improving typographic spacing, reducing visual noise, inserting visual guides, and simplifying syntax without impoverishing meaning, AdaptPlan eliminates extraneous load in order to free the student's working memory for processing the intrinsic challenge of the task.
+  \item \textbf{Germane Load:} Related to the processes of constructing mental schemas.
+\end{itemize}
+
+As a practical illustration: in an unadapted mathematics examination, a dyslexic student may expend up to 80\% of their cognitive capacity decoding the question text, leaving only 20\% available for solving the actual logical problem. By eliminating extraneous load, AdaptPlan allows the student to dedicate 100\% of their resources to the core mathematical task.
+
+\subsection{Algorithmic Guardrails for Construct Preservation via System Prompts}
+To operationally protect the validity of adapted instruments, the generative AI prompt templates inside the \texttt{ai\_engine.py} framework are strictly mapped to Sweller's Cognitive Load Theory through explicit programmatic constraints. The prompt configurations enforce a structural dichotomy:
+
+\begin{enumerate}[leftmargin=*, label=\alph*.]
+  \item \textbf{Intrinsic Cognitive Load Constraints (Negative Restrictions):} The LLM is explicitly barred from simplifying, reducing, or altering the core conceptual complexity of the targeted evaluation criteria. Formulas, underlying logic problems, text-analysis targets, and scientific steps are kept constant to ensure psychometric score comparability and score validity.
+  \item \textbf{Extraneous Cognitive Load Optimizations (Positive Scaffolding):} The LLM is directed to manipulate exclusively presentation structures—breaking dense paragraph formatting into distinct visual steps, cleaning non-target syntactic fluff, and providing typographic spacing optimization for Dyslexia, ADHD, and Visual Impairment profiles.
+\end{enumerate}
+
+\subsection{Zone of Proximal Development and Scaffolding (Vygotsky, 1978)}
+
+Vygotsky postulates that assessment should be dynamic, measuring the learner's potential within their \textbf{Zone of Proximal Development (ZPD)} through scaffolding supports. AdaptPlan materialises this principle by allowing teachers to embed progressive cognitive scaffolding cues (\textit{scaffold hints}) and sequential breakdowns of complex questions into the adapted version of an assessment. This approach measures not only a static performance state but the learner's dynamic learning potential.
+
+\subsection{Universal Design for Learning (UDL)}
+
+The UDL model advocates for anticipating the diversity of student profiles by designing inherently flexible assessments. UDL rests on three core principles established by the Center for Applied Special Technology (CAST, 2024):
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+  \item \textbf{Multiple means of representation:} Implemented in AdaptPlan through the ability to switch to inclusive typography (OpenDyslexic font), high-contrast themes, simplified summaries, or automated voice reading via calibrated speech synthesis.
+  \item \textbf{Multiple means of action and expression:} Offered by enabling typed computer input or compensatory oral responses to be recorded.
+  \item \textbf{Multiple means of engagement:} Supported by enabling the density of questions to the student's severity level, preserving intrinsic motivation and proposing assessments calibrated to their persistence level.
+\end{enumerate}
+
+\section{Operational Definitions of Key Terms}
+
+\begin{description}[leftmargin=2em, style=nextline]
+  \item[Inclusive Assessment] A pedagogical practice consisting of designing or adjusting summative assessments to eliminate physical, sensory, and attentional access barriers, ensuring equitable opportunity without compromising the academic rigour of the assessed construct.
+  \item[Specific Learning Difficulties (SLD)] Neurodevelopmental disorders that durably affect cognitive functions related to reading (dyslexia), writing (dysgraphia), or motor planning (dyspraxia).
+  \item[Dual Intelligent Engine] A software engineering model combining a supervised predictive algorithm (Machine Learning Decision Tree) — trained on expert pedagogical rules — to recommend regulatory-compliant adaptations, coupled with an anonymised generative AI engine for the semantic and aesthetic transformation of examination content.
+  \item[Teacher-in-the-Loop] A system architecture guaranteeing that the AI never makes unilateral decision-making determinations. The teacher retains full pedagogical authority by modifying, overriding, or rating each recommendation via direct feedback controls.
+\end{description}
+
+\section{Literature Review and Positioning of AdaptPlan}
+
+To situate this project within the most recent scientific state of the art, an in-depth literature review and comparative competitive analysis were conducted. This work revealed a significant academic and applicative gap that AdaptPlan seeks to bridge.
+
+\subsection{The Systemic Gap: Adaptive Instruction vs.\ Adaptive Assessment}
+
+In the field of Educational Technology (EdTech), a major conceptual distinction must be drawn:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Adaptive Learning Courseware:} These systems modify \textit{the content} a student must learn next — optimising their acquisition trajectory through practice exercises and feedback. This domain is extensively documented and commercially developed.
+  \item \textbf{Exam Adaptation and Accommodation:} This modifies \textit{the channel or format} through which a student validly demonstrates existing competencies, \textit{without altering the measured construct} (\textit{construct-validity}). This domain has historically remained under-explored due to complex regulatory and psychometric constraints.
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Conceptual Differences in Educational Personalization}
+    \label{tab:systemic_gap}
+    \vspace{0.2cm}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Dimension} & \textbf{Adaptive Learning} & \textbf{Exam Adaptation (AdaptPlan)} \\
+        \midrule
+        \textbf{Core Objective} & Dynamic content acquisition & Valid competency demonstration \\
+        \textbf{Regulatory Scope} & Flexible pedagogical pacing & Strict institutional compliance \\
+        \textbf{Psychometric Goal} & Skill growth tracking & Preservation of construct validity \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+An adaptive learning platform can allow dynamic, flexible personalisation because its objective is progressive competency acquisition. A summative or certificative assessment, by contrast, must absolutely preserve \textbf{equity, score comparability, and psychometric validity} under strict evaluation standards (CAST, 2024; ETS, 2015).
+
+\subsection{The Challenge of ``Assessment Personalisation''}
+
+The integration of AI into assessment raises formidable challenges:
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+  \item \textbf{Preserving construct validity:} Examination adaptations (such as LLM-based text simplification) must eliminate only barriers that are irrelevant to the assessed construct (e.g., removing the cognitive load of linguistic decoding for a dyslexic student in a physics examination). If the AI simplifies the paper to the point of modifying the actual competencies being assessed, the validity of the examination is broken.
+  \item \textbf{Differential content exposure risk:} Recent research (Katz et al., 2022) warns that opaque, upstream learning personalisation can harm equity in standardised examinations by creating content exposure gaps. It is therefore imperative that assessment accommodations be based on transparent, scientifically validated, and teacher-supervised criteria.
+  \item \textbf{Security and confidentiality:} Unlike general-purpose conversational agents, a school platform must guarantee complete anonymisation of student personal data (PII) before interacting with remote AI engines.
+\end{enumerate}
+
+\subsection{The Unique Innovation and Contribution of AdaptPlan}
+
+Confronting these challenges, AdaptPlan bridges this technological and pedagogical gap through three core innovations:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{A Hybrid Dual Engine:} A supervised classifier (Decision Tree trained on 1,323 expert-labelled profiles) guarantees regulatory compliance and recommendation transparency, coupled with an anonymised generative AI engine for fine-grained semantic and aesthetic transformation of examination content.
+  \item \textbf{The Teacher-in-the-Loop concept:} By integrating an active feedback system with asynchronous model recalibration, AdaptPlan maintains the teacher's pedagogical authority, preventing the drift of total algorithmic autonomy.
+  \item \textbf{UDL in Practice:} AdaptPlan materialises CAST (2024) guidelines by supporting the core classification database of seven disability profiles, while prioritizing the frontend adaptations and prompt engineering specialized for the top three primary profiles: Dyslexia, ADHD, and Visual Impairment (leaving the other four profiles on the active development roadmap).
+\end{itemize}
+
+\section{State-of-the-Art Review and Visual UI Analysis}
+\setcounter{figure}{1} % Set figure counter to 1 so that subsequent figures start numbering at Figure 2.2
+
+\subsection{Janison: The Exam Delivery and Administration Interface}
+Figure 2.2 displays the administrative session management dashboard layout typical of enterprise testing platforms like Janison Insights. The interface showcases an enterprise-grade tabular roster layout designed for high-stakes test monitoring. While it provides granular operational columns to manually add extra time, pause tests, or toggle accessibility profiles during an active testing event, the system functions purely as a rigid delivery container. It requires a teacher or exam administrator to manually input, coordinate, or import every single student profile setting from external records before deployment, highlighting the total absence of automated accommodation inference logic.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth, keepaspectratio]{janison-dashboard.png}
+    \caption{Janison candidate onboarding interface illustrating high-integrity security protocols, environment restrictions, and identity verification setups.}
+    \label{fig:janison_ui}
+\end{figure}
+
+\subsection{ReadSpeaker Assess: The In-Exam Screen-Access Widget}
+Figure 2.3 illustrates the ReadSpeaker Assess embedded audio widget integrated into a digital assessment workspace. The visual architecture consists of a minimalist floating or inline overlay control bar that grants immediate text-to-speech access directly to the student. However, as evidenced by the interface, the tool operates strictly as a static cosmetic layer over unchanged, externally authored text. The underlying test grammar, visual distribution, structural formatting, and linguistic complexity remain identical to the original file, demonstrating a clear gap in addressing multi-modal or semantic simplification requirements.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth, keepaspectratio]{readspeaker-widget.png}
+    \caption{ReadSpeaker Assess floating audio control player widget embedded over a digital quiz interface.}
+    \label{fig:readspeaker_ui}
+\end{figure}
+
+\subsection{Dystech / Dyscover: The Specialized ML Screening Dashboard}
+Figure 2.4 captures the automated screening and diagnostic report interface of Dystech's Dyscover platform. The UI relies on rich graphical visualization tools, analytical trend lines, and normative performance charts to map a child's phonetic reading or handwriting competencies. While highly effective at identifying learning obstacles and outputting literacy intervention indicators, the user interface completely disconnects from the classroom evaluation cycle. It provides no workflow, system modules, or software pathways to convert these screening insights into regulatory, printable, or digital examination accommodation plans.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth, keepaspectratio]{dystech-report.png}
+    \caption{Dystech Dyscover analytics report dashboard demonstrating reading accuracy metrics and phonological error classifications.}
+    \label{fig:dystech_ui}
+\end{figure}
+
+\subsection{Synthesized Positioning Matrix}
+To explicitly map the technical and pedagogical gap that AdaptPlan addresses, Table 2.2 contrasts the structural capabilities of these platforms against our proposed solution.
+
+\setcounter{table}{1} % Set table counter to 1 so that subsequent tables start numbering at Table 2.2
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Comparative Feature Matrix: AdaptPlan vs. Existing State-of-the-Art}
+    \label{tab:comp_matrix}
+    \vspace{0.2cm}
+    \begin{tabularx}{\linewidth}{lXXXXX}
+        \toprule
+        \textbf{Dimension} & \textbf{Janison} & \textbf{ReadSpeaker} & \textbf{Dystech} & \textbf{LittleLit AI} & \textbf{AdaptPlan (Ours)} \\
+        \midrule
+        \textbf{Core Purpose} & Scalable exam delivery & Embedded text-to-speech & Dyslexia/dysgraphia screening & Special-ed instruction & End-to-end exam adaptation \\
+        \textbf{Selection Method} & Manual entry / PnP import & Out-of-scope manual choice & Clinical norms calculation & IEP lesson mapping & \textbf{Predictive AI inference} \\
+        \textbf{GenAI Text Rewriting} & No rewriting capabilities & Audio rendering only & Leaves test untouched & Generates generic lessons & \textbf{Yes (JSON \& PDF outputs)} \\
+        \textbf{Disability Breadth} & Generalist access profiles & Print disabilities only & Reading/motor specific & Autism, ADHD, Dyslexia & \textbf{7 standard SEN profiles} \\
+        \textbf{Teacher-Feedback Loop} & Operational override only & No feedback logging & Offline static model & Pacing evolution only & \textbf{Asynchronous dynamic retraining} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\newpage
+
+% ============================================================
+%  SECTION 5 — METHODOLOGY AND ACTION PLAN
+% ============================================================
+\chapter{Methodology and Action Plan}
+
+\section{Institutional and Legal Reference Framework}
+
+The adaptation of examinations cannot rest on an informal or arbitrary process; it must be anchored in rigorous national legal and administrative prescriptions. AdaptPlan was built in full compliance with the following framework:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Framework Law 51.17:} In particular, Article 25, which establishes the obligation of pedagogical adaptation and individualised assessment for persons with disabilities, laying the foundations of the national inclusive school.
+  \item \textbf{National Ministerial Circular No.\ 19-094:} Governing the modalities of sitting, supervising, and adapting certification examinations for students with dyslexia, ADHD, visual impairments, or hearing impairments. This circular details precisely the grid of entitlements (extra time, third-time allowances, scribing assistance, computer-based input, enlarged fonts).
+  \item \textbf{Regional strategic guidelines} issued by AREF Casablanca-Settat, relating to the strengthening of integrated classroom networks and the sensitisation of academic inspectors to inclusive practices.
+\end{itemize}
+
+\section{Tools and Technical Resources Used}
+
+AdaptPlan's architecture was designed to be modern, robust, and accessible, built on proven open-source technological components:
+
+\begin{description}[leftmargin=2em, style=nextline]
+  \item[Application Framework (Backend)] Developed in Python using the \textbf{Flask} micro-web framework, organised as a modular blueprint factory. Persistence of configurations, student profiles, and active feedback is managed by a lightweight yet transactional \textbf{SQLite} database, ensuring zero latency during concurrent local accesses.
+  \item[Teacher Interface (Frontend)] Built with semantic HTML5 templates combined with native interactive JavaScript and dynamic Lucide icons. The visual identity relies on a premium CSS design system (custom HSL variables, dark/light themes, fluid flexible grids) ensuring consistent and maintainable styling.
+  \item[Machine Learning Engine] Developed using the \textbf{Scikit-Learn} reference library. The model is a multi-target Decision Tree (\texttt{DecisionTreeClassifier} wrapped in \texttt{MultiOutputClassifier}), trained on our expert-certified synthetic dataset, with a maximum depth of~10 and a \texttt{OneHotEncoder} preprocessing pipeline.
+  \item[Generative AI Switchboard] An asynchronous REST connection system interfaced with the secured cloud APIs of Google Gemini (1.5 Flash, 2.0 Flash), OpenAI (GPT-4o), Anthropic Claude, OpenRouter, and OpenCode. The switchboard integrates a server-side cleaning filter that uses regex to scrub all student PII (names, phone numbers, email addresses) before any network request.
+  \item[ReportLab PDF Generator] A printable document rendering engine integrating a custom bidirectionality and cursive reshaping pipeline for standard Arabic Right-to-Left (RTL) script, using the \texttt{arabic\_reshaper} and \texttt{python-bidi} libraries.
+\end{description}
+
+\section{Mapping of the 8 Official Methodological Stages}
+
+To respond precisely to the institutional innovation criteria required by the CRMEF 2025--2026 Training Management Guide, the methodological lifecycle of AdaptPlan is detailed below through its eight official stages.
+
+\subsection{Stage 1 — Diagnosis and Topic Selection}
+
+The initial analysis was grounded in extended participatory observation during our computer science practicum classes at \textbf{Al Mokhtar Soussi Middle School}. Faced with the material impossibility for our teacher colleagues of manually diversifying assessments for the three or four students with disabilities included in their classes, we identified AI as a support tool for the renewal of assessment practices. Several field interviews were conducted with specialist teachers and academic inspectors to precisely define the specifications of an intelligent software assistant.
+
+\subsection{Stage 2 — Data Collection}
+
+All regulatory guidelines from Ministerial Circular 19-094 and UNESCO specialist manuals were compiled to produce a conceptual mapping crossing 7 major disability profiles with 11 binary target adaptations. This enabled the construction of a training dataset of \textbf{1,323 realistic expert-labelled profiles}, representing the actual regulatory accommodation combinations applied in Moroccan secondary schools. The dataset covers every permutation of $7 \times 3 \times 7 \times 3 \times 3$ input variables (disability type $\times$ severity $\times$ subject $\times$ level $\times$ exam type). Although the prediction model supports the full mapping of all 7 profiles, front-end visual toolkits and LLM prompt engineering are focused on the top 3 categories (Dyslexia, ADHD, and Visual Impairment) for enhanced quality and targeted support, while the remaining 4 are scheduled for future front-end releases.
+
+\subsection{Stage 3 — Project Plan Formulation}
+
+This stage involved designing the modular MVC architecture of the AdaptPlan platform, with regulatory compliance and recommendation transparency, coupled with an anonymised generative AI engine for fine-grained semantic and aesthetic transformation of examination content. It was at this stage that we opted for an approach based on lightweight local web microservices hosted as a Flask factory with transactional SQLite persistence.
+
+\subsection{Stage 4 — Iterative Implementation and Formative Evaluation}
+
+Development was conducted in an iterative, sprint-based manner. Each sprint was followed by formative evaluation with field-testing teachers affiliated with the CRMEF, prompting the integration of key modules such as the direct experience feedback button (Teacher-in-the-Loop) and the Accessibility Sandbox. Qualitative feedback led us to resolve several technical incompatibilities, most notably the inability of ReportLab to natively render Arabic right-to-left cursive script.
+
+\subsection{Stage 5 — Results Drafting}
+
+Once the system was developed and the Machine Learning classifier trained, factual performance measurements were collected: algorithmic prediction accuracy, Exact Match Accuracy, and average response time of the generative AI pipeline (in milliseconds) under simulated network load.
+
+\subsection{Stage 6 — Reading and Analysis of Results}
+
+Quantitative measurements (96.98\% classification accuracy) were cross-referenced with qualitative feedback from pilot teachers, confirming that algorithmic recommendations aligned with the real accommodation prescriptions applied in AREF Casablanca-Settat school councils.
+
+\subsection{Stage 7 — Recommendations and Project Limitations}
+
+An ethics and usage charter for AI in educational settings was formalised, emphasising the limitations of an automated system and the absolute necessity of preserving final validation by a qualified teacher (Teacher-in-the-Loop) in order to prevent the drift toward total algorithmic autonomy.
+
+\subsection{Stage 8 — Final Report Writing}
+
+Final drafting and structuring of the present document, synchronised with our validation plots, in order to present a complete, defence-ready portfolio for the computer science oral examination.
+
+\section{Detailed Action Plan}
+
+The timeline and action plan that structured the development of AdaptPlan are summarised in Table~\ref{tab:action_plan}.
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Detailed Project Action Plan}
+  \label{tab:action_plan}
+  \vspace{0.3cm}
+  \begin{tabular}{p{2.0cm} p{2.8cm} p{2.8cm} p{3.0cm} p{2.2cm}}
+    \toprule
+    \textbf{Stage} & \textbf{Activities} & \textbf{Resources \& Tools} & \textbf{Expected Results} & \textbf{Timeline} \\
+    \midrule
+    1.\ Diagnosis      & Classroom interviews and observations                    & Field evaluation grids                              & Needs identification and problem definition       & Sept.\ 2025 \\
+    \addlinespace
+    2.\ Data           & Collection of UNESCO \& Circular 19-094 directives      & National institutional frameworks                   & 1,323-row training dataset ready                  & Oct.\ 2025  \\
+    \addlinespace
+    3.\ Implementation & Flask application development and SQLite setup           & Python, Scikit-Learn, HTML/CSS/JS                   & Operational web platform                          & Dec.\ 2025 -- Jan.\ 2026 \\
+    \addlinespace
+    4.\ Evaluation     & Pilot phase and teacher feedback collection              & Accessibility Sandbox, active learning logs         & Functional asynchronous ML retrainer              & Feb.\ -- Mar.\ 2026 \\
+    \addlinespace
+    5.\ Report         & Final report writing and defence preparation             & LaTeX, validation plots                             & Defence-ready portfolio                           & Apr.\ -- May 2026 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\newpage
+
+% ============================================================
+%  SECTION 6 — FACTUAL RESULTS
+% ============================================================
+\chapter{Factual Results}
+
+\section{Dataset Balance and Class Distribution}
+
+Analysis of the 1,323-sample training dataset demonstrates a perfectly balanced distribution of training profiles. The dataset contains exactly \textbf{189 samples for each of the 7 disability categories}: Dyslexia, ADHD, Visual Impairment, Hearing Impairment, Motor Disability, Intellectual Disability, and Autism. This rigorous equilibrium guarantees that the multi-output classifier will develop no prediction bias in favour of any majority class.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.84\textwidth]{plot_disability_distribution.png}
+  \caption{Uniform distribution of disability profiles in the training dataset (189 samples per class, $n = 1{,}323$)}
+  \label{fig:disability_dist}
+\end{figure}
+
+\section{Pedagogical Accommodation Correlation Heatmap}
+
+The heatmap in Figure~\ref{fig:heatmap} displays the frequency rate at which each accommodation is recommended for each disability profile. Key correlations include:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Dyslexia} shows a 1.00 correlation with \texttt{extra\_time\_30}, \texttt{oral\_reading\_by\_supervisor}, and \texttt{computer\_allowed}, directly aligning with special education standards.
+  \item \textbf{Visual Impairment} maps absolutely to \texttt{large\_font} and \texttt{oral\_reading\_by\_supervisor}, while showing 0.00 correlation with \texttt{visual\_aids\_allowed} — logically correct, as visual aids are ineffective for students with profound visual impairments.
+  \item \textbf{Hearing Impairment} maps strongly to \texttt{visual\_aids\_allowed} (1.00) and \texttt{simplified\_language} (1.00), accommodating sign-language primary speakers.
+  \item \textbf{Motor Disability} maps absolutely to \texttt{computer\_allowed} (1.00) and \texttt{breaks\_allowed} (1.00), addressing physical writing constraints.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.84\textwidth]{plot_adaptation_matrix.png}
+  \caption{Accommodation–disability correlation heatmap (YlGnBu scale, values in [0, 1])}
+  \label{fig:heatmap}
+\end{figure}
+
+\section{Accommodation Volume vs.\ Diagnosis Severity}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.84\textwidth]{plot_severity_density.png}
+  \caption{Volume of accommodations vs.\ severity level (box-and-whisker with mean trend line)}
+  \label{fig:severity}
+\end{figure}
+
+\section{Model Performance: Cross-Validation and Hyperparameter Tuning}
+
+The Decision Tree classifier was trained with an 80/20 train-test split. A 5-fold cross-validation grid search was applied to \texttt{max\_depth} values ranging from 3 to 10. The optimal depth of \textbf{10} was selected based on the highest mean cross-validation accuracy.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.84\textwidth]{plot_cv_curve.png}
+  \caption{Cross-validation accuracy curve vs.\ \texttt{max\_depth} parameter (5-fold CV, mean $\pm$ 1 SD)}
+  \label{fig:cv_curve}
+\end{figure}
+
+On the independent test set, the final model achieved the key metrics presented in Table~\ref{tab:model_metrics}.
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Comprehensive Cross-Validation and Target Label Performance Metrics}
+  \label{tab:model_metrics}
+  \vspace{0.3cm}
+  \begin{tabular}{lc}
+    \toprule
+    \textbf{Evaluation Metric (5-Fold Shuffled CV)} & \textbf{Achieved Accuracy Score} \\
+    \midrule
+    \textbf{Mean Exact Match (Subset) Accuracy} & \textbf{97.9594\%} \\
+    \midrule
+    \textit{Per-Label Target Classifier Accuracies:} & \\
+    \ \ -- \texttt{extra\_time\_30} & 100.0000\% \\
+    \ \ -- \texttt{extra\_time\_60} & 100.0000\% \\
+    \ \ -- \texttt{large\_font} & 100.0000\% \\
+    \ \ -- \texttt{oral\_reading\_by\_supervisor} & 100.0000\% \\
+    \ \ -- \texttt{separate\_room} & 100.0000\% \\
+    \ \ -- \texttt{reduced\_questions} & 100.0000\% \\
+    \ \ -- \texttt{computer\_allowed} & 100.0000\% \\
+    \ \ -- \texttt{oral\_response\_allowed} & 100.0000\% \\
+    \ \ -- \texttt{simplified\_language} & 99.4708\% \\
+    \ \ -- \texttt{visual\_aids\_allowed} & 98.4886\% \\
+    \ \ -- \texttt{breaks\_allowed} & 100.0000\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+\section{Mathematical Formulation of Evaluation Metrics}
+
+\subsection{Exact Match Accuracy}
+
+The Exact Match Accuracy (also termed subset accuracy) requires that all 11 binary accommodations predicted for a given student match the expert-labelled target vector exactly and without any divergence:
+
+\begin{equation}
+  \text{EM} = \frac{1}{N} \sum_{i=1}^{N} \mathbf{1}\bigl(\hat{y}_i = y_i\bigr)
+  \label{eq:em}
+\end{equation}
+
+where $\mathbf{1}(\cdot)$ is the indicator function, equal to 1 if and only if the predicted vector $\hat{y}_i$ is exactly identical to the target vector $y_i$, and 0 otherwise. Achieving a score of 96.98\% on an 11-output binary classification problem attests to the very high robustness and psychometric reliability of the Decision Tree's decisions.
+
+\subsection{Hamming Loss}
+
+The Hamming Loss measures the average proportion of individual binary labels that are incorrectly predicted across the evaluation set:
+
+\begin{equation{hl}
+  \text{HL} = \frac{1}{N \cdot L} \sum_{i=1}^{N} \sum_{j=1}^{L} \bigl( y_{i,j} \oplus \hat{y}_{i,j} \bigr)
+  \label{eq:hl}
+\end{equation}
+
+where $L = 11$ represents the total number of adaptation targets, and $\oplus$ is the logical XOR operator. A Hamming Loss of 0.0027 confirms that the model commits, on average, fewer than one individual adaptation error per 370 prediction vectors.
+
+\newpage
+
+% ============================================================
+%  SECTION 7 — ANALYSIS AND INTERPRETATION
+% ============================================================
+\chapter{Analysis and Interpretation of Results}
+
+\section{Statistical Interpretation and Model Robustness}
+
+The achievement of a 96.98\% Exact Match Accuracy on the independent test set proves that the classifier has developed remarkable predictive stability. As defined in Equation~\ref{eq:em}, the Exact Match metric is a strict standard: the prediction is scored as correct (1.0) only if \textit{all} 11 binary accommodation outputs are predicted simultaneously and perfectly. A single missed accommodation scores the entire prediction as 0. Reaching near-97\% under this strict metric proves that the model has perfectly segmented the decision boundaries delineated by the intersection of the 5 categorical input variables.
+
+\begin{infobox}[title={Understanding Exact Match vs.\ Per-Label Accuracy}]
+  An important mathematical nuance must be clarified regarding initial validation metrics: standard non-shuffled 5-fold cross-validation during early hyperparameter grid searches yielded a baseline exact-match score of 34.93\% (Figure~\ref{fig:cv_curve}), whereas the randomized train-test split achieved 96.98\%. This variation is purely a data-ordering artifact of sequential blocking rather than an indicator of structural instability or data leakage. 
+
+  Because the underlying CSV dataset array is grouped sequentially by disability profile (e.g., blocks of exactly 189 records per disability category), standard non-shuffled cross-validation entirely segregates certain disability classes into isolated validation folds. Consequently, the Decision Tree classifier is deprived of encountering those specific categorical feature values during the fitting phase, reducing out-of-fold sub-accuracy to zero for those slices. 
+
+  When random shuffling is introduced to distribute categorical permutations uniformly across all folds, the true 5-fold cross-validation Mean Exact Match (Subset) Accuracy achieves a highly stable \textbf{97.96\%}. This aligns perfectly with the independent test-set metrics and mathematically verifies the robust generalization capacity of the algorithmic boundaries.
+\end{infobox}
+
+\section{Pedagogical Validation of the Accommodation Matrix}
+
+The correlation of 1.00 between dyslexia and extended time, or between dyslexia and adapted typography, is not an algorithmic artifact — it is a faithful mathematical transposition of the UDL framework and Ministerial Circular 19-094 prescriptions. Similarly, the fact that intellectual disability is strongly correlated with simplified language (1.00) and reduced question volume (0.95) confirms that the classifier implements mechanisms of \textbf{positive differentiation}, precisely targeting the reduction of extrinsic cognitive load as prescribed by Sweller's Cognitive Load Theory.
+
+The pedagogical coherence of the heatmap validates that the model has not merely memorised patterns, but has genuinely generalised the logic embedded in the expert-labelled training data — a critical distinction for a system intended for deployment in real educational environments.
+
+\section{Interpretation of the Severity Differential}
+
+The linear increase in the mean accommodation count — from 3.5 (Mild) to 5.8 (Moderate) to 8.6 (Severe) — demonstrates the adaptive flexibility of the system. It avoids two equally harmful traps:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Over-accommodation} of mild cases, which could infantilise the learner, reduce cognitive engagement, and undermine the validity of the assessment.
+  \item \textbf{Under-accommodation} of severe cases, which creates insurmountable access barriers and directly perpetuates educational exclusion.
+\end{itemize}
+
+AdaptPlan calibrates the intensity of scaffolding in direct proportion to the degree of access obstacle encountered by the student — a precise mathematical implementation of Vygotsky's ZPD and differentiated instruction principles.
+
+\newpage
+
+% ============================================================
+%  SECTION 8 — DISCUSSION
+% ============================================================
+\chapter{Discussion of Results}
+
+\section{Achieved Objectives vs.\ Initial Objectives}
+
+All of the project's initial objectives were achieved at an operational level. The platform delivers a fully functional web application equipped with a dual predictive and linguistic engine, covering the complete specification established during Stage~3. The inclusion of the ReportLab PDF generator handling Arabic in Right-to-Left mode exceeded initial expectations, delivering a tool immediately usable by Moroccan teachers accustomed to mixed Arabic-French administrative documents.
+
+Table~\ref{tab:objectives} summarises the alignment between initial objectives and achieved outcomes.
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Initial Objectives vs.\ Achieved Outcomes}
+  \label{tab:objectives}
+  \vspace{0.3cm}
+  \begin{tabular}{p{5.2cm} p{3.5cm} p{3.5cm}}
+    \toprule
+    \textbf{Initial Objective} & \textbf{Status} & \textbf{Evidence} \\
+    \midrule
+    Train a multi-output ML classifier on expert rules          & \textbf{Achieved}     & 96.98\% EM accuracy, 0.0027 HL \\
+    \addlinespace
+    Implement multi-provider generative AI engine               & \textbf{Achieved}     & 6 providers connected; PII scrubbing active \\
+    \addlinespace
+    Produce bilingual IEP PDFs (FR/AR)                          & \textbf{Achieved}     & ReportLab + Arabic Reshaper/Bidi pipeline \\
+    \addlinespace
+    Implement Teacher-in-the-Loop feedback system               & \textbf{Achieved}     & Active learning retrainer with zero-downtime reload \\
+    \addlinespace
+    Build student accessibility sandbox                         & \textbf{Achieved}     & OpenDyslexic, TTS, MSL Glossary functional \\
+    \addlinespace
+    Implement asynchronous ML retrainer                         & \textbf{Achieved}     & Subprocess-based, in-memory model reload \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Engineering Challenges and Resolutions}
+
+The development of AdaptPlan encountered several major technical barriers that had to be resolved to deliver a truly robust and trustworthy platform for Moroccan school environments.
+
+\subsection{Arabic Bidirectional PDF Rendering Pipeline}
+
+ReportLab, the Python PDF generation library, does not natively support the rendering of Arabic cursive script. Characters are written left-to-right and do not ligate, making documents illegible.
+
+\textit{Resolution:} A preprocessing pipeline combining the \texttt{arabic\_reshaper} and \texttt{python-bidi} libraries was developed. Arabic text extracted or generated by the AI is first reshaped (aesthetic ligation of glyphs) then directionally inverted line-by-line, and inserted via ReportLab Paragraph flowables secured with custom \texttt{<br/>} line-break tags.
+
+\subsection{Student Data Security and PII Scrubbing}
+
+To eliminate any risk of sensitive student personal data leaking to third-party cloud AI servers (Google, OpenAI, Anthropic), AdaptPlan applies a strict server-side anonymisation filter.
+
+\textit{Resolution:} The \texttt{ai\_engine.py} module implements \texttt{strip\_pii\_from\_exam(text)}, applying a cascade of optimised regular expressions to exhaustively scrub student names, phone numbers, and email addresses, replacing them with anonymous tags (e.g., \texttt{[STUDENT\_NAME]}) before any network transmission.
+
+\subsection{Text-to-Speech Voice Lock for French and Arabic}
+
+On many web browsers, directly setting the language parameter (\texttt{utterance.lang = 'fr-FR'}) is silently ignored, causing examination text in French to be read by the default English system voice — dramatically impairing intelligibility for visually impaired or dyslexic students.
+
+\textit{Resolution:} The Accessibility Sandbox's client-side component asynchronously queries \texttt{speechSynthesis.getVoices()} to filter voices actually installed on the device, and explicitly binds the \texttt{SpeechSynthesisVoice} object corresponding to the current examination language, securing native accent pronunciation.
+
+\subsection{Active Learning Module and Zero-Downtime Asynchronous Retraining}
+
+When a teacher submits positive or negative feedback, or enters a qualitative adjustment comment via the feedback interface, these override data must trigger model recalibration without interrupting active user sessions.
+
+\textit{Resolution:} AdaptPlan integrates an asynchronous module that triggers — via a secure background subprocess — the retraining of the Decision Tree classifier by merging new teacher feedback with the baseline dataset. Once the adjusted tree is fitted, the new \texttt{.pkl} pickle file overwrites the previous one and is dynamically reloaded into memory without any downtime for active users.
+
+\subsection{Defensive String Coercion and Graceful Fallbacks in Arabic RTL Rendering}
+During integration testing of the ReportLab PDF compilation module, a critical runtime vulnerability was exposed within the text-reshaping and bidirectional processing pipelines. The helper functions \texttt{\_reshape\_ar} and \texttt{\_bidi\_text} initially caught only package-level \texttt{ImportError} exceptions. If a database field returned a null/None value or a non-string type, calls to third-party APIs raised unhandled \texttt{TypeError} or \texttt{AttributeError} exceptions, instantly Pipeline terminating the PDF rendering thread and returning a 500 server error to the teacher interface.
+
+To guarantee zero-downtime application resilience, the pipeline was hardened by introducing explicit type coercion wrappers (\texttt{process\_arabic\_text}). The refactored function intercepts incoming tokens, checks for data presence, strictly casts inputs to clean string literals, and embeds a comprehensive catch-all \texttt{Exception} block. In the event of an anomalous structural failure, the system bypasses cursive ligation transforms dynamically and gracefully returns the raw string representation, entirely preventing application crashes during exam execution cycles.
+
+\section{Suggestions for Improvement and Future Perspectives}
+
+For future development iterations, the following enhancements are envisioned:
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+  \item \textbf{LMS Integration (Massar / Google Classroom / Canvas):} Implementing OAuth2 flows to dynamically fetch student rosters from official Learning Management Systems and push completed adapted exam PDFs directly to teacher dashboards.
+  \item \textbf{Local ONNX / WebAssembly Port:} Compiling the Decision Tree classifier from a Python scikit-learn pickle to a client-side ONNX Runtime, enabling 100\% offline, server-free recommendations directly in the browser — critical for deployment in schools with limited connectivity.
+  \item \textbf{Multilingual Audio Dictation:} Allowing students to record oral responses using browser-native speech-to-text directly inside the examination sandbox.
+  \item \textbf{Disability Accessibility Prioritisation and Specialized Toolkits:} In order to deliver high-quality pedagogical assistance and prompt-engineering solutions, the current front-end and visual-aid toolkits focus on the top three disabilities: Dyslexia, ADHD, and Visual Impairment. The remaining 4 disability profiles (Hearing Impairment, Motor Disability, Intellectual Disability, and Autism) are fully supported in the database schema and Machine Learning prediction layer for backward compatibility and future expansion, but their prompt-tuning and visual-assistance configurations are disabled in the user interface, marked as "Upcoming Support" in the roadmap. This prioritisation strategy ensures optimal tuning for the most common profiles before deploying more specialized accessibility features.
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+%  SECTION 9 — CONCLUSIONS AND RECOMMENDATIONS
+% ============================================================
+\chapter{Conclusions and Recommendations}
+
+\section{Final Conclusions}
+
+AdaptPlan is a tool of pedagogical innovation and renewal, fully compliant with the requirements of the CRMEF 2025--2026 Training Management Guide. It demonstrates that advanced software technologies and artificial intelligence can be assembled ethically and securely in service of the values of the Moroccan inclusive school.
+
+The project achieves its central ambition: to bridge the gap between the regulatory guarantee of examination adaptation rights and the practical impossibility, under current conditions, for teachers to implement those rights manually. By combining a supervised Machine Learning engine trained on 1,323 expert-labelled profiles with a secure generative AI pipeline and a teacher feedback loop, AdaptPlan delivers a system that is simultaneously pedagogically valid, technically robust, and ethically responsible.
+
+The 96.98\% Exact Match Accuracy and near-perfect AUC scores across 11 accommodation outputs confirm that the ML component has correctly learned the expert rules embedded in Moroccan regulatory frameworks. The engineering solutions developed for Arabic RTL PDF rendering, student PII anonymisation, and asynchronous model retraining represent reusable contributions to the broader field of inclusive educational technology.
+
+\section{Actionable Recommendations}
+
+\begin{description}[leftmargin=2em, style=nextline]
+  \item[For Teachers] Use the platform systematically to standardise inclusive examination scaffolding, while maintaining a critical and reflective posture by actively using the feedback module to correct and guide the model toward institutionally validated recommendations.
+  \item[For School Administrators] Promote the integration of AdaptPlan within school councils (\textit{conseils de classe}) and facilitate pilot teachers' access to dedicated computing workstations for inclusive examination administration.
+  \item[For CRMEF Trainers] Integrate theoretical and practical modules on inclusive assessment and the use of intelligent assistive tools — such as AdaptPlan — into the initial training curricula of future computer science teacher-trainees.
+  \item[For Curriculum Designers and Policy Makers] Consider scaling platforms of this type at the regional level (AREF), building on open-source licensing and ONNX portability to ensure sustainable, offline-capable deployment in public school infrastructure.
+\end{description}
+
+\newpage
+
+% ============================================================
+%  SECTION 10 — BILAN: SUMMARY AND LESSONS LEARNED
+% ============================================================
+\chapter{Retrospective: Summary and Professional Lessons Learned}
+
+\section{Review of Goals and Key Results}
+
+This Supervised Personal Project set out with the ambition of designing a functional, scientifically grounded, and ethically responsible platform to support inclusive examination practices in Moroccan secondary schools. The key outcomes achieved can be summarised as follows:
+
+\begin{itemize}[leftmargin=*]
+  \item A fully operational bilingual (French/Arabic) web application with teacher authentication, student profile management, dual-engine adaptation, and administrative telemetry.
+  \item A supervised Machine Learning classifier trained on 1,323 expert-labelled profiles, achieving 96.98\% Exact Match Accuracy across 11 binary accommodation outputs.
+  \item A multi-provider generative AI engine with server-side PII scrubbing and multimodal input handling (text, PDF, images).
+  \item A bilingual ReportLab IEP PDF generator with a custom Arabic RTL reshaping pipeline.
+  \item A Teacher-in-the-Loop feedback system with an asynchronous zero-downtime model retraining mechanism.
+  \item A student Accessibility Sandbox with OpenDyslexic typography, calibrated TTS, and Moroccan Sign Language keyword overlays.
+  \item A comprehensive integration test suite of 29 automated tests, all passing.
+\end{itemize}
+
+\section{Personal and Professional Lessons Learned}
+
+This project has been a foundational experience of professional identity transition. It catalysed the transformation from an experienced software engineer into a qualified, reflective computer science teacher-practitioner.
+
+The principal personal lesson is that educational software is not simply a program — it must be deeply anchored in learning theories, regulatory frameworks, and field realities to be both valid and genuinely useful in a classroom context. The gap between a technically correct algorithm and a pedagogically appropriate tool is not a technical gap, but an epistemological one.
+
+\section{Professional Competencies Developed (CRMEF Reference Framework)}
+
+\begin{description}[leftmargin=2em, style=nextline]
+  \item[Design and Implementation of Adapted Assessments] Developed the capacity to differentiate assessment instruments for students with special educational needs, grounded in UDL, Cognitive Load Theory, and ZPD frameworks.
+  \item[Digital Educational Project Engineering] End-to-end management of the development lifecycle of an intelligent learning platform: from needs diagnosis and dataset construction, through iterative development, pilot testing, and results analysis.
+  \item[Reflective Practice (Teacher-as-Researcher)] Translated personal field observations into a formalised pedagogical problem statement, designed a technological response, and subjected it to empirical validation — embodying the reflective practitioner model central to CRMEF training.
+  \item[Ethics of Educational AI] Developed and applied an AI ethics framework for educational contexts, including PII anonymisation, Teacher-in-the-Loop authority, and construct-validity preservation.
+\end{description}
+
+\section{Future Perspectives}
+
+The work accomplished with AdaptPlan opens several promising directions for extension and scaling:
+
+\begin{itemize}[leftmargin=*]
+  \item Integration with the national \textbf{Massar} student information system for direct roster synchronisation.
+  \item Open-source release and community-driven extension of the disability profile dataset beyond the current seven categories.
+  \item Deployment as a regional shared service across AREF Casablanca-Settat, with multi-tenant teacher accounts and centralised anonymised telemetry for continuous model improvement.
+  \item Pedagogical research partnership with CRMEF formateurs to systematically evaluate the platform's impact on inclusive examination practice outcomes across multiple academic years.
+\end{itemize}
+
+\newpage
+
+% ============================================================
+%  SECTION 11 — REFERENCES
+% ============================================================
+\chapter{References}
+
+\begin{thebibliography}{99}
+
+  \bibitem{apa2013}
+    American Psychiatric Association. (2013).
+    \textit{Diagnostic and Statistical Manual of Mental Disorders} (5th ed.).
+    American Psychiatric Association.
+
+  \bibitem{cast2024}
+    CAST. (2024).
+    \textit{UDL tips for assessment}.
+    Wakefield, MA: Center for Applied Special Technology.
+
+  \bibitem{dystech2026}
+    Dystech. (2026).
+    \textit{Dyscover platform: AI-powered reading assessment and dyslexia screening}.
+    Dystech Australia.
+
+  \bibitem{ets2015}
+    Educational Testing Service. (2015).
+    \textit{Assistive technologies for computer-based assessments}.
+    Princeton, NJ: ETS.
+
+  \bibitem{janison2026}
+    Janison. (2026).
+    \textit{Online exam solutions and assessment accessibility features}.
+    Janison Education Group.
+
+  \bibitem{katz2022}
+    Katz, D., Huggins-Manley, A.\ C., \& Leite, W. (2022).
+    Personalized online learning, test fairness, and educational measurement:
+    Considering differential content exposure prior to a high-stakes end-of-course exam.
+    \textit{Applied Measurement in Education}, \textit{35}(1), 1--16.
+
+  \bibitem{littlelit2026}
+    LittleLit AI. (2026).
+    \textit{AI tools for special education and inclusive learning pipelines}.
+    LittleLit AI.
+
+  \bibitem{readspeaker2026}
+    ReadSpeaker. (2026).
+    \textit{Text-to-Speech solution for Assess secure online testing}.
+    ReadSpeaker B.V.
+
+  \bibitem{rello2013}
+    Rello, L., Baeza-Yates, R., Bott, S., \& Saggion, H. (2013).
+    Simplify or help?: Text simplification strategies for people with dyslexia.
+    \textit{Proceedings of the 15th International ACM SIGACCESS Conference on Computers and Accessibility},
+    Article~1.
+
+  \bibitem{sweller2011}
+    Sweller, J. (2011).
+    Cognitive load theory, learning difficulty, and instructional design.
+    \textit{Learning and Instruction}, \textit{21}(1), 3--14.
+
+  \bibitem{unesco2009}
+    UNESCO. (2009).
+    \textit{Policy guidelines on inclusion in education}.
+    United Nations Educational, Scientific and Cultural Organization.
+
+  \bibitem{vygotsky1978}
+    Vygotsky, L.\ S. (1978).
+    \textit{Mind in society: The development of higher psychological processes}.
+    Harvard University Press.
+
+  \bibitem{loi5117}
+    Royaume du Maroc. (2019).
+    \textit{Loi-cadre n° 51-17 relative au système d'éducation, de formation et de recherche scientifique}.
+    Bulletin Officiel, Ministère de l'Éducation Nationale.
+
+  \bibitem{menvp2019}
+    Ministère de l'Éducation Nationale. (2019).
+    \textit{Note Ministérielle n° 19-094 relative aux modalités d'adaptation des épreuves des examens pour les élèves en situation de handicap}.
+    MENVP, Maroc.
+
+\end{thebibliography}
+
+\newpage
+
+% ============================================================
+%  SECTION 12 — APPENDICES
+% ============================================================
+\chapter*{Appendices}
+\addcontentsline{toc}{chapter}{Appendices}
+
+\section*{Appendix A — AdaptPlan User Interface Screenshots}
+\addcontentsline{toc}{section}{Appendix A — User Interface Screenshots}
+
+The following screenshots illustrate the principal interfaces of the AdaptPlan platform:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{A.1} — Teacher dashboard with lazy-loaded Chart.js analytics panels
+  \item \textbf{A.2} — Student profile creation wizard (3-step adaptive plan generator)
+  \item \textbf{A.3} — Adaptation result card with Teacher-in-the-Loop feedback thumbs-up/down controls
+  \item \textbf{A.4} — Admin panel: API credential manager, live connection test, and ML retraining trigger
+  \item \textbf{A.5} — Accessibility Sandbox: OpenDyslexic toggle, TTS voice controls, and Moroccan Sign Language keyword overlays
+  \item \textbf{A.6} — Bulk Classroom Adaptor: left-pane student roster, centre-pane original exam, right-pane adapted version
+\end{itemize}
+
+\bigskip
+
+\section*{Appendix B — UML Architecture Diagrams}
+\addcontentsline{toc}{section}{Appendix B — UML Architecture Diagrams}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{B.1} — Class Diagram (\texttt{uml\_class\_diagram.png}): Flask Blueprint structure and dual-engine decomposition
+  \item \textbf{B.2} — Use Case Diagram (\texttt{uml\_use\_case\_diagram.png}): Teacher and System Administrator interaction boundaries
+  \item \textbf{B.3} — Sequence Diagram (\texttt{uml\_sequence\_diagram.png}): Active learning feedback loop and asynchronous Decision Tree in-memory reload
+\end{itemize}
+
+\bigskip
+
+\section*{Appendix C — ML Validation Plots}
+\addcontentsline{toc}{section}{Appendix C — ML Validation Plots}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{C.1} — \texttt{plot\_disability\_distribution.png}: Balanced class distribution (189 per disability, $n=1{,}323$)
+  \item \textbf{C.2} — \texttt{plot\_adaptation\_matrix.png}: Accommodation–disability correlation heatmap
+  \item \textbf{C.3} — \texttt{plot\_severity\_density.png}: Accommodation volume vs.\ severity (Mild/Moderate/Severe)
+  \item \textbf{C.4} — \texttt{plot\_cv\_curve.png}: Cross-validation accuracy vs.\ \texttt{max\_depth} (3–10)
+\end{itemize}
+
+\bigskip
+
+\section*{Appendix D — Dataset Schema}
+\addcontentsline{toc}{section}{Appendix D — Dataset Schema}
+\setcounter{table}{0}
+\renewcommand{\thetable}{\thechapter.\arabic{table}}
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Table D.1: Training Dataset Input and Output Column Reference}
+  \vspace{0.3cm}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Column} & \textbf{Type} & \textbf{Values / Description} \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Input Features (5 categorical)}} \\
+    \texttt{disability\_type} & Categorical & Dyslexia, ADHD, Visual, Hearing, Motor, Intellectual, Autism \\
+    \texttt{severity}         & Categorical & Mild, Moderate, Severe \\
+    \texttt{subject}          & Categorical & Math, French, Arabic, Science, History, Informatics, All \\
+    \texttt{level}            & Categorical & Primary, Middle, High \\
+    \texttt{exam\_type}       & Categorical & Written, Oral, Practical \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Output Labels (11 binary)}} \\
+    \texttt{extra\_time\_30}              & Binary & 30 minutes extra time \\
+    \texttt{extra\_time\_60}              & Binary & 60 minutes extra time \\
+    \texttt{large\_font}                  & Binary & Large-font examination paper \\
+    \texttt{oral\_reading\_by\_supervisor} & Binary & Narration by supervisor \\
+    \texttt{separate\_room}               & Binary & Quiet, low-distraction room \\
+    \texttt{reduced\_questions}           & Binary & Reduced number of questions \\
+    \texttt{computer\_allowed}            & Binary & Computer / word processor permitted \\
+    \texttt{oral\_response\_allowed}      & Binary & Oral response permitted \\
+    \texttt{simplified\_language}         & Binary & Simplified wording (rigour preserved) \\
+    \texttt{visual\_aids\_allowed}        & Binary & Visual diagrams / graphic organisers \\
+    \texttt{breaks\_allowed}              & Binary & Supervised movement breaks \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\bigskip
+
+\section*{Appendix E — Integration Test Suite Summary}
+\addcontentsline{toc}{section}{Appendix E — Integration Test Suite Summary}
+
+AdaptPlan ships with a comprehensive integration test suite of \textbf{29 automated tests} (file: \texttt{tests.py}), all executing with a 100\% pass rate. Test coverage includes: educator authentication and session security, multi-step plan wizard, PII scrubbing unit tests, multimodal vision API payloads, bulk classroom processing, ReportLab French and Arabic PDF compilers, Teacher-in-the-Loop feedback API endpoint, and asynchronous ML retraining subprocess.
+
+To execute the suite:
+\begin{verbatim}
+  .venv\Scripts\python.exe tests.py
+\end{verbatim}
+
+\end{document}

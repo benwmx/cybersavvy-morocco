@@ -1,0 +1,498 @@
+Remerciements
+
+Avant tout, je tiens à exprimer ma gratitude envers Allah le Tout-Puissant pour m'avoir accordé la force, la santé et la sagesse nécessaires à l'accomplissement de ce Projet Personnel Encadré et de ma formation qualifiante.
+
+J'adresse ma profonde reconnaissance à ma famille bien-aimée pour ses sacrifices inlassables, sa patience et ses prières, qui ont constitué mon pilier tout au long de ce parcours. À mes chers amis et collègues stagiaires, j'exprime ma sincère appréciation pour leur encouragement constant.
+
+J'exprime mes vifs remerciements à mon encadrant, , pour ses conseils précieux, ses retours constructifs et son accompagnement soutenu tout au long du cycle de ce projet. Ses orientations académiques m'ont permis d'affiner les objectifs de ce travail et d'en élever continuellement la qualité.
+
+Je tiens également à remercier sincèrement M. Elmostafa ATOUBI, Chef de la filière Informatique, pour son accompagnement dévoué tout au long de cette formation, sa disponibilité constante et son engagement indéfectible envers la réussite des stagiaires.
+
+Je remercie chaleureusement l'administration, le corps professoral et l'ensemble de l'équipe pédagogique du Centre Régional des Métiers de l'Éducation et de la Formation (CRMEF) — Casablanca-Settat, pour la richesse exceptionnelle des enseignements dispensés et les apports professionnels qui ont enrichi notre formation qualifiante.
+
+Enfin, j'adresse ma gratitude à la direction du collège Abdelaziz Mezyan Belfeqih, mon établissement de stage, pour son accueil chaleureux et les conditions de travail favorables durant le stage pratique. Mes remerciements particuliers vont à mon mentor de classe, M. Abderrahmane MAKHLOUF, dont les conseils pratiques, l'accompagnement sur le terrain et les insights pédagogiques ont grandement enrichi ma réflexion professionnelle en tant que futur enseignant.
+
+Résumés
+
+Résumé
+
+Ce Projet Personnel Encadré s'inscrit dans le contexte de la transformation numérique du système éducatif marocain et de la montée des menaces cybernétiques visant les mineurs. Partant du constat que la plateforme officielle e-himaya.gov.ma demeure essentiellement informative et dépourvue d'instruments pédagogiques interactifs exploitables en classe, ce projet propose la conception et la réalisation de « CyberSafe », une application web bilingue (français / arabe) reposant sur une approche par scénarios interactifs et par évaluation formative pour renforcer la culture numérique et la cybersécurité chez les collégiens. Développée avec React et Supabase, l'application fonctionne hors-ligne grâce à IndexedDB et offre aux enseignants un tableau de bord analytique augmenté par l'intelligence artificielle (Gemini 2.0 Flash) pour générer des recommandations pédagogiques ciblées facilitant la remédiation en classe. La démarche adoptée articule le modèle de conception pédagogique ADDIE et les huit étapes méthodologiques du CRMEF. Le produit livré est une application fonctionnelle, exploitable en contexte de classe et alignée sur l'Approche Par Compétences (APC).
+
+Mots-clés : cybersécurité, apprentissage par scénarios, culture numérique, enseignement collégial, intelligence artificielle, application web, Approche Par Compétences, hors-ligne, bilinguisme.
+
+Abstract
+
+This Supervised Personal Project addresses the gap between Morocco's digital education platforms and the cybersecurity skills that middle-school students actually develop. The national portal e-himaya.gov.ma provides useful awareness content, but no interactive scenarios, no formative assessment, and no classroom tracking tools for teachers. CyberSafe is a bilingual (French/Arabic) web application that fills this gap through scenario-based learning: students work through simulated cybersecurity situations and receive immediate corrective feedback after each answer. Because many Moroccan schools have unreliable connectivity, the application caches content locally via IndexedDB and queues results for upload when a connection is restored. Teachers access an analytical dashboard that aggregates class performance data and, using the Gemini 2.0 Flash API, generates targeted remediation recommendations in French or Arabic. No student names or individual identifiers are sent to the external API. The project follows the ADDIE instructional design model and aligns with Morocco's Competency-Based Approach (CBA).
+
+Keywords: cybersecurity, scenario-based learning, digital literacy, middle school, artificial intelligence, web application, Competency-Based Approach, offline-first, bilingualism.
+
+خلاصة
+
+يندرج هذا المشروع الشخصي المؤطر في سياق التحول الرقمي للمنظومة التربوية المغربية وتنامي المخاطر السيبرانية التي تهدد المتعلمين القاصرين. وانطلاقا من كون المنصة الرسمية e-himaya.gov.ma ذات طابع إخباري محض تفتقر إلى أدوات بيداغوجية تفاعلية قابلة للاستثمار داخل القسم، يقترح هذا المشروع تصميم وإنجاز تطبيق ويب ثنائي اللغة (الفرنسية والعربية) يحمل اسم «CyberSafe»، يعتمد على التعلم بالسيناريوهات التفاعلية لتعزيز الثقافة الرقمية والأمن السيبراني لدى تلاميذ السلك الإعدادي. أُنجز التطبيق باستعمال React وSupabase، ويتيح الاشتغال دون اتصال بالإنترنت عبر IndexedDB، ويوفر للأساتذة لوحة قيادة تحليلية مدعومة بالذكاء الاصطناعي (Gemini 2.0 Flash) لتقديم توصيات تربوية موجهة تساعد في عمليات المعالجة البيداغوجية. وقد اعتُمدت في الإنجاز منهجية ADDIE والمراحل الثماني المعتمدة بالمركز الجهوي لمهن التربية والتكوين، لينتج عن ذلك تطبيق وظيفي قابل للاستعمال الصفي ومنسجم مع المقاربة بالكفايات.
+
+الكلمات المفتاحية: الأمن السيبراني، التعلم بالسيناريوهات، الثقافة الرقمية، التعليم الإعدادي، الذكاء الاصطناعي، تطبيق ويب، المقاربة بالكفايات.
+
+Introduction générale
+
+Contexte général
+
+La généralisation des usages numériques chez les jeunes a profondément transformé leur rapport à l'information, à la communication et au savoir. Au Maroc, cette dynamique est portée par des chantiers structurants tels que le programme GENIE de généralisation des technologies de l'information dans l'enseignement, la Vision stratégique 2015-2030 du Conseil Supérieur de l'Éducation et, plus récemment, la stratégie nationale « Maroc Digital 2030 » pilotée par l'Agence de Développement du Digital (ADD). Toutefois, l'accélération de la connectivité s'accompagne d'une exposition accrue des mineurs à des risques cybernétiques (hameçonnage, usurpation d'identité, harcèlement en ligne, fuite de données personnelles), face auxquels la culture numérique et la cybersécurité deviennent des compétences citoyennes de premier ordre.
+
+Genèse du projet
+
+Ce projet est né d'une période d'immersion pédagogique au collège Abdelaziz Mezyan Belfeqih. Cette confrontation avec le terrain a mis en évidence un décalage réel entre la sensibilisation théorique et la pratique en classe : si le numérique est une composante intégrée du quotidien des collégiens, son usage pédagogique en matière de cybersécurité reste cantonné à des activités de consultation informative. L'enjeu ne réside plus dans la disponibilité de l'information, mais dans la création d'instruments didactiques capables de transformer cette information en savoir-agir — c'est-à-dire de passer de la littératie numérique (connaître les risques) à la compétence sécuritaire (agir face aux risques).
+
+Problématique
+
+Le Maroc dispose d'une plateforme institutionnelle de référence, e-himaya.gov.ma, dédiée à la protection des enfants en ligne. Cette plateforme, bien que pertinente, reste de nature essentiellement informative : elle diffuse des contenus de sensibilisation mais n'offre ni scénarios de mise en situation, ni dispositif d'évaluation formative, ni outil de suivi exploitable par l'enseignant en situation de classe. De plus, sa dépendance à une connexion internet stable en limite l'usage dans des établissements à connectivité variable. La problématique de ce projet se formule ainsi :
+
+Comment concevoir et réaliser un outil pédagogique numérique interactif, bilingue et accessible hors-ligne, capable de transformer la sensibilisation passive à la cybersécurité en un apprentissage actif par scénarios et mesurable, tout en dotant l'enseignant d'un système d'aide à la décision pédagogique par l'intelligence artificielle, en complément de la plateforme e-himaya.gov.ma ?
+
+Objectifs du projet
+
+Le projet poursuit six objectifs principaux :
+
+- Concevoir une application web interactive et bilingue (français / arabe) destinée aux collégiens et à leurs enseignants ;
+
+- Concevoir des scénarios interactifs de cybersécurité sous forme de pistes progressives avec rétroaction formative immédiate ;
+
+- Doter l'enseignant d'outils de gestion de classes et d'un tableau de bord analytique ;
+
+- Garantir une accessibilité hors-ligne grâce à IndexedDB (architecture offline-first) ;
+
+- Intégrer un assistant pédagogique basé sur l'intelligence artificielle (Gemini) pour aider l'enseignant à interpréter les résultats et à planifier des remédiations ciblées ;
+
+- Apporter une valeur pédagogique interactive en complément de e-himaya.gov.ma.
+
+Démarche méthodologique
+
+La démarche combine deux référentiels complémentaires. Sur le plan pédagogique, le modèle ADDIE (Analyse, Conception, Développement, Implémentation, Évaluation) structure l'ingénierie de l'outil. Sur le plan institutionnel, les huit étapes méthodologiques du CRMEF encadrent la conduite du projet, du diagnostic initial jusqu'à la rédaction du rapport final. Le tableau explicite l'articulation entre ces deux référentiels.
+
+Structure du rapport
+
+Ce rapport s'organise en six chapitres. Le premier pose le cadre théorique et pédagogique. Le deuxième analyse les travaux antérieurs et positionne le projet. Le troisième spécifie les besoins. Le quatrième détaille la phase de conception (architecture, UML, base de données). Le cinquième présente la phase de réalisation. Le sixième analyse les résultats et discute les apports. Un bilan professionnel et personnel ainsi qu'une conclusion générale clôturent le travail, suivis de la bibliographie et des annexes.
+
+Cadre théorique et pédagogique
+
+Ce chapitre établit les fondements théoriques du projet. Il situe les enjeux de la cybersécurité et de la culture numérique au Maroc, examine l'apport de l'apprentissage actif par scénarios dans l'enseignement de la sécurité numérique, rappelle les principes de l'Approche Par Compétences et de l'intégration des TICE, puis analyse la plateforme officielle e-himaya.gov.ma.
+
+La cybersécurité et la culture numérique au Maroc : enjeux et difficultés
+
+La culture numérique désigne l'ensemble des connaissances, compétences et attitudes permettant à l'individu d'utiliser les outils numériques de manière critique, responsable et sécurisée. Chez le collégien, elle recouvre la protection des données personnelles, l'identification des tentatives d'hameçonnage, la gestion des mots de passe, la prévention du cyberharcèlement et la vérification de l'information.
+
+Au Maroc, le taux de pénétration d'Internet et l'usage massif des smartphones par les adolescents accroissent l'exposition aux risques. Plusieurs difficultés persistent : la faible intégration de la cybersécurité dans les pratiques de classe, le manque d'outils pédagogiques adaptés au niveau collégial, la barrière linguistique (contenus souvent disponibles uniquement en une seule langue) et l'inégalité d'accès à une connexion stable. Ces constats justifient un outil conçu spécifiquement pour le contexte marocain : bilingue, accessible hors-ligne et ancré dans des situations concrètes vécues par les élèves.
+
+Une distinction fondamentale doit être soulignée : la différence entre la littératie numérique et la compétence sécuritaire. La littératie numérique — acquise par la lecture d'articles ou de guides informatifs — permet à l'élève de connaître les risques. La compétence sécuritaire, en revanche, lui permet de réagir face à ces risques dans une situation réelle. Cette seconde dimension ne peut s'acquérir que par la mise en situation active, c'est-à-dire par l'expérimentation, l'erreur et la rétroaction.
+
+L'apprentissage actif par scénarios et l'apport des TICE
+
+L'apprentissage par scénarios situationnels
+
+L'apprentissage par scénarios (scenario-based learning) consiste à placer l'apprenant dans des situations simulées, proches des contextes réels qu'il pourrait rencontrer, et à lui demander d'y réagir par des décisions ou des choix. Appliqué à la cybersécurité, il permet de transformer des règles abstraites (« ne pas cliquer sur des liens suspects ») en réflexes concrets, en confrontant l'élève à une simulation d'un courriel frauduleux, d'une demande d'identifiant par un inconnu ou d'un message de harcèlement.
+
+Cette approche présente plusieurs avantages pédagogiques. D'une part, elle favorise un apprentissage actif : l'élève n'est plus simple récepteur d'un contenu, mais acteur d'une situation-problème qu'il doit résoudre. D'autre part, la rétroaction immédiate — caractéristique essentielle du dispositif — lui permet d'apprendre de ses erreurs en temps réel, consolidant les acquis et corrigeant les représentations erronées.
+
+Fondements théoriques : charge cognitive et apprentissage multimédia
+
+Deux théories soutiennent la conception de CyberSafe :
+
+La théorie de la charge cognitive (Sweller, 1988) distingue trois types de charges pesant sur la mémoire de travail de l'apprenant : la charge intrinsèque (liée à la complexité du contenu), la charge extrinsèque (liée à la présentation) et la charge germane (liée à la construction de schémas mentaux). Une interface épurée et des scénarios progressivement plus complexes permettent de réduire la charge extrinsèque et de concentrer les ressources cognitives sur l'apprentissage effectif.
+
+La théorie de l'apprentissage multimédia (Mayer, 2009) démontre que l'être humain traite l'information via deux canaux distincts (verbal et visuel), et que la combinaison cohérente de textes, d'images et de questions structurées améliore significativement la rétention et la compréhension. CyberSafe exploite ce principe en intégrant des supports médiatiques (images, vidéos) à chaque scénario.
+
+La rétroaction formative comme levier d'apprentissage
+
+La rétroaction immédiate est le mécanisme central de CyberSafe. À chaque question, l'élève reçoit une indication sur la justesse de sa réponse accompagnée d'une explication. Ce retour en temps réel remplit une fonction formative : il informe l'apprenant de son état de maîtrise et guide sa progression. La théorie de la Zone de Développement Proximal de Vygotsky (1978) éclaire ce mécanisme : l'élève progresse mieux lorsqu'il reçoit un étayage adapté à ses difficultés actuelles, ce qu'assure la rétroaction ciblée du système.
+
+L'Approche Par Compétences (APC) et l'intégration des TICE
+
+L'Approche Par Compétences, retenue par le système éducatif marocain, recentre l'apprentissage sur la mobilisation de ressources (savoirs, savoir-faire, savoir-être) face à des situations complexes. Elle privilégie l'évaluation des compétences en action plutôt que la restitution de connaissances isolées. L'intégration des Technologies de l'Information et de la Communication pour l'Enseignement (TICE) prolonge cette logique en offrant des environnements interactifs, différenciés et traçables.
+
+CyberSafe s'inscrit pleinement dans ce cadre : chaque piste de scénarios cible une compétence numérique précise, l'élève la mobilise dans une situation simulée, et l'enseignant dispose d'indicateurs pour réguler son enseignement. L'outil articule ainsi APC et TICE autour d'une finalité citoyenne : la sécurité numérique.
+
+Analyse de la plateforme officielle e-himaya.gov.ma : forces et limites
+
+La plateforme e-himaya.gov.ma, portée par l'Agence de Développement du Digital (ADD) en partenariat avec plusieurs ministères, est le dispositif institutionnel marocain de référence pour la protection des mineurs en ligne. Ses forces sont réelles : légitimité officielle, contenus de sensibilisation fiables, guides thématiques, vidéos pédagogiques, dispositif de signalement et couverture de risques essentiels (harcèlement, hameçonnage, données personnelles).
+
+Toutefois, du point de vue pédagogique, plusieurs limites apparaissent. La plateforme privilégie une logique descendante et informative : l'utilisateur consulte, mais n'est pas mis en situation. Elle ne propose pas de parcours progressif de mise en situation, ni de dispositif d'évaluation formative permettant à l'enseignant de mesurer la progression d'une classe. Elle suppose par ailleurs une connexion permanente, ce qui en limite l'usage dans les établissements faiblement connectés. La figure illustre la page d'accueil de la plateforme.
+
+Ces limites définissent l'espace d'innovation du projet : CyberSafe ne se substitue pas à e-himaya, mais en prolonge la mission en y ajoutant interactivité, évaluation formative par scénarios, suivi pédagogique et accessibilité hors-ligne.
+
+Travaux antérieurs et positionnement du projet
+
+Plateformes et dispositifs existants
+
+Plusieurs solutions abordent la sensibilisation à la cybersécurité ou l'apprentissage interactif. À l'échelle internationale, des plateformes proposent des modules de mise en situation, des jeux sérieux (serious games) ou des quiz en ligne ; des outils éducatifs généralistes (questionnaires interactifs, plateformes d'apprentissage par scénarios) sont largement utilisés en classe. À l'échelle nationale, e-himaya.gov.ma demeure la référence institutionnelle. Ces dispositifs apportent chacun une contribution, mais aucun ne réunit l'ensemble des caractéristiques requises pour le contexte ciblé.
+
+Limites des approches informatives
+
+Les approches existantes présentent des limites récurrentes lorsqu'on les rapporte au besoin spécifique du collège marocain :
+
+- Passivité : les contenus informatifs n'engagent pas l'élève dans une démarche active de résolution de problèmes ;
+
+- Absence de suivi : peu d'outils offrent à l'enseignant des indicateurs de progression par classe ;
+
+- Dépendance à la connexion : la plupart exigent un accès Internet permanent ;
+
+- Barrière linguistique : rares sont les solutions véritablement bilingues français / arabe avec gestion du sens d'écriture (RTL) ;
+
+- Inadéquation curriculaire : les contenus ne sont pas alignés sur le niveau et le programme du collège marocain.
+
+Positionnement de CyberSafe
+
+CyberSafe se positionne comme une réponse intégrée à ces limites. Le tableau synthétise sa valeur ajoutée par rapport aux approches existantes.
+
+Le projet ne vise donc pas à concurrencer les dispositifs existants, mais à combler un vide précis : un outil de classe, interactif et formatif, bilingue, traçable et utilisable même sans connexion, conçu pour le collégien marocain et son enseignant.
+
+Spécification des besoins
+
+Ce chapitre formalise les besoins de l'application à partir de l'analyse menée précédemment. Il précise le public cible, les besoins fonctionnels et non-fonctionnels, ainsi que les contraintes du projet.
+
+Public cible
+
+CyberSafe s'adresse à deux catégories principales d'utilisateurs, auxquelles s'ajoute un rôle d'administration :
+
+- Les élèves du collège (تلاميذ السلك الإعدادي) : utilisateurs principaux et acteurs des scénarios interactifs, ils jouent les pistes de cybersécurité et reçoivent une rétroaction formative immédiate. Leur interface doit être intuitive et adaptée à leur niveau pour minimiser la charge cognitive extrinsèque ;
+
+- Les enseignants d'informatique (administrateurs pédagogiques) : ils gèrent les classes, assignent les contenus et consultent le tableau de bord analytique pour interpréter les résultats et ajuster leur enseignement selon l'APC ;
+
+- Le super-administrateur : il gère le contenu global (catégories, scénarios, questions avec médias), les comptes enseignants et les traductions de l'interface.
+
+Besoins fonctionnels
+
+Les besoins fonctionnels sont organisés par acteur.
+
+Acteur Élève
+
+- S'authentifier au moyen d'un code de classe et d'un identifiant Massar ;
+
+- Choisir une piste de scénarios parmi celles assignées à sa classe ;
+
+- Jouer un scénario interactif avec rétroaction immédiate (correct / incorrect avec explication) ;
+
+- Visualiser sa progression (score, questions réussies) ;
+
+- Poursuivre son activité hors-ligne et synchroniser ultérieurement.
+
+Acteur Enseignant
+
+- S'authentifier par courriel et mot de passe ;
+
+- Gérer les classes et les élèves (création, inscription, suivi) ;
+
+- Assigner des catégories de scénarios à une classe ;
+
+- Consulter le tableau de bord analytique (taux de réussite, progression par élève et par classe) ;
+
+- Obtenir des recommandations pédagogiques générées par intelligence artificielle (Gemini), basées sur les statistiques agrégées et anonymisées de sa classe ;
+
+- Configurer sa clé API personnelle pour activer l'assistant IA (depuis la page Paramètres).
+
+Acteur Super-Administrateur
+
+- Gérer le contenu global (opérations CRUD sur catégories, scénarios, questions) ;
+
+- Ajouter des médias (images, vidéos) aux scénarios et aux questions ;
+
+- Créer et gérer des tutoriels pédagogiques globaux (accessibles à tous les enseignants et élèves) ;
+
+- Gérer les enseignants et les classes ;
+
+- Gérer les traductions de l'interface (internationalisation i18n).
+
+Besoins non-fonctionnels
+
+- Disponibilité hors-ligne : l'application doit rester utilisable sans connexion (architecture offline-first) ;
+
+- Sécurité : isolation stricte des données par la sécurité au niveau des lignes (RLS) ; aucune donnée personnelle des élèves ne transite vers des services tiers ;
+
+- Confidentialité dans l'IA : l'assistant pédagogique ne reçoit jamais de données nominatives — uniquement des statistiques agrégées et anonymisées (moyennes, pourcentages, comptages) ; la clé API de l'enseignant est stockée localement dans son navigateur et ne transite pas par les serveurs Supabase ;
+
+- Performance : temps de réponse réduit grâce au cache local et à la gestion des requêtes ;
+
+- Accessibilité linguistique : interface bilingue FR/AR avec prise en charge du sens d'écriture de droite à gauche (RTL) ; l'assistant IA répond dans la langue courante de l'enseignant (français ou arabe) ;
+
+- Ergonomie : interface adaptée aux collégiens, claire et responsive (ordinateurs, tablettes, smartphones) ;
+
+- Maintenabilité : architecture modulaire facilitant l'évolution du contenu.
+
+Contraintes
+
+Le projet est soumis à plusieurs contraintes : un environnement scolaire à connectivité variable, des terminaux hétérogènes (ordinateurs, tablettes, smartphones), la nécessité d'un contenu aligné sur le curriculum, et le respect de la confidentialité des données des mineurs conformément aux exigences légales en vigueur. Ces contraintes ont directement orienté les choix techniques (architecture offline-first, IndexedDB, RLS, bilinguisme natif).
+
+Phase de conception
+
+Ce chapitre présente la conception de CyberSafe : architecture technique, modélisation UML, conception de la base de données et conception pédagogique.
+
+Architecture technique
+
+CyberSafe adopte une architecture Single Page Application (SPA) de type BaaS (Backend as a Service), structurée en deux couches distinctes :
+
+Couche Présentation (Frontend) : Développée avec React 19 et Vite, elle gère l'interface, le routage (TanStack Router) et l'état des données (TanStack Query). Elle embarque une base de données locale (IndexedDB via Dexie.js) qui assure la continuité de service en mode déconnecté, permettant à l'élève de jouer des scénarios sans connexion active.
+
+Couche Service (Backend — Supabase) : Supabase centralise l'authentification des utilisateurs (JWT), la base de données PostgreSQL avec les politiques de sécurité au niveau des lignes (Row Level Security — RLS), et le stockage des médias pédagogiques (images, vidéos) dans un bucket sécurisé.
+
+La figure présente cette architecture.
+
+Modélisation UML
+
+Diagramme de cas d'utilisation
+
+Le diagramme de cas d'utilisation (figure ) recense les interactions des trois acteurs avec le système.
+
+Diagramme de séquence — Authentification et RLS
+
+La figure décrit la séquence d'authentification et l'application des politiques de sécurité au niveau des lignes.
+
+Diagramme de séquence — Mode hors-ligne et synchronisation
+
+La figure illustre le cycle en ligne / hors-ligne / reconnexion.
+
+Diagramme de séquence — Déroulement d'un scénario interactif
+
+La figure détaille le flux complet suivi par un élève : identification, sélection d'un scénario, progression question par question avec rétroaction immédiate, et enregistrement du résultat (en ligne ou différé).
+
+Conception de la base de données
+
+Le modèle relationnel, déployé sur PostgreSQL via Supabase, comprend neuf tables principales : teachers (utilisateurs authentifiés), classes, students, categories, scenarios (incluant un champ image_url pour le média de couverture), results (résultats des élèves par scénario), class_scenario_status (statut d'activation des scénarios par classe), tutorials (ressources pédagogiques complémentaires, globales ou personnalisées par enseignant) et translations (libellés bilingues de l'interface). La sécurité au niveau des lignes (RLS) est activée sur toutes les tables sensibles pour isoler les données par enseignant et par élève. Le diagramme entité-association est présenté en figure .
+
+Conception pédagogique : de e-himaya à CyberSafe
+
+La conception pédagogique transpose les thématiques de e-himaya en pistes de scénarios interactifs. Chaque catégorie informative devient une piste composée de questions à choix, dotées d'une rétroaction formative ciblée. Le tableau illustre cette transposition.
+
+Conception de l'assistant pédagogique IA
+
+Architecture et modèle BYOK
+
+L'assistant pédagogique repose sur l'API Google Gemini (modèle gemini-2.0-flash), appelée directement depuis le navigateur de l'enseignant (client-side). Le choix architectural retenu est le modèle BYOK (Bring Your Own Key) : chaque enseignant configure sa propre clé API, obtenue gratuitement via Google AI Studio. Cette clé est stockée dans le localStorage du navigateur sous la clé gemini_api_key_ userId et n'est jamais transmise aux serveurs Supabase. Ce design découple entièrement la fonctionnalité IA de l'infrastructure backend et garantit la maîtrise des coûts par chaque utilisateur.
+
+Confidentialité par conception (Privacy by Design)
+
+L'intégration de l'IA dans un contexte éducatif impliquant des mineurs impose une rigueur absolue. La conception adopte le principe de confidentialité dès la conception : seules des statistiques agrégées et anonymisées sont transmises à l'API externe — moyennes globales, scores par catégorie, noms de scénarios et comptages d'erreurs. Aucun nom d'élève, aucun identifiant individuel, aucune donnée brute ne quitte le navigateur de l'enseignant.
+
+Ingénierie du prompt
+
+Le prompt envoyé à Gemini est structuré pour ancrer les recommandations dans le contexte pédagogique marocain. Il précise le rôle du modèle (conseiller pédagogique pour collèges marocains), fournit les données de performance, et demande une réponse structurée en quatre sections : Diagnostic, Actions prioritaires pour les prochaines séances, Méthodes pédagogiques recommandées (faisant explicitement référence aux approches du curriculum marocain : jeux de rôle, ateliers, approche par compétences), et Tutoriels à créer dans CyberSafe. Le modèle répond dans la langue courante de l'enseignant (français ou arabe).
+
+Diagramme de séquence — Assistant IA
+
+La figure détaille le flux complet : configuration de la clé, construction du prompt, appel à l'API Gemini et affichage des recommandations.
+
+Diagramme de composants logiciels
+
+Ce diagramme (figure ) représente l'architecture interne du frontend : les contextes React (état global), les hooks métier, la couche API, la base locale Dexie et les composants clés. Il montre comment ces éléments interagissent pour former le système CyberSafe.
+
+Phase de réalisation
+
+Ce chapitre décrit la mise en œuvre concrète de CyberSafe : environnement technique, authentification sécurisée, moteur de scénarios et mode hors-ligne, tableau de bord enseignant, gestion du bilinguisme, et présentation des principales interfaces.
+
+Environnement de développement et technologies
+
+La réalisation s'appuie sur une pile technologique JavaScript moderne, choisie pour sa performance, sa maintenabilité et son adéquation aux contraintes du projet. Le tableau présente les choix effectués.
+
+Authentification et sécurité au niveau des lignes (RLS)
+
+L'authentification distingue trois rôles. L'élève s'identifie par un code de classe associé à son identifiant Massar ; l'enseignant et le super-administrateur s'authentifient par courriel et mot de passe via Supabase Auth, qui délivre un jeton JWT porteur du rôle.
+
+La sécurité repose sur la Row Level Security (RLS) de PostgreSQL : chaque table est protégée par des politiques qui filtrent les lignes accessibles selon l'identité du demandeur. Ainsi, un enseignant n'accède qu'aux données de ses propres classes, et un élève qu'à sa propre progression. Les opérations d'administration globale (création/modification de scénarios et de catégories) passent par des fonctions Supabase en mode SECURITY DEFINER, qui vérifient le flag is_admin dans les métadonnées de l'utilisateur avant d'autoriser l'opération. Un extrait de politique RLS est fourni en annexe .
+
+Moteur de scénarios et mode hors-ligne (Dexie / IndexedDB)
+
+Le moteur de scénarios charge les pistes et leurs questions, gère la progression de l'élève et assure la rétroaction immédiate à chaque réponse (affichage du résultat correct/incorrect avec explication contextuelle). En mode connecté, les scénarios sont récupérés depuis Supabase puis mis en cache dans IndexedDB via Dexie.
+
+En mode hors-ligne, l'application lit les scénarios depuis le cache local et enregistre les réponses avec un indicateur synced_status: false. Une routine de fond surveille l'état du réseau via l'API navigator.onLine et déclenche, dès rétablissement de la connexion, la synchronisation transactionnelle des réponses en attente vers Supabase. Ce mécanisme offline-first garantit la continuité pédagogique et la fiabilité des données même en l'absence de connexion. La logique de synchronisation est détaillée en annexe .
+
+Tableau de bord enseignant (analytics)
+
+Le tableau de bord agrège les résultats des élèves pour offrir à l'enseignant une vision synthétique : taux de réussite par scénario, score moyen par élève et par classe, et identification des scénarios les moins maîtrisés. Ces indicateurs soutiennent une régulation pédagogique conforme à l'APC : l'enseignant ajuste son enseignement en fonction des difficultés objectivées par les données.
+
+Gestion du bilinguisme (i18n) et du sens d'écriture (RTL)
+
+Le bilinguisme constitue une exigence centrale. L'ensemble des libellés d'interface est géré par un système i18n maison : les clés de traduction sont définies dans un fichier de référence (translations.ts) et peuvent être surchargées depuis la base Supabase par l'administrateur — permettant ainsi d'adapter les formulations sans redéploiement. Les contenus pédagogiques (titres, descriptions, rétroactions) sont stockés sous forme de champs bilingues (title_fr / title_ar) directement dans les tables Supabase.
+
+Le passage à l'arabe déclenche la bascule en mode RTL (right-to-left), avec adaptation globale de la disposition, de l'alignement et des composants (attribut dir="rtl" sur le document). Cette gestion garantit une expérience cohérente quelle que soit la langue choisie par l'utilisateur.
+
+Tutoriels pédagogiques
+
+La plateforme intègre une section « Tutoriels » accessible depuis l'espace enseignant. Cette section héberge des ressources pédagogiques complémentaires aux scénarios interactifs : articles explicatifs, fiches de sensibilisation, guides pratiques. Deux niveaux de visibilité coexistent :
+
+- Tutoriels globaux (teacher_id = NULL) : créés par le super-administrateur, visibles par tous les enseignants. Quatre tutoriels de référence ont été initialisés (hameçonnage, mots de passe, cyberharcèlement, vie privée) ;
+
+- Tutoriels privés (teacher_id = uuid) : créés par un enseignant pour ses propres besoins pédagogiques (adaptation au niveau de la classe, protocoles internes, exercices spécifiques), visibles uniquement par leur auteur.
+
+La route /tutorials est intégrée à l'espace enseignant avec son contenu bilingue (FR/AR) initialisé. L'interface de gestion et d'affichage du contenu constitue une prochaine étape de développement.
+
+Gestion des médias pédagogiques
+
+CyberSafe intègre un système d'upload de médias (images et vidéos) pour enrichir les scénarios. L'administrateur peut associer une image ou vidéo de couverture à chaque scénario, ainsi qu'un média spécifique à chaque question. Les fichiers sont hébergés dans un bucket Supabase Storage avec contrôle d'accès : lecture publique pour l'affichage, écriture restreinte au propriétaire du contenu. Les URL publiques sont stockées directement dans la base de données et rendues dans l'interface par un composant adaptatif (image ou vidéo selon l'extension détectée).
+
+Assistant pédagogique IA (Gemini)
+
+L'assistant pédagogique est la fonctionnalité la plus distinctive de CyberSafe du point de vue de l'enseignant. Il est implémenté en trois composants interdépendants.
+
+Configuration (Page Paramètres). La carte « Configuration IA » (accentuée en violet) permet à l'enseignant de saisir et tester sa clé API Gemini. Au moment de la sauvegarde, une requête de vérification est envoyée à l'API («Reply with one word: ready») ; une erreur HTTP 429 (rate-limited) est traitée comme une clé valide. La clé est ensuite stockée dans localStorage et jamais transmise au backend.
+
+Génération des recommandations (Page Analytique). Le hook useAIRecommendations encapsule la mutation TanStack Query. Lorsque l'enseignant clique « Générer les recommandations », la fonction buildPrompt() construit le prompt à partir des statistiques agrégées de la classe sélectionnée (ou de toutes les classes), puis callGemini() effectue le POST à l'API Gemini 2.0 Flash avec une température de 0.7 et un maximum de 1 200 tokens. La réponse structurée en Markdown est ensuite rendue par le composant GeminiMarkdown.
+
+Affichage contextuel. Si aucune clé n'est configurée, un message invite l'enseignant à aller dans les Paramètres ; si les données de classe sont vides, un message l'indique. Un bouton « Régénérer » permet de relancer l'analyse, et un avertissement de disclaimer rappelle le caractère indicatif des recommandations.
+
+Principales interfaces graphiques
+
+Les figures suivantes présentent les écrans majeurs de CyberSafe, couvrant les trois espaces utilisateurs (élève, enseignant, administrateur). Remplacer les blocs grisés par les captures réelles de l'application déployée.
+
+Analyse des résultats et discussion
+
+Conformément à la nature du projet (la livraison d'un outil numérique et non une enquête de terrain), les résultats correspondent aux fonctionnalités effectivement conçues, codées et validées. Ce chapitre présente la validation technique, la conformité aux objectifs, les obstacles rencontrés, les limites et les perspectives.
+
+Validation technique et tests fonctionnels
+
+La validation a reposé sur une série de tests fonctionnels couvrant les principaux scénarios d'usage. Le tableau en présente une synthèse.
+
+Conformité avec les objectifs et l'APC
+
+Les six objectifs initiaux sont atteints : l'application bilingue est conçue et fonctionnelle ; les scénarios de cybersécurité sont interactifs et formatifs ; l'enseignant dispose d'outils de gestion et d'analyse ; l'accessibilité hors-ligne est assurée par IndexedDB ; l'assistant pédagogique IA (Gemini) est opérationnel et génère des recommandations contextualisées ; et l'outil apporte une valeur interactive en complément de e-himaya. Sur le plan pédagogique, l'alignement avec l'APC se vérifie par la structuration en compétences : chaque piste mobilise une compétence numérique précise, évaluée en situation. L'IA renforce cette logique en aidant l'enseignant à identifier les lacunes collectives et à planifier une remédiation ciblée.
+
+Obstacles rencontrés et solutions adoptées
+
+Trois obstacles majeurs ont marqué la réalisation, présentés dans le tableau .
+
+Limites techniques observées
+
+Plusieurs limites sont à signaler. La résolution des conflits de synchronisation, en cas de modifications concurrentes, reste sommaire (stratégie du « dernier écrit l'emporte »). Le volume de contenu hors-ligne dépend de la capacité de stockage du terminal. Les médias (images, vidéos) ne sont pas mis en cache hors-ligne — seul le contenu textuel l'est. Enfin, l'application n'a pas encore fait l'objet d'une expérimentation à large échelle en conditions réelles de classe, étape qui dépasse le cadre du présent projet.
+
+Perspectives d'évolution
+
+Les perspectives incluent : l'enrichissement de la banque de scénarios en lien avec e-himaya ; le développement de l'interface de gestion et d'affichage des tutoriels pédagogiques (la structure de données est prête, le contenu initial est en place) ; l'ajout de mécaniques d'engagement (classements anonymisés, badges de progression) ; une stratégie de synchronisation plus robuste incluant le cache des médias ; l'intégration de tableaux de bord destinés à l'administration de l'établissement ; et, à terme, une expérimentation contrôlée mesurant l'impact pédagogique réel de l'outil sur les compétences sécuritaires des collégiens.
+
+Bilan professionnel et personnel
+
+Rappel des objectifs et des résultats clés
+
+Ce projet visait la conception d'un outil pédagogique numérique pour renforcer la cybersécurité chez les collégiens. Le résultat est une application web bilingue, interactive, fonctionnant hors-ligne et dotée d'un suivi enseignant : l'ensemble des objectifs fixés a été atteint, et un produit concret et exploitable a été livré.
+
+Compétences professionnelles développées
+
+La conduite de ce projet a permis de développer un ensemble de compétences :
+
+- Compétences techniques : développement full-stack JavaScript/TypeScript (React 19, Supabase), modélisation UML, conception de bases de données relationnelles, sécurité web (RLS), architecture offline-first, gestion de médias ;
+
+- Compétences d'ingénierie pédagogique : application du modèle ADDIE, alignement sur l'APC, conception de situations d'apprentissage actif par scénarios, évaluation formative ;
+
+- Compétences méthodologiques : conduite de projet selon les huit étapes du CRMEF, du diagnostic à l'évaluation ;
+
+- Compétences transversales : autonomie, résolution de problèmes complexes, gestion du temps et rédaction académique.
+
+Apprentissages personnels
+
+Sur le plan personnel, ce projet a confirmé l'intérêt de relier ingénierie logicielle et conception pédagogique. Il a renforcé une posture réflexive : concevoir un outil, ce n'est pas seulement coder, c'est répondre à un besoin éducatif réel, dans un contexte donné, pour un public précis. La confrontation avec les réalités du terrain lors du stage au collège Abdelaziz Mezyan Belfeqih a été déterminante pour ancrer le projet dans des besoins authentiques. La gestion des obstacles techniques a par ailleurs développé persévérance et rigueur.
+
+Perspectives professionnelles
+
+Ce travail ouvre des perspectives concrètes pour la pratique d'enseignement : intégrer le numérique de manière critique et créative, concevoir des ressources adaptées au contexte marocain, et contribuer à la culture de cybersécurité au sein de l'établissement. Il constitue une base réutilisable et extensible pour de futurs projets pédagogiques.
+
+Conclusion générale
+
+Ce Projet Personnel Encadré a conduit à la conception et à la réalisation de « CyberSafe », une application web de sensibilisation à la cybersécurité destinée aux collégiens marocains et à leurs enseignants, dans le cadre de la formation qualifiante au CRMEF Casablanca-Settat.
+
+L'analyse initiale a montré que le portail e-himaya.gov.ma, bien utile pour la sensibilisation, ne propose ni parcours interactif, ni évaluation formative, ni outil de suivi pour l'enseignant. La distinction entre littératie numérique et compétence sécuritaire est au cœur de ce manque : connaître un risque ne suffit pas ; encore faut-il savoir y réagir en situation réelle. C'est ce besoin que CyberSafe cherche à combler.
+
+L'architecture offline-first contourne le problème de connectivité dans les établissements mal équipés : les scénarios sont mis en cache localement et les résultats synchronisés avec Supabase dès que le réseau est disponible. Les scénarios interactifs avec rétroaction immédiate permettent à l'élève de travailler en situation plutôt que de simplement lire un contenu. L'intégration de Gemini 2.0 Flash donne à l'enseignant un outil d'aide à la décision : à partir des statistiques agrégées de sa classe, il reçoit un diagnostic et des pistes de remédiation rédigées dans sa langue, sans qu'aucune donnée nominative ne quitte son navigateur.
+
+La démarche, articulant le modèle ADDIE et les huit étapes méthodologiques du CRMEF, a abouti à un produit fonctionnel et aligné sur l'Approche Par Compétences. Les fonctionnalités conçues, codées et validées (voir tableau ) correspondent aux six objectifs fixés en début de projet.
+
+Perspectives de développement :
+La version actuelle de « CyberSafe » est fonctionnelle, mais plusieurs directions peuvent être explorées :
+
+- Déploiement expérimental : une phase de test pilote en conditions réelles permettrait de mesurer l'impact de l'outil sur les compétences sécuritaires des élèves ;
+
+- Expansion des contenus : l'architecture modulaire permet l'ajout de nouveaux scénarios couvrant des menaces émergentes (ingénierie sociale, deepfakes, désinformation) ;
+
+- Engagement et motivation : des mécaniques de progression (badges, classements anonymisés, défis collaboratifs) pourraient renforcer l'implication des élèves ;
+
+- Accessibilité élargie : une synthèse vocale (Text-to-Speech) rendrait la plateforme accessible aux élèves ayant des difficultés de lecture.
+
+Ce projet confirme qu'il est possible, dans le cadre d'un PPE, de concevoir un outil numérique adapté au contexte marocain : bilingue, utilisable hors-ligne, aligné sur l'APC et enrichi par l'intelligence artificielle. L'enseignant qui conçoit ses propres ressources pédagogiques n'est pas simplement un utilisateur de contenus existants ; il contribue à adapter l'enseignement aux réalités de son terrain.
+
+Bibliographie / Webographie
+
+I. Références institutionnelles et cadre national
+
+- Conseil Supérieur de l'Éducation, de la Formation et de la Recherche Scientifique (CSEFRS). (2015). Vision stratégique de la réforme 2015-2030 : Pour une École de l'équité, de la qualité et de la promotion. Royaume du Maroc.
+
+- Royaume du Maroc. (2019). Loi-cadre n° 51-17 relative au système d'éducation, de formation et de recherche scientifique. Bulletin Officiel.
+
+- Agence de Développement du Digital (ADD). Portail national e-Himaya : protection des enfants en ligne. Disponible sur : 
+
+- Ministère de l'Éducation Nationale, du Préscolaire et des Sports. Cadre de référence de l'Approche Par Compétences (APC) au Maroc. Direction des Curricula. Disponible sur : 
+
+II. Références pédagogiques et didactiques
+
+- Branson, R. K., Rayner, G. T., Cox, J. L., Furman, J. P., King, F. J., Hannum, W. H. (1975). Interservices Procedures for Instructional Systems Development (Vols. 1–5, TRADOC Pam 350-30). Fort Monroe, VA: U.S. Army Training and Doctrine Command. (Fondements historiques du modèle ADDIE.)
+
+- Branch, R. M. (2009). Instructional Design: The ADDIE Approach. New York: Springer.
+
+- Perrenoud, Ph. (1997). Construire des compétences dès l'école. Paris : ESF Éditeur. (6e éd., 2011.)
+
+- Tardif, J. (2006). L'évaluation des compétences : documenter le parcours de développement. Montréal : Chenelière Éducation.
+
+- Vygotsky, L. S. (1978). Mind in Society: The Development of Higher Psychological Processes. Cambridge, MA: Harvard University Press.
+
+- Sweller, J. (1988). Cognitive load during problem solving: Effects on learning. Cognitive Science, 12(2), 257–285.
+
+- Mayer, R. E. (2009). Multimedia Learning (2e éd.). Cambridge: Cambridge University Press.
+
+III. Références techniques
+
+- OWASP Foundation. OWASP Top Ten Web Application Security Risks. Disponible sur : 
+
+- W3C (World Wide Web Consortium). Directives pour l'accessibilité aux contenus web (WCAG). Disponible sur : 
+
+- Commission Nationale de l'Informatique et des Libertés (CNIL). La protection des données des mineurs en ligne. Disponible sur : 
+
+- Google DeepMind. Gemini API Documentation — Generative Language (v1beta). Disponible sur : 
+
+- Giray, L. (2023). Prompt engineering with ChatGPT: a guide for academic writers. Annals of Biomedical Engineering, 51(12), 2629–2633.
+
+IV. Webographie — Documentation technique
+
+- Plateforme nationale e-Himaya (protection des enfants en ligne) : 
+
+- Documentation officielle React : 
+
+- Documentation officielle Supabase (Auth, PostgreSQL, RLS, Storage) : 
+
+- Dexie.js — Wrapper IndexedDB pour le hors-ligne : 
+
+- TanStack (Router Query) : 
+
+- Tailwind CSS : 
+
+- MDN Web Docs — Progressive Web Apps : 
+
+Extraits de code source
+
+A.1 — Exemple de politique de sécurité au niveau des lignes (RLS) — PostgreSQL / Supabase
+
+A.2 — Synchronisation hors-ligne avec Dexie (extrait simplifié)
+
+A.3 — Bascule de langue et sens d'écriture (i18n / RTL)
+
+Schéma relationnel détaillé de la base de données
+
+La structure complète des tables (clés primaires, clés étrangères et principaux champs) est présentée dans le diagramme entité-association de la figure (chapitre 4). Les principales relations sont les suivantes :
+
+- teachers (1) – (N) classes ;
+
+- classes (1) – (N) students ;
+
+- categories (1) – (N) scenarios ;
+
+- classes (N) – (N) scenarios via class_scenario_status ;
+
+- students (1) – (N) results ;
+
+- scenarios (1) – (N) results ;
+
+- translations : table de libellés bilingues (clé i18n, valeur FR, valeur AR).
+
+La sécurité au niveau des lignes (RLS) est activée sur toutes les tables sensibles afin d'isoler les données par enseignant et par élève. Les opérations d'administration globale passent par des fonctions PostgreSQL en mode SECURITY DEFINER.
