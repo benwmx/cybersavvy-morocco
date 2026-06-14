@@ -1,0 +1,91 @@
+@startuml usecase
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam usecase {
+  BackgroundColor #EEF5FF
+  BorderColor #0F3A6E
+  FontColor #0F3A6E
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #0F3A6E
+  FontColor #0F3A6E
+}
+skinparam rectangle {
+  BackgroundColor #FAFAFA
+  BorderColor #9CA3AF
+  FontColor #374151
+}
+
+left to right direction
+title Diagramme de cas d'utilisation — CyberSafe
+
+actor "Élève" as E
+actor "Enseignant" as T
+actor "Super-Admin" as A
+actor "Visiteur\n(Invité)" as G
+
+rectangle "Plateforme CyberSafe" {
+
+  rectangle "Espace Élève" {
+    usecase "Saisir code classe\n+ code Massar" as UC1
+    usecase "Consulter liste\ndes scénarios" as UC2
+    usecase "Jouer scénario interactif\n(questions + rétroaction)" as UC3
+    usecase "Voir résultats\net erreurs" as UC4
+    usecase "Jouer hors-ligne\n(cache IndexedDB)" as UC5
+    usecase "Consulter historique\npersonnel" as UC6
+  }
+
+  rectangle "Espace Enseignant" {
+    usecase "S'authentifier\n(email / mot de passe)" as UC7
+    usecase "Créer et gérer\nles classes" as UC8
+    usecase "Gérer les élèves\n(ajout / suppression)" as UC9
+    usecase "Assigner scénarios\nà une classe" as UC10
+    usecase "Dupliquer catégorie\n(fork personnalisable)" as UC11
+    usecase "Tableau de bord\nanalytique" as UC12
+    usecase "Voir historique\npar élève" as UC13
+  }
+
+  rectangle "Espace Admin" {
+    usecase "Statistiques\nplateforme" as UC14
+    usecase "Gérer enseignants\net classes" as UC15
+    usecase "CRUD catégories\net scénarios" as UC16
+    usecase "Gérer médias\n(images / vidéos)" as UC17
+    usecase "Gérer traductions\nde l'interface (i18n)" as UC18
+  }
+
+  rectangle "Mode Invité" {
+    usecase "Jouer scénarios\npublics (is_public)" as UC19
+    usecase "Résultats locaux\n(localStorage)" as UC20
+  }
+}
+
+E --> UC1
+E --> UC2
+E --> UC3
+E --> UC4
+E --> UC5
+E --> UC6
+
+T --> UC7
+T --> UC8
+T --> UC9
+T --> UC10
+T --> UC11
+T --> UC12
+T --> UC13
+
+A --> UC7
+A --> UC14
+A --> UC15
+A --> UC16
+A --> UC17
+A --> UC18
+
+G --> UC19
+G --> UC20
+
+UC3 ..> UC5 : <<extend>>\n(si hors-ligne)
+UC4 ..> UC6 : <<include>>
+
+@enduml

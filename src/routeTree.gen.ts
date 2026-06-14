@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as GuestRouteImport } from './routes/guest'
 import { Route as GameRouteImport } from './routes/game'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -34,6 +35,11 @@ import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuestRoute = GuestRouteImport.update({
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/game': typeof GameRouteWithChildren
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/game': typeof GameRouteWithChildren
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -209,6 +217,7 @@ export interface FileRouteTypes {
     | '/game'
     | '/guest'
     | '/login'
+    | '/reset-password'
     | '/admin'
     | '/admin/overview'
     | '/admin/users'
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/game'
     | '/guest'
     | '/login'
+    | '/reset-password'
     | '/admin'
     | '/admin/overview'
     | '/admin/users'
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/game'
     | '/guest'
     | '/login'
+    | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/analytics'
     | '/_authenticated/classes'
@@ -277,6 +288,7 @@ export interface RootRouteChildren {
   GameRoute: typeof GameRouteWithChildren
   GuestRoute: typeof GuestRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -286,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guest': {
@@ -494,6 +513,7 @@ const rootRouteChildren: RootRouteChildren = {
   GameRoute: GameRouteWithChildren,
   GuestRoute: GuestRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,0 +1,68 @@
+@startuml architecture
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam component {
+  BackgroundColor #EEF5FF
+  BorderColor #0F3A6E
+  FontColor #0F3A6E
+  ArrowColor #0F3A6E
+}
+skinparam database {
+  BackgroundColor #FFF8E6
+  BorderColor #B45309
+}
+skinparam package {
+  BackgroundColor #FAFAFA
+  BorderColor #9CA3AF
+  FontColor #374151
+}
+
+title Architecture technique de CyberSafe
+
+package "Client — Navigateur (SPA)" {
+  component "React 19 + TypeScript\n(Tailwind CSS v4 / Radix UI)" as UI
+  component "TanStack Router\n(routage déclaratif, file-based)" as Router
+  component "TanStack Query\n(cache serveur, mutations)" as Query
+  database "IndexedDB\nvia Dexie.js" as IDB
+  component "OfflineSyncProvider\n(navigator.onLine)" as Sync
+}
+
+package "Backend — Supabase (BaaS)" {
+  component "Supabase Auth\n(email/password → JWT)" as Auth
+  database "PostgreSQL\n+ Row Level Security (RLS)" as PG
+  component "Storage\n(bucket : cybersafe-media)" as Storage
+  component "SECURITY DEFINER\nRPC Functions (admin)" as RPC
+}
+
+cloud "Google AI (externe)" {
+  component "Gemini API\n(gemini-2.0-flash)" as Gemini
+}
+
+UI --> Router : navigation
+Router --> Query : chargement des données
+Query <--> Auth : signIn / getSession
+Query <--> PG : requêtes sécurisées (Bearer JWT)
+Query <--> IDB : lecture cache hors-ligne
+Sync --> IDB : flushQueue() à la reconnexion
+Sync --> PG : INSERT results (sync différée)
+PG --> RPC : délégation admin
+PG ..> Storage : référence image_url / media_url
+Auth ..> PG : JWT → auth.uid() → politiques RLS
+IDB <.. Query : syncPublicScenarios()\nsyncTranslations()
+UI --> Gemini : POST generateContent\n(stats agrégées anonymisées)\n[clé API stockée en localStorage]
+
+note bottom of IDB
+  Stores locaux :
+  scenarios | categories
+  class_scenario_status
+  translations | offline_queue
+end note
+
+note bottom of RPC
+  admin_save_scenario()
+  admin_list_users()
+  admin_get_stats()
+  get_class_visible_scenarios()
+end note
+
+@enduml
