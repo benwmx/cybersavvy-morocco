@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScenarioVisuals } from "@/components/ScenarioVisuals";
 import { useLang } from "@/lib/i18n/LanguageContext";
+import { useStudent } from "@/context/StudentContext";
 import { getTrack } from "@/content/scenarios";
 import { api, ScenarioRow } from "@/lib/supabase/api";
+import { getDB } from "@/lib/offline/db";
 import { saveResult } from "@/lib/offline/queue";
 import { Check, X, Lightbulb, Trophy, ArrowRight, RefreshCw, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -32,27 +34,37 @@ function ScenarioRunner() {
       return;
     }
 
-    api.getScenario(trackId).then(track => {
-      if (track) setDynamicTrack(track);
+    (async () => {
+      // Prefer local Dexie, fall back to Supabase when online
+      const db = getDB();
+      if (db) {
+        const local = await db.scenarios.get(trackId);
+        if (local) {
+          setDynamicTrack(local as ScenarioRow);
+          setLoading(false);
+          return;
+        }
+      }
+      if (navigator.onLine) {
+        const remote = await api.getScenario(trackId).catch(() => null);
+        if (remote) setDynamicTrack(remote);
+      }
       setLoading(false);
-    }).catch(() => setLoading(false));
+    })();
   }, [trackId, staticTrack]);
 
-  const [student, setStudent] = useState<{ class_id: string; massar_code: string } | null>(null);
+  const { student } = useStudent();
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("cs.student");
-    const guestRaw = localStorage.getItem("cs.guest");
-    
-    if (raw) {
-      setStudent(JSON.parse(raw));
-    } else if (guestRaw) {
-      setIsGuest(true);
-    } else {
-      navigate({ to: "/login" });
+    if (!student) {
+      if (localStorage.getItem("cs.guest")) {
+        setIsGuest(true);
+      } else {
+        navigate({ to: "/login" });
+      }
     }
-  }, [navigate]);
+  }, [student, navigate]);
 
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -61,14 +73,23 @@ function ScenarioRunner() {
   const [done, setDone] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "online" | "queued" | "guest">("idle");
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-bold">{t("syncing")}</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50/60 to-white">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-12 w-12 rounded-2xl bg-blue-100 flex items-center justify-center animate-pulse">
+          <PlayCircle className="h-6 w-6 text-[#1E3A8A]" />
+        </div>
+        <p className="font-extrabold text-[#1E3A8A] tracking-widest uppercase text-xs">{t("syncing")}</p>
+      </div>
+    </div>
+  );
 
   const track = staticTrack || dynamicTrack;
 
   if (!track) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Track not found</p>
+        <p>{t("trackNotFound")}</p>
       </div>
     );
   }
@@ -97,8 +118,8 @@ function ScenarioRunner() {
         setSaveState("guest");
       } else if (student) {
         const res = await saveResult({
+          student_id: student.id,
           class_id: student.class_id,
-          massar_code: student.massar_code,
           scenario_id: track.id,
           score,
           max_score: total,
@@ -112,35 +133,49 @@ function ScenarioRunner() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-b from-amber-50/60 via-white to-white">
         <Navbar />
-        <main className="container mx-auto px-4 py-12">
-          <Card className="max-w-xl mx-auto text-center overflow-hidden">
-            <div className="bg-gradient-to-br from-amber-300 to-amber-500 py-10">
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-xl">
-                <Trophy className="h-12 w-12 text-amber-500" />
+        <main className="container mx-auto px-4 py-12 lg:py-20">
+          <Card className="max-w-xl mx-auto text-center border-none shadow-2xl shadow-slate-200 bg-white rounded-3xl overflow-hidden animate-in zoom-in duration-700">
+            <div className="bg-gradient-to-br from-amber-400 to-amber-600 py-16 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,white_0%,transparent_70%)]" />
+              <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-3xl bg-white/20 backdrop-blur-xl shadow-inner animate-in fade-in zoom-in delay-300 duration-1000">
+                <Trophy className="h-14 w-14 text-white drop-shadow-lg" />
               </div>
             </div>
-            <CardHeader>
-              <CardTitle className="text-2xl">{track.title[lang]}</CardTitle>
+            <CardHeader className="p-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#1E3A8A] text-xs font-bold border border-blue-100 mx-auto mb-4">
+                <span>{'category' in track ? track.category : 'Simulation'}</span>
+              </div>
+              <CardTitle className="text-3xl font-extrabold text-slate-900 tracking-tight">{track.title[lang]}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{t("yourScore")}</p>
-              <p className="text-5xl font-bold my-3">
-                {score} <span className="text-2xl text-muted-foreground">/ {total}</span>
-              </p>
-              <p className="text-xs text-muted-foreground mb-6">
-                {saveState === "queued" ? `↻ ${t("syncQueued")}` : saveState === "guest" ? t("guestHistory") : `✓ ${t("syncDone")}`}
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                <Button asChild>
+            <CardContent className="p-8 pt-0">
+              <div className="space-y-1 mb-8">
+                <p className="text-sm font-bold uppercase tracking-widest text-slate-400">{t("yourScore")}</p>
+                <div className="flex items-center justify-center gap-3">
+                   <p className="text-7xl font-black text-[#1E3A8A]">{score}</p>
+                   <p className="text-3xl font-bold text-slate-300 mt-4">/ {total}</p>
+                </div>
+              </div>
+              
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-10 flex items-center justify-center gap-3">
+                <div className={`h-2 w-2 rounded-full ${saveState === 'idle' ? 'bg-slate-300' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  {saveState === "queued" ? t("syncQueued") : saveState === "guest" ? t("guestHistory") : t("syncDone")}
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild size="lg" className="h-14 px-8 rounded-2xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-bold shadow-xl shadow-blue-900/10 active:scale-95 transition-all">
                   <Link to={isGuest ? "/guest" : "/game"}>
-                    <ArrowRight className="ltr:mr-2 rtl:ml-2 rtl:rotate-180 h-4 w-4" />
+                    <ArrowRight className="ms-0 me-2 h-4 w-4 rotate-180 rtl:rotate-0" />
                     {t("backToTracks")}
                   </Link>
                 </Button>
                 <Button
                   variant="outline"
+                  size="lg"
+                  className="h-14 px-8 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold active:scale-95 transition-all"
                   onClick={() => {
                     setIdx(0);
                     setSelected(null);
@@ -150,8 +185,8 @@ function ScenarioRunner() {
                     setSaveState("idle");
                   }}
                 >
-                  <RefreshCw className="ltr:mr-2 rtl:ml-2 h-4 w-4" />
-                  {lang === "fr" ? "Rejouer" : "إعادة"}
+                  <RefreshCw className="ms-0 me-2 h-4 w-4" />
+                  {t("retry")}
                 </Button>
               </div>
             </CardContent>
@@ -164,46 +199,55 @@ function ScenarioRunner() {
   const isCorrect = selected === q.correctIndex;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50/60 via-white to-white">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div>
-            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-              <span>{track.title[lang]}</span>
-              <span>
-                {t("question")} {idx + 1} {t("of")} {total}
+      <main className="container mx-auto px-4 py-8 lg:py-12">
+        <div className="max-w-3xl mx-auto space-y-8">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-[0.2em] text-[#1E3A8A]">
+              <span className="bg-blue-100/80 px-3 py-1.5 rounded-full border border-blue-200">{track.title[lang]}</span>
+              <span className="text-slate-400">
+                {t("question")} {idx + 1} / {total}
               </span>
             </div>
-            <Progress value={((idx + (selected !== null ? 1 : 0)) / total) * 100} />
+            <div className="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
+              <div 
+                className="h-full bg-[#1E3A8A] transition-all duration-700 ease-out shadow-[0_0_12px_rgba(30,58,138,0.3)] rounded-full"
+                style={{ width: `${((idx + (selected !== null ? 1 : 0)) / total) * 100}%` }}
+              />
+            </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl leading-relaxed">{q.prompt[lang]}</CardTitle>
+          <Card className="border-none shadow-2xl shadow-slate-200 bg-white rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="p-8 md:p-12 pb-6 text-center">
+              <CardTitle className="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 tracking-tight">
+                {q.prompt[lang]}
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-8 md:p-12 pt-0 space-y-8">
               {q.media_url ? (
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                <div className="relative aspect-video rounded-3xl overflow-hidden bg-slate-100 border border-slate-100 shadow-inner group">
                   {q.media_url.match(/\.(mp4|webm|ogg)$/) || q.media_url.includes('youtube.com') || q.media_url.includes('vimeo.com') ? (
                     <video src={q.media_url} controls className="w-full h-full object-contain" />
                   ) : (
-                    <img src={q.media_url} alt="Question visual" className="w-full h-full object-contain" />
+                    <img src={q.media_url} alt="Assessment visual" className="w-full h-full object-contain" />
                   )}
                 </div>
               ) : (
-                <ScenarioVisuals trackId={track.id} questionId={q.id || idx.toString()} />
+                <div className="rounded-3xl overflow-hidden border border-slate-100 bg-slate-50/50">
+                  <ScenarioVisuals trackId={track.id} questionId={q.id || idx.toString()} imageUrl={'image_url' in track ? (track as ScenarioRow).image_url : null} />
+                </div>
               )}
               
-              <div className="grid gap-2">
+              <div className="grid gap-4">
                 {q.choices[lang].map((choice: string, i: number) => {
                   const isPicked = selected === i;
                   const isAnswer = i === q.correctIndex;
-                  let style = "border-border hover:border-primary hover:bg-primary/5";
+                  let style = "border-slate-100 bg-slate-50/50 text-slate-700 hover:border-[#1E3A8A] hover:bg-blue-50 hover:text-[#1E3A8A] shadow-sm";
                   if (selected !== null) {
-                    if (isAnswer) style = "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30";
-                    else if (isPicked) style = "border-destructive bg-destructive/5";
-                    else style = "border-border opacity-60";
+                    if (isAnswer) style = "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-[0_0_15px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500";
+                    else if (isPicked) style = "border-rose-200 bg-rose-50 text-rose-800 opacity-90";
+                    else style = "border-slate-100 bg-slate-50 text-slate-400 opacity-40 grayscale";
                   }
                   return (
                     <button
@@ -211,12 +255,18 @@ function ScenarioRunner() {
                       type="button"
                       disabled={selected !== null}
                       onClick={() => handlePick(i)}
-                      className={`text-start rounded-xl border-2 px-4 py-3 transition-all flex items-center justify-between gap-3 ${style}`}
+                      className={`text-start rounded-2xl border-2 px-6 py-5 transition-all duration-300 flex items-center justify-between gap-4 font-bold text-lg group ${style}`}
                     >
                       <span>{choice}</span>
-                      {selected !== null && isAnswer && <Check className="h-5 w-5 text-emerald-600 shrink-0" />}
+                      {selected !== null && isAnswer && (
+                        <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 animate-in zoom-in duration-300">
+                          <Check className="h-5 w-5" />
+                        </div>
+                      )}
                       {selected !== null && isPicked && !isAnswer && (
-                        <X className="h-5 w-5 text-destructive shrink-0" />
+                        <div className="h-8 w-8 rounded-full bg-rose-500 text-white flex items-center justify-center shrink-0 animate-in zoom-in duration-300">
+                          <X className="h-5 w-5" />
+                        </div>
                       )}
                     </button>
                   );
@@ -224,33 +274,36 @@ function ScenarioRunner() {
               </div>
 
               {selected !== null && (
-                <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div
-                    className={`rounded-xl p-4 border-2 ${
+                    className={`rounded-2xl p-6 border-2 flex items-start gap-4 ${
                       isCorrect
-                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30"
-                        : "border-amber-400 bg-amber-50 dark:bg-amber-950/30"
+                        ? "border-emerald-200 bg-emerald-50/50"
+                        : "border-amber-200 bg-amber-50/50"
                     }`}
                   >
-                    <p className="font-semibold flex items-center gap-2">
-                      {isCorrect ? (
-                        <Check className="h-5 w-5 text-emerald-600" />
-                      ) : (
-                        <X className="h-5 w-5 text-amber-600" />
-                      )}
-                      {isCorrect ? t("correct") : t("incorrect")}
-                    </p>
+                    <div className={`mt-1 h-6 w-6 rounded-full flex items-center justify-center shrink-0 ${isCorrect ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
+                      {isCorrect ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                    </div>
+                    <div className="space-y-1">
+                      <p className={`font-black uppercase tracking-widest text-sm ${isCorrect ? 'text-emerald-700' : 'text-amber-700'}`}>
+                        {isCorrect ? t("correct") : t("incorrect")}
+                      </p>
+                      <div className="flex items-start gap-2 pt-2">
+                        <Lightbulb className="h-4 w-4 text-[#1E3A8A] shrink-0 mt-0.5" />
+                        <p className="text-slate-600 text-base leading-relaxed font-medium">
+                          {q.explanation[lang]}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
-                    <p className="font-semibold flex items-center gap-2 mb-1">
-                      <Lightbulb className="h-4 w-4 text-primary" />
-                      {t("whyMatters")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{q.explanation[lang]}</p>
-                  </div>
-                  <Button className="w-full" onClick={handleNext}>
+                  
+                  <Button 
+                    className="w-full h-16 rounded-2xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-lg font-black shadow-2xl shadow-blue-900/10 active:scale-[0.98] transition-all group" 
+                    onClick={handleNext}
+                  >
                     {idx + 1 < total ? t("next") : t("finish")}
-                    <ArrowRight className="ltr:ml-2 rtl:mr-2 rtl:rotate-180 h-4 w-4" />
+                    <ArrowRight className="ms-2 h-5 w-5 transition-transform group-hover:translate-x-2 rtl:rotate-180 rtl:group-hover:-translate-x-2" />
                   </Button>
                 </div>
               )}

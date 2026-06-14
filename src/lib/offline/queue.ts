@@ -18,7 +18,7 @@ export async function flushQueue(): Promise<number> {
       if (item.id != null) await db.offline_queue.delete(item.id);
       flushed++;
     } catch {
-      // keep in queue
+      // keep in queue until next flush attempt
     }
   }
   return flushed;
