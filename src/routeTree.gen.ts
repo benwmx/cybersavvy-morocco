@@ -9,37 +9,37 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as GuestRouteImport } from './routes/guest'
 import { Route as GameRouteImport } from './routes/game'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GameTrackIdRouteImport } from './routes/game.$trackId'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
-import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
-import { Route as AuthenticatedQuizzesRouteImport } from './routes/_authenticated/quizzes'
-import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated/students'
-import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as AdminContentRouteImport } from './routes/admin/content'
-import { Route as AdminClassesRouteImport } from './routes/admin/classes'
 import { Route as AdminTranslationsRouteImport } from './routes/admin/translations'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
+import { Route as AdminContentRouteImport } from './routes/admin/content'
+import { Route as AdminClassesRouteImport } from './routes/admin/classes'
+import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
+import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated/students'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedQuizzesRouteImport } from './routes/_authenticated/quizzes'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuestRoute = GuestRouteImport.update({
@@ -50,6 +50,11 @@ const GuestRoute = GuestRouteImport.update({
 const GameRoute = GameRouteImport.update({
   id: '/game',
   path: '/game',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -66,29 +71,39 @@ const GameTrackIdRoute = GameTrackIdRouteImport.update({
   path: '/$trackId',
   getParentRoute: () => GameRoute,
 } as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTranslationsRoute = AdminTranslationsRouteImport.update({
+  id: '/translations',
+  path: '/translations',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => AdminRoute,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRoute,
+const AdminOverviewRoute = AdminOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => AdminRoute,
 } as any)
-const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => AuthenticatedRoute,
+const AdminContentRoute = AdminContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => AdminRoute,
 } as any)
-const AuthenticatedClassesRoute = AuthenticatedClassesRouteImport.update({
+const AdminClassesRoute = AdminClassesRouteImport.update({
   id: '/classes',
   path: '/classes',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => AdminRoute,
 } as any)
-const AuthenticatedQuizzesRoute = AuthenticatedQuizzesRouteImport.update({
-  id: '/quizzes',
-  path: '/quizzes',
+const AuthenticatedTutorialsRoute = AuthenticatedTutorialsRouteImport.update({
+  id: '/tutorials',
+  path: '/tutorials',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedStudentsRoute = AuthenticatedStudentsRouteImport.update({
@@ -96,65 +111,44 @@ const AuthenticatedStudentsRoute = AuthenticatedStudentsRouteImport.update({
   path: '/students',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedTutorialsRoute = AuthenticatedTutorialsRouteImport.update({
-  id: '/tutorials',
-  path: '/tutorials',
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedQuizzesRoute = AuthenticatedQuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedClassesRoute = AuthenticatedClassesRouteImport.update({
+  id: '/classes',
+  path: '/classes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/_authenticated/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminOverviewRoute = AdminOverviewRouteImport.update({
-  id: '/admin/overview',
-  path: '/overview',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminContentRoute = AdminContentRouteImport.update({
-  id: '/admin/content',
-  path: '/content',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminClassesRoute = AdminClassesRouteImport.update({
-  id: '/admin/classes',
-  path: '/classes',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminTranslationsRoute = AdminTranslationsRouteImport.update({
-  id: '/admin/translations',
-  path: '/translations',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/admin/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/game': typeof GameRouteWithChildren
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/admin/overview': typeof AdminOverviewRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/admin/content': typeof AdminContentRoute
-  '/admin/classes': typeof AdminClassesRoute
-  '/admin/translations': typeof AdminTranslationsRoute
-  '/admin/settings': typeof AdminSettingsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -162,21 +156,21 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
+  '/admin/classes': typeof AdminClassesRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/translations': typeof AdminTranslationsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/game': typeof GameRouteWithChildren
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/admin/overview': typeof AdminOverviewRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/admin/content': typeof AdminContentRoute
-  '/admin/classes': typeof AdminClassesRoute
-  '/admin/translations': typeof AdminTranslationsRoute
-  '/admin/settings': typeof AdminSettingsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -184,6 +178,12 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
+  '/admin/classes': typeof AdminClassesRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/overview': typeof AdminOverviewRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/translations': typeof AdminTranslationsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
 export interface FileRoutesById {
@@ -194,6 +194,7 @@ export interface FileRoutesById {
   '/game': typeof GameRouteWithChildren
   '/guest': typeof GuestRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/classes': typeof AuthenticatedClassesRoute
@@ -202,29 +203,23 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/tutorials': typeof AuthenticatedTutorialsRoute
-  '/admin/overview': typeof AdminOverviewRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/admin/content': typeof AdminContentRoute
   '/admin/classes': typeof AdminClassesRoute
-  '/admin/translations': typeof AdminTranslationsRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/overview': typeof AdminOverviewRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/translations': typeof AdminTranslationsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/game/$trackId': typeof GameTrackIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/game'
     | '/guest'
     | '/login'
     | '/reset-password'
-    | '/admin'
-    | '/admin/overview'
-    | '/admin/users'
-    | '/admin/content'
-    | '/admin/classes'
-    | '/admin/translations'
-    | '/admin/settings'
     | '/analytics'
     | '/classes'
     | '/dashboard'
@@ -232,21 +227,21 @@ export interface FileRouteTypes {
     | '/settings'
     | '/students'
     | '/tutorials'
+    | '/admin/classes'
+    | '/admin/content'
+    | '/admin/overview'
+    | '/admin/settings'
+    | '/admin/translations'
+    | '/admin/users'
     | '/game/$trackId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/game'
     | '/guest'
     | '/login'
     | '/reset-password'
-    | '/admin'
-    | '/admin/overview'
-    | '/admin/users'
-    | '/admin/content'
-    | '/admin/classes'
-    | '/admin/translations'
-    | '/admin/settings'
     | '/analytics'
     | '/classes'
     | '/dashboard'
@@ -254,6 +249,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/students'
     | '/tutorials'
+    | '/admin/classes'
+    | '/admin/content'
+    | '/admin/overview'
+    | '/admin/settings'
+    | '/admin/translations'
+    | '/admin/users'
     | '/game/$trackId'
   id:
     | '__root__'
@@ -272,12 +273,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/students'
     | '/_authenticated/tutorials'
-    | '/admin/overview'
-    | '/admin/users'
-    | '/admin/content'
     | '/admin/classes'
-    | '/admin/translations'
+    | '/admin/content'
+    | '/admin/overview'
     | '/admin/settings'
+    | '/admin/translations'
+    | '/admin/users'
     | '/game/$trackId'
   fileRoutesById: FileRoutesById
 }
@@ -293,18 +294,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guest': {
@@ -319,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/game'
       fullPath: '/game'
       preLoaderRoute: typeof GameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -342,81 +350,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameTrackIdRouteImport
       parentRoute: typeof GameRoute
     }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/translations': {
+      id: '/admin/translations'
+      path: '/translations'
+      fullPath: '/admin/translations'
+      preLoaderRoute: typeof AdminTranslationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
       path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/analytics': {
-      id: '/_authenticated/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/classes': {
-      id: '/_authenticated/classes'
-      path: '/classes'
-      fullPath: '/classes'
-      preLoaderRoute: typeof AuthenticatedClassesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/quizzes': {
-      id: '/_authenticated/quizzes'
-      path: '/quizzes'
-      fullPath: '/quizzes'
-      preLoaderRoute: typeof AuthenticatedQuizzesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/students': {
-      id: '/_authenticated/students'
-      path: '/students'
-      fullPath: '/students'
-      preLoaderRoute: typeof AuthenticatedStudentsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/tutorials': {
-      id: '/_authenticated/tutorials'
-      path: '/tutorials'
-      fullPath: '/tutorials'
-      preLoaderRoute: typeof AuthenticatedTutorialsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/overview': {
       id: '/admin/overview'
       path: '/overview'
       fullPath: '/admin/overview'
       preLoaderRoute: typeof AdminOverviewRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/content': {
@@ -433,19 +392,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminClassesRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/translations': {
-      id: '/admin/translations'
-      path: '/translations'
-      fullPath: '/admin/translations'
-      preLoaderRoute: typeof AdminTranslationsRouteImport
-      parentRoute: typeof AdminRoute
+    '/_authenticated/tutorials': {
+      id: '/_authenticated/tutorials'
+      path: '/tutorials'
+      fullPath: '/tutorials'
+      preLoaderRoute: typeof AuthenticatedTutorialsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/admin/settings': {
-      id: '/admin/settings'
+    '/_authenticated/students': {
+      id: '/_authenticated/students'
+      path: '/students'
+      fullPath: '/students'
+      preLoaderRoute: typeof AuthenticatedStudentsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
       path: '/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/quizzes': {
+      id: '/_authenticated/quizzes'
+      path: '/quizzes'
+      fullPath: '/quizzes'
+      preLoaderRoute: typeof AuthenticatedQuizzesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/classes': {
+      id: '/_authenticated/classes'
+      path: '/classes'
+      fullPath: '/classes'
+      preLoaderRoute: typeof AuthenticatedClassesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
@@ -472,29 +473,29 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTutorialsRoute: AuthenticatedTutorialsRoute,
 }
 
-interface AdminRouteChildren {
-  AdminOverviewRoute: typeof AdminOverviewRoute
-  AdminUsersRoute: typeof AdminUsersRoute
-  AdminContentRoute: typeof AdminContentRoute
-  AdminClassesRoute: typeof AdminClassesRoute
-  AdminTranslationsRoute: typeof AdminTranslationsRoute
-  AdminSettingsRoute: typeof AdminSettingsRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminOverviewRoute: AdminOverviewRoute,
-  AdminUsersRoute: AdminUsersRoute,
-  AdminContentRoute: AdminContentRoute,
-  AdminClassesRoute: AdminClassesRoute,
-  AdminTranslationsRoute: AdminTranslationsRoute,
-  AdminSettingsRoute: AdminSettingsRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
-
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
+
+interface AdminRouteChildren {
+  AdminClassesRoute: typeof AdminClassesRoute
+  AdminContentRoute: typeof AdminContentRoute
+  AdminOverviewRoute: typeof AdminOverviewRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminTranslationsRoute: typeof AdminTranslationsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminClassesRoute: AdminClassesRoute,
+  AdminContentRoute: AdminContentRoute,
+  AdminOverviewRoute: AdminOverviewRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminTranslationsRoute: AdminTranslationsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface GameRouteChildren {
   GameTrackIdRoute: typeof GameTrackIdRoute
