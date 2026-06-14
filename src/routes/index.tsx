@@ -1,141 +1,267 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Navbar } from "@/components/Navbar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { GraduationCap, ShieldCheck, ArrowRight, Wifi, Languages, Trophy, PlayCircle } from "lucide-react";
+import {
+  ShieldCheck,
+  ArrowRight,
+  Wifi,
+  ChevronDown,
+  Fish,
+  KeyRound,
+  Users,
+  MessageSquareWarning,
+  Lock,
+  Bug,
+  ArrowUpRight
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     meta: [
-      { title: "CyberSafe — Apprends à te protéger en ligne" },
+      { title: "CyberSafe — Plateforme Nationale de Cybersécurité" },
       {
         name: "description",
-        content: "Plateforme bilingue FR/AR de cybersécurité pour collégiens.",
+        content: "Plateforme d'Évaluation et de Sensibilisation à la Cybersécurité pour le milieu éducatif.",
       },
     ],
   }),
 });
 
 function LandingPage() {
-  const { t } = useLang();
+  const { t, lang, setLang, dir } = useLang();
+
+  const pillars = [
+    { id: "phishing", icon: Fish, label: t("pillarPhishing") },
+    { id: "passwords", icon: KeyRound, label: t("pillarPasswords") },
+    { id: "social", icon: Users, label: t("pillarSocial") },
+    { id: "bullying", icon: MessageSquareWarning, label: t("pillarBullying") },
+    { id: "privacy", icon: Lock, label: t("pillarPrivacy") },
+    { id: "threats", icon: Bug, label: t("pillarMalware") },
+  ];
+
+  const scrollToContent = () => {
+    document.getElementById("portals")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden">
-          <div
-            className="absolute inset-0 -z-10 opacity-50"
-            style={{ background: "var(--gradient-hero)" }}
-          />
-          <div className="container mx-auto px-4 py-20 lg:py-28">
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-flex items-center gap-2 rounded-full border bg-card/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                {t("tagline")}
-              </span>
-              <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl text-foreground">
-                {t("heroTitle")}
+    <div className="min-h-screen bg-white selection:bg-[#1E3A8A]/10 font-sans text-slate-900 overflow-x-hidden" dir={dir}>
+      {/* 1. THE SYSTEM NAVIGATION HEADER */}
+      <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-6 h-6 text-[#1E3A8A]" />
+            <span className="text-xl font-extrabold tracking-tighter text-[#1E3A8A]">{t("appName")}</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="flex p-1 bg-slate-50 border border-slate-100 rounded-lg">
+              <button
+                onClick={() => setLang("fr")}
+                className={`px-4 py-1.5 text-xs font-bold transition-all duration-200 rounded-md ${
+                  lang === "fr"
+                    ? "bg-white text-[#1E3A8A] shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200"
+                    : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                Français
+              </button>
+              <button
+                onClick={() => setLang("ar")}
+                className={`px-4 py-1.5 text-xs font-bold transition-all duration-200 rounded-md ${
+                  lang === "ar"
+                    ? "bg-white text-[#1E3A8A] shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200"
+                    : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                العربية
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="pt-20">
+        {/* 2. EDITORIAL HERO SECTION */}
+        <section className="relative px-6 pt-24 pb-32 md:pt-40 md:pb-48 bg-white overflow-hidden">
+          <div className="max-w-5xl mx-auto relative z-10">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+              <div className="inline-block px-3 py-1 rounded-sm bg-slate-50 border border-slate-100 text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500">
+                {t("heroTag")}
+              </div>
+
+              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-[#1E3A8A] leading-[1.05] max-w-4xl">
+                {t("platformTitle")}
               </h1>
-              <p className="mt-6 text-lg text-muted-foreground">{t("heroSubtitle")}</p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild size="lg" className="rounded-full px-8">
-                  <Link to="/login">
-                    {t("getStarted")}
-                    <ArrowRight className="ltr:ml-2 rtl:mr-2 rtl:rotate-180 h-4 w-4" />
-                  </Link>
+
+              <p className="max-w-2xl text-lg md:text-xl text-slate-500 leading-relaxed font-medium">
+                {t("heroSubtitle")}
+              </p>
+
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Button
+                  onClick={scrollToContent}
+                  size="lg"
+                  className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white px-10 h-14 rounded-sm font-bold text-base transition-transform hover:scale-[1.02] active:scale-95"
+                >
+                  <span className="flex items-center gap-2">
+                    {t("startPath")}
+                    <ChevronDown className="w-4 h-4" />
+                  </span>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="rounded-full px-8">
-                  <Link to="/guest">{t("guestMode")}</Link>
-                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Asymmetrical background element */}
+          <div className="absolute top-0 right-0 w-1/3 h-full bg-[#F8FAFC] -z-10 hidden md:block" />
+        </section>
+
+        {/* 3. THE SEGREGATED PORTAL GATEWAYS */}
+        <section id="portals" className="px-6 py-24 bg-[#F8FAFC]">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-px bg-slate-200 border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+              {/* Portal 1: Learner */}
+              <div className="bg-white p-12 md:p-16 flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-px bg-[#1E3A8A] mb-8" />
+                  <h2 className="text-3xl font-extrabold text-slate-900 mb-6">
+                    {t("learnerSpace")}
+                  </h2>
+                  <p className="text-slate-500 text-lg mb-8 leading-relaxed">
+                    {t("learnerDesc")}
+                  </p>
+
+                  <ul className="space-y-4 mb-12">
+                    {[
+                      t("learnerBullet1"),
+                      t("learnerBullet2"),
+                      t("learnerBullet3"),
+                    ].map((label, idx) => (
+                      <li key={idx} className="flex items-center gap-3 text-sm font-semibold text-slate-700">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#1E3A8A]" />
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Link
+                  to="/login"
+                  search={{ role: "student" }}
+                  className="inline-flex items-center justify-between group px-8 h-16 border border-slate-200 hover:border-[#1E3A8A] transition-colors rounded-sm"
+                >
+                  <span className="font-bold uppercase tracking-widest text-xs text-slate-900">
+                    {t("learnerPortalEntry")}
+                  </span>
+                  <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#1E3A8A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </Link>
+              </div>
+
+              {/* Portal 2: Trainer */}
+              <div className="bg-white p-12 md:p-16 flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-px bg-slate-300 mb-8" />
+                  <h2 className="text-3xl font-extrabold text-slate-900 mb-6">
+                    {t("trainerSpace")}
+                  </h2>
+                  <p className="text-slate-500 text-lg mb-8 leading-relaxed">
+                    {t("trainerDesc")}
+                  </p>
+
+                  <ul className="space-y-4 mb-12">
+                    {[
+                      t("trainerBullet1"),
+                      t("trainerBullet2"),
+                      t("trainerBullet3"),
+                    ].map((label, idx) => (
+                      <li key={idx} className="flex items-center gap-3 text-sm font-semibold text-slate-700">
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Link
+                  to="/login"
+                  search={{ role: "teacher" }}
+                  className="inline-flex items-center justify-between group px-8 h-16 border border-slate-200 hover:border-slate-900 transition-colors rounded-sm"
+                >
+                  <span className="font-bold uppercase tracking-widest text-xs text-slate-900">
+                    {t("trainerPortalEntry")}
+                  </span>
+                  <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </Link>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Portals */}
-        <section className="container mx-auto px-4 pb-20">
-          <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto">
-            {/* Student */}
-            <Link to="/login" className="group">
-              <Card className="h-full transition-all hover:-translate-y-1 hover:shadow-xl border-2 hover:border-primary">
-                <CardHeader>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-2">
-                    <GraduationCap className="h-6 w-6" />
-                  </div>
-                  <CardTitle>{t("studentPortal")}</CardTitle>
-                  <CardDescription>{t("studentPortalDesc")}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <span className="inline-flex items-center text-sm font-medium text-primary group-hover:underline">
-                    {t("join")}
-                    <ArrowRight className="ltr:ml-1 rtl:mr-1 rtl:rotate-180 h-4 w-4" />
-                  </span>
-                </CardContent>
-              </Card>
-            </Link>
+        {/* 4. THE 6 TACTICAL CYBER-SAFETY PILLARS */}
+        <section className="px-6 py-32 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-20">
+              <h2 className="text-3xl font-extrabold text-[#1E3A8A] mb-4">
+                {t("pillarsTitle")}
+              </h2>
+              <div className="w-20 h-1 bg-[#1E3A8A]/10" />
+            </div>
 
-            {/* Guest */}
-            <Link to="/guest" className="group">
-              <Card className="h-full transition-all hover:-translate-y-1 hover:shadow-xl border-2 border-emerald-500/20 hover:border-emerald-500">
-                <CardHeader>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 mb-2">
-                    <PlayCircle className="h-6 w-6" />
-                  </div>
-                  <CardTitle>{t("guestMode")}</CardTitle>
-                  <CardDescription>{t("guestDesc")}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <span className="inline-flex items-center text-sm font-medium text-emerald-600 group-hover:underline">
-                    {t("getStarted")}
-                    <ArrowRight className="ltr:ml-1 rtl:mr-1 rtl:rotate-180 h-4 w-4" />
-                  </span>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* Teacher */}
-            <Link to="/login" className="group">
-              <Card className="h-full transition-all hover:-translate-y-1 hover:shadow-xl border-2 hover:border-primary">
-                <CardHeader>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-accent-foreground mb-2">
-                    <ShieldCheck className="h-6 w-6" />
-                  </div>
-                  <CardTitle>{t("teacherPortal")}</CardTitle>
-                  <CardDescription>{t("teacherPortalDesc")}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <span className="inline-flex items-center text-sm font-medium text-primary group-hover:underline">
-                    {t("signIn")}
-                    <ArrowRight className="ltr:ml-1 rtl:mr-1 rtl:rotate-180 h-4 w-4" />
-                  </span>
-                </CardContent>
-              </Card>
-            </Link>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {pillars.map((pillar) => (
+                <div
+                  key={pillar.id}
+                  className="group bg-[#F8FAFC] border border-slate-100 p-10 hover:bg-white hover:shadow-xl hover:shadow-[#1E3A8A]/5 transition-all duration-300 rounded-sm"
+                >
+                  <pillar.icon className="w-8 h-8 text-slate-800 mb-8 transition-transform group-hover:scale-110" strokeWidth={1.5} />
+                  <h3 className="text-xl font-bold text-slate-900 mb-4">
+                    {pillar.label}
+                  </h3>
+                  <div className="w-8 h-px bg-slate-200 group-hover:w-16 group-hover:bg-[#1E3A8A] transition-all duration-500" />
+                </div>
+              ))}
+            </div>
           </div>
+        </section>
 
-          {/* Features */}
-          <div className="mt-16 grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
-            {[
-              { icon: Languages, fr: "Bilingue FR / AR", ar: "ثنائية اللغة" },
-              { icon: Wifi, fr: "Mode hors-ligne", ar: "وضع دون اتصال" },
-              { icon: Trophy, fr: "Apprentissage gamifié", ar: "تعلم تفاعلي" },
-            ].map(({ icon: Icon, fr, ar }) => (
-              <div key={fr} className="flex items-start gap-3 rounded-xl border bg-card p-4">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="font-medium">{fr}</p>
-                  <p className="text-sm text-muted-foreground" dir="rtl">{ar}</p>
-                </div>
+        {/* 5. OFFLINE SYSTEM RESILIENCE BANNER & VISITOR ESCAPE */}
+        <section className="border-t border-slate-100">
+          <div className="max-w-7xl mx-auto px-6 h-32 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4 text-slate-500">
+              <div className="flex items-center justify-center w-8 h-8 bg-slate-50 border border-slate-100 rounded-sm">
+                <Wifi className="w-4 h-4" />
               </div>
-            ))}
+              <p className="text-xs font-bold uppercase tracking-widest">
+                {t("offlineResilience")}
+              </p>
+            </div>
+
+            <Link
+              to="/guest"
+              className="group flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#1E3A8A] hover:opacity-80 transition-opacity"
+            >
+              <span>{t("freeAccess")}</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            </Link>
           </div>
         </section>
       </main>
+
+      <footer className="bg-[#F8FAFC] border-t border-slate-100 py-12 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            {t("footerCopyright")}
+          </div>
+          <div className="flex gap-8">
+            {[t("footerTerms"), t("footerPrivacy"), t("footerAccessibility")].map(label => (
+              <button key={label} className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
