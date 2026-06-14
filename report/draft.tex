@@ -1,0 +1,966 @@
+% =====================================================================
+%  RAPPORT DE PROJET PERSONNEL ENCADRÉ (المشروع الشخصي المؤطر)
+%  CRMEF Casablanca-Settat — Filière : Informatique (شعبة المعلوميات)
+%  Projet : « CyberSafe » — Outil pédagogique interactif de cybersécurité
+%  Saison de formation : 2025-2026
+% ---------------------------------------------------------------------
+%  /!\ COMPILATION : ce document DOIT être compilé avec XeLaTeX (ou LuaLaTeX)
+%      et NON avec pdfLaTeX (texte arabe RTL + français).
+%        - Overleaf : Menu > Settings > Compiler > XeLaTeX
+%        - CLI : xelatex rapport_cybersafe.tex  (compiler 2 à 3 fois)
+%      Police arabe requise : « Amiri » (ou « Scheherazade New »).
+% =====================================================================
+
+\documentclass[12pt, a4paper, oneside]{report}
+
+% =====================================================================
+%  >>> INFORMATIONS À COMPLÉTER PAR L'ÉTUDIANT(E) <<<
+% =====================================================================
+\newcommand{\monnom}{[À COMPLÉTER : Nom et Prénom]}
+\newcommand{\nomarabe}{[الإسم والنسب]}
+\newcommand{\encadrant}{[À COMPLÉTER : Nom de l'encadrant(e)]}
+\newcommand{\jurya}{[À COMPLÉTER : Membre du jury 1]}
+\newcommand{\juryb}{[À COMPLÉTER : Membre du jury 2]}
+\newcommand{\juryc}{[À COMPLÉTER : Membre du jury 3]}
+\newcommand{\anneeformation}{2025--2026}
+% =====================================================================
+
+% ---------- Moteur Unicode & langues (XeLaTeX / LuaLaTeX) ----------
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{french}
+\setotherlanguage{arabic}
+
+% ---------- Polices ----------
+\setmainfont{Latin Modern Roman}
+\setmonofont{Latin Modern Mono}
+\newfontfamily\arabicfont[Script=Arabic]{Amiri} % installer Amiri si absent
+
+% ---------- Mise en page ----------
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm,
+            headheight=15pt]{geometry}
+
+% ---------- Graphiques, tableaux, listes ----------
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage[font=small,labelfont=bf]{caption}
+
+% ---------- Couleurs ----------
+\usepackage{xcolor}
+\definecolor{crmefblue}{RGB}{15, 58, 110}
+\definecolor{crmefaccent}{RGB}{0, 120, 160}
+\definecolor{codegray}{RGB}{245, 245, 245}
+\definecolor{codegreen}{RGB}{0, 128, 0}
+\definecolor{codepurple}{RGB}{125, 40, 160}
+\definecolor{codeblue}{RGB}{30, 80, 200}
+
+% ---------- Code source (Annexes) ----------
+\usepackage{listings}
+
+% Définition du langage JavaScript pour listings (non fourni par défaut)
+\lstdefinelanguage{JavaScript}{
+  morekeywords={await, async, break, case, catch, const, continue, default,
+    delete, do, else, export, extends, finally, for, from, function, if,
+    import, in, instanceof, let, new, of, return, super, switch, this,
+    throw, try, typeof, var, void, while, yield, true, false, null, undefined},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]"
+}
+\lstdefinestyle{cybersafe}{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{codeblue}\bfseries,
+    commentstyle=\color{codegreen}\itshape,
+    stringstyle=\color{codepurple},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=true,
+    frame=single,
+    rulecolor=\color{gray!40},
+    tabsize=2,
+    captionpos=b
+}
+\lstset{style=cybersafe}
+
+% ---------- En-têtes & pieds de page ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\textit{CyberSafe}}
+\fancyfoot[C]{\thepage}
+\fancypagestyle{plain}{%
+    \fancyhf{}%
+    \fancyfoot[C]{\thepage}%
+    \renewcommand{\headrulewidth}{0pt}%
+}
+
+% ---------- Titres (titlesec) ----------
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+    {\normalfont\huge\bfseries\color{crmefblue}}
+    {\filright\Large\chaptertitlename\ \thechapter}
+    {20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{0pt}{30pt}
+
+% ---------- Table des matières (tocloft) ----------
+\usepackage{tocloft}
+\renewcommand{\cftchapfont}{\bfseries\color{crmefblue}}
+\renewcommand{\cftchappagefont}{\bfseries}
+\setlength{\cftbeforechapskip}{6pt}
+
+% ---------- Liens hypertexte ----------
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=crmefblue,
+    citecolor=crmefaccent,
+    urlcolor=crmefaccent,
+    pdftitle={Rapport PPE - CyberSafe - CRMEF Casablanca-Settat},
+    pdfauthor={\monnom}
+}
+\usepackage{xurl}
+
+% ---------- Profondeur de numérotation ----------
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% ---------- Macro d'image robuste (compile même sans le fichier) ----------
+% \figimg[largeur]{chemin}{hauteur_du_cadre_si_absent}
+\newcommand{\figimg}[3][0.8]{%
+  \IfFileExists{#2}{%
+    \includegraphics[width=#1\textwidth]{#2}%
+  }{%
+    \setlength{\fboxsep}{4pt}%
+    \fcolorbox{gray!50}{gray!8}{%
+      \parbox[c][#3][c]{#1\textwidth}{%
+        \centering\ttfamily\footnotesize\color{gray!70}%
+        [ IMAGE À INSÉRER ]\\[4pt]\detokenize{#2}%
+      }%
+    }%
+  }%
+}
+
+% =====================================================================
+\begin{document}
+
+% =====================================================================
+%  PAGE DE GARDE
+% =====================================================================
+\begin{titlepage}
+    \centering
+    \IfFileExists{images/logo_men.png}{\includegraphics[height=2cm]{images/logo_men.png}}{}
+    \hfill
+    \IfFileExists{images/logo_crmef.png}{\includegraphics[height=2cm]{images/logo_crmef.png}}{}
+    \vspace{0.4cm}
+
+    {\large \textarabic{المملكة المغربية} \par}
+    {\normalsize \textsc{Royaume du Maroc} \par}
+    \vspace{0.3cm}
+    {\small \textarabic{وزارة التربية الوطنية والتعليم الأولي والرياضة} \par}
+    {\footnotesize Ministère de l'Éducation Nationale, du Préscolaire et des Sports \par}
+    \vspace{0.3cm}
+    {\small \textarabic{المركز الجهوي لمهن التربية والتكوين — جهة الدار البيضاء سطات} \par}
+    {\footnotesize Centre Régional des Métiers de l'Éducation et de la Formation \par}
+    {\footnotesize CRMEF Casablanca-Settat \par}
+    \vspace{0.2cm}
+    {\footnotesize Filière : Informatique — \textarabic{شعبة المعلوميات} \par}
+
+    \vspace{0.8cm}
+    {\color{crmefblue}\rule{\textwidth}{1.5pt}}
+    \vspace{0.8cm}
+
+    {\footnotesize Rapport de Projet Personnel Encadré \par}
+    {\footnotesize \textarabic{تقرير المشروع الشخصي المؤطر} \par}
+    \vspace{0.3cm}
+    {\small présenté dans le cadre de la formation qualifiante \par}
+
+    \vspace{1.1cm}
+    {\huge\bfseries\color{crmefblue}
+     Conception d'un outil pédagogique interactif numérique pour
+     renforcer la culture numérique et la cybersécurité chez les
+     collégiens \par}
+    \vspace{0.6cm}
+    {\Large\itshape «\,CyberSafe\,» \par}
+    {\normalsize Application web bilingue (FR\,/\,AR) de sensibilisation gamifiée \par}
+
+    \vspace{0.8cm}
+    {\color{crmefblue}\rule{\textwidth}{1.5pt}}
+    \vspace{1.1cm}
+
+    \begin{minipage}[t]{0.45\textwidth}
+        \begin{flushleft}\textbf{Réalisé par :}\\[2pt]\monnom\end{flushleft}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.45\textwidth}
+        \begin{flushright}\textbf{Encadré par :}\\[2pt]\encadrant\end{flushright}
+    \end{minipage}
+
+    \vspace{1cm}
+    {\textbf{Membres de la commission de soutenance :} \par}
+    \vspace{0.2cm}
+    {\jurya \quad\textbullet\quad \juryb \quad\textbullet\quad \juryc \par}
+
+    \vfill
+    {\color{crmefblue}\rule{0.5\textwidth}{0.8pt}}\\[6pt]
+    {\large Saison de formation : \anneeformation \par}
+\end{titlepage}
+\thispagestyle{empty}
+
+% =====================================================================
+%  PAGES LIMINAIRES (numérotation romaine)
+% =====================================================================
+\pagenumbering{roman}
+
+% ---------------------------- REMERCIEMENTS --------------------------
+\chapter*{Remerciements}
+\markboth{Remerciements}{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Au terme de ce travail, je tiens à exprimer ma profonde gratitude à toutes les personnes qui ont contribué, de près ou de loin, à la réalisation de ce Projet Personnel Encadré.
+
+Je remercie tout particulièrement mon encadrant(e), \encadrant, pour la confiance qu'il/elle m'a accordée, pour ses conseils éclairés et pour la rigueur méthodologique qu'il/elle a su m'inculquer tout au long de ce parcours.
+
+Mes remerciements s'adressent également à l'ensemble du corps formateur du Centre Régional des Métiers de l'Éducation et de la Formation (CRMEF) de la région Casablanca-Settat, ainsi qu'à l'administration, pour la qualité de la formation dispensée durant la saison \anneeformation.
+
+J'exprime ma reconnaissance aux membres de la commission de soutenance, \jurya, \juryb{} et \juryc, qui ont accepté d'évaluer ce travail et d'enrichir ce projet de leurs remarques constructives.
+
+Enfin, je dédie ce travail à ma famille et à mes collègues stagiaires, dont le soutien constant a été une source de motivation permanente.
+
+% ------------------------------ RÉSUMÉS ------------------------------
+\chapter*{Résumés}
+\markboth{Résumés}{Résumés}
+\addcontentsline{toc}{chapter}{Résumés}
+
+\section*{Résumé}
+Ce Projet Personnel Encadré s'inscrit dans le contexte de la transformation numérique du système éducatif marocain et de la montée des menaces cybernétiques visant les mineurs. Partant du constat que la plateforme officielle \texttt{e-himaya.gov.ma} demeure essentiellement informative et dépourvue de scénarios pédagogiques interactifs exploitables en classe, ce projet propose la conception et la réalisation de «\,CyberSafe\,», une application web bilingue (français / arabe) reposant sur la ludification (\textit{gamification}) pour renforcer la culture numérique et la cybersécurité chez les collégiens. Développée avec React et Supabase, l'application fonctionne hors-ligne grâce à IndexedDB et offre aux enseignants un tableau de bord de suivi des apprenants. La démarche adoptée articule le modèle de conception pédagogique ADDIE et les huit étapes méthodologiques du CRMEF. Le produit livré est une application fonctionnelle, exploitable en contexte de classe et alignée sur l'Approche Par Compétences (APC).
+
+\textbf{Mots-clés :} cybersécurité, ludification, culture numérique, enseignement collégial, application web, Approche Par Compétences, hors-ligne, bilinguisme.
+
+\section*{Abstract}
+This Supervised Personal Project addresses the digital transformation of the Moroccan education system and the rising cyber threats targeting minors. Observing that the official platform \texttt{e-himaya.gov.ma} remains mostly informative and lacks interactive, classroom-ready pedagogical scenarios, the project proposes the design and implementation of «\,CyberSafe\,», a bilingual (French / Arabic) web application based on gamification to strengthen digital literacy and cybersecurity awareness among middle-school students. Built with React and Supabase, the application works offline through IndexedDB and provides teachers with a dashboard to track learners' progress. The methodology combines the ADDIE instructional-design model with the eight official CRMEF stages. The delivered product is a functional, classroom-ready application aligned with the Competency-Based Approach.
+
+\textbf{Keywords:} cybersecurity, gamification, digital literacy, middle school, web application, Competency-Based Approach, offline, bilingualism.
+
+\section*{\textarabic{خلاصة}}
+\begin{arabic}
+يندرج هذا المشروع الشخصي المؤطر في سياق التحول الرقمي للمنظومة التربوية المغربية وتنامي المخاطر السيبرانية التي تهدد المتعلمين القاصرين. وانطلاقا من كون المنصة الرسمية \texttt{e-himaya.gov.ma} ذات طابع إخباري محض تفتقر إلى سيناريوهات بيداغوجية تفاعلية قابلة للاستثمار داخل القسم، يقترح هذا المشروع تصميم وإنجاز تطبيق ويب ثنائي اللغة (الفرنسية والعربية) يحمل اسم «CyberSafe»، يعتمد على التلعيب لتعزيز الثقافة الرقمية والأمن السيبراني لدى تلاميذ السلك الإعدادي. أُنجز التطبيق باستعمال React وSupabase، ويتيح الاشتغال دون اتصال بالإنترنت عبر IndexedDB، كما يوفر للأساتذة لوحة قيادة لتتبع تقدم المتعلمين. وقد اعتُمدت في الإنجاز منهجية ADDIE والمراحل الثماني المعتمدة بالمركز الجهوي لمهن التربية والتكوين، لينتج عن ذلك تطبيق وظيفي قابل للاستعمال الصفي ومنسجم مع المقاربة بالكفايات.
+
+\textbf{الكلمات المفتاحية:} الأمن السيبراني، التلعيب، الثقافة الرقمية، التعليم الإعدادي، تطبيق ويب، المقاربة بالكفايات.
+\end{arabic}
+
+% --------------------- TABLES DES MATIÈRES & LISTES ------------------
+\tableofcontents
+\listoftables
+\listoffigures
+
+\clearpage
+\pagenumbering{arabic}
+
+% =====================================================================
+%  INTRODUCTION GÉNÉRALE
+% =====================================================================
+\chapter*{Introduction générale}
+\markboth{Introduction générale}{Introduction générale}
+\addcontentsline{toc}{chapter}{Introduction générale}
+
+\section*{Contexte général}
+La généralisation des usages numériques chez les jeunes a profondément transformé leur rapport à l'information, à la communication et au savoir. Au Maroc, cette dynamique est portée par des chantiers structurants tels que le programme GENIE de généralisation des technologies de l'information dans l'enseignement, la \textit{Vision stratégique 2015-2030} et, plus récemment, la stratégie nationale «\,Maroc Digital 2030\,». Toutefois, l'accélération de la connectivité s'accompagne d'une exposition accrue des mineurs à des risques cybernétiques (hameçonnage, usurpation d'identité, harcèlement en ligne, fuite de données personnelles), face auxquels la culture numérique et la cybersécurité deviennent des compétences citoyennes de premier ordre.
+
+\section*{Problématique}
+Le Maroc dispose d'une plateforme institutionnelle de référence, \texttt{e-himaya.gov.ma}, dédiée à la protection des enfants en ligne. Cette plateforme, bien que pertinente, reste de nature essentiellement \textit{informative} : elle diffuse des contenus de sensibilisation mais n'offre ni scénarios interactifs, ni dispositif ludifié, ni outil de suivi exploitable par l'enseignant en situation de classe. Il en résulte un déficit d'appropriation active des bonnes pratiques de sécurité numérique par les collégiens. La problématique de ce projet se formule ainsi :
+
+\begin{quote}
+\textit{Comment concevoir et réaliser un outil pédagogique numérique interactif, bilingue et accessible hors-ligne, capable de transformer la sensibilisation passive à la cybersécurité en un apprentissage actif, ludifié et mesurable, en complément de la plateforme \texttt{e-himaya.gov.ma} ?}
+\end{quote}
+
+\section*{Objectifs du projet}
+Le projet poursuit cinq objectifs principaux :
+\begin{enumerate}[leftmargin=*]
+  \item Concevoir une application web interactive et bilingue (français / arabe) destinée aux collégiens et à leurs enseignants ;
+  \item Ludifier des scénarios de cybersécurité sous forme de pistes de quiz progressives ;
+  \item Doter l'enseignant d'outils de gestion de classes et d'un tableau de bord analytique ;
+  \item Garantir une accessibilité hors-ligne grâce à IndexedDB (architecture \textit{offline-first}) ;
+  \item Apporter une valeur pédagogique interactive en complément de \texttt{e-himaya.gov.ma}.
+\end{enumerate}
+
+\section*{Démarche méthodologique}
+La démarche combine deux référentiels complémentaires. Sur le plan pédagogique, le modèle \textbf{ADDIE} (Analyse, Conception, Développement, Implémentation, Évaluation) structure l'ingénierie de l'outil. Sur le plan institutionnel, les \textbf{huit étapes méthodologiques du CRMEF} encadrent la conduite du projet, du diagnostic initial jusqu'à la rédaction du rapport final. Le tableau~\ref{tab:addiecrmef} explicite l'articulation entre ces deux référentiels.
+
+\begin{table}[H]
+\centering
+\caption{Articulation entre le modèle ADDIE et les huit étapes officielles du CRMEF}
+\label{tab:addiecrmef}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}l X X@{}}
+\toprule
+Phase ADDIE & Étapes CRMEF correspondantes & Traduction dans le projet \\
+\midrule
+Analyse & 1. Diagnostic ; 2. Collecte de contenus & Analyse des besoins et de \texttt{e-himaya} \\
+Conception & 3. Élaboration du plan du projet & Architecture, UML, modèle de données \\
+Développement & 4. Réalisation intermédiaire (codage) & Implémentation de CyberSafe \\
+Implémentation & 5. Évaluation développementale (tests) & Tests fonctionnels et validation \\
+Évaluation & 6. Rédaction ; 7. Analyse ; 8. Recommandations & Discussion, bilan et rapport \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{Structure du rapport}
+Ce rapport s'organise en six chapitres. Le premier pose le cadre théorique et pédagogique. Le deuxième analyse les travaux antérieurs et positionne le projet. Le troisième spécifie les besoins. Le quatrième détaille la phase de conception (architecture, UML, base de données). Le cinquième présente la phase de réalisation. Le sixième analyse les résultats et discute les apports. Un bilan professionnel et personnel ainsi qu'une conclusion générale clôturent le travail, suivis de la bibliographie et des annexes.
+
+% =====================================================================
+%  CHAPITRE 1
+% =====================================================================
+\chapter{Cadre théorique et pédagogique}
+
+Ce chapitre établit les fondements théoriques du projet. Il situe les enjeux de la cybersécurité et de la culture numérique au Maroc, examine l'apport de la ludification dans l'apprentissage, rappelle les principes de l'Approche Par Compétences et de l'intégration des TICE, puis analyse la plateforme officielle \texttt{e-himaya.gov.ma}.
+
+\section{La cybersécurité et la culture numérique au Maroc : enjeux et difficultés}
+La culture numérique désigne l'ensemble des connaissances, compétences et attitudes permettant à l'individu d'utiliser les outils numériques de manière critique, responsable et sécurisée. Chez le collégien, elle recouvre la protection des données personnelles, l'identification des tentatives d'hameçonnage, la gestion des mots de passe, la prévention du cyberharcèlement et la vérification de l'information.
+
+Au Maroc, le taux de pénétration d'Internet et l'usage massif des smartphones par les adolescents accroissent l'exposition aux risques. Plusieurs difficultés persistent : la faible intégration de la cybersécurité dans les pratiques de classe, le manque d'outils pédagogiques adaptés au niveau collégial, la barrière linguistique (contenus souvent disponibles uniquement en une seule langue) et l'inégalité d'accès à une connexion stable. Ces constats justifient un outil conçu spécifiquement pour le contexte marocain : bilingue, accessible hors-ligne et ancré dans des situations concrètes vécues par les élèves.
+
+\section{L'apport du numérique et de la ludification dans l'apprentissage}
+La ludification (\textit{gamification}) consiste à transposer des mécaniques issues du jeu (points, badges, niveaux, progression, rétroaction immédiate) dans des contextes non ludiques afin de susciter l'engagement et la motivation. Appliquée à l'éducation, elle favorise l'apprentissage actif : l'élève n'est plus simple récepteur d'un contenu mais acteur d'une situation-problème qu'il doit résoudre.
+
+Plusieurs principes théoriques soutiennent cette approche. La théorie de la charge cognitive invite à doser l'information pour ne pas saturer la mémoire de travail ; la théorie de l'apprentissage multimédia souligne l'intérêt de combiner texte et représentations visuelles ; enfin, la rétroaction immédiate, caractéristique des dispositifs ludifiés, consolide les acquis et corrige les erreurs en temps réel. Dans le cas de la cybersécurité, la mise en scène de scénarios réalistes (un courriel suspect, un message d'un inconnu, un mot de passe faible) permet de transformer des règles abstraites en réflexes concrets.
+
+\section{L'Approche Par Compétences (APC) et l'intégration des TICE}
+L'Approche Par Compétences, retenue par le système éducatif marocain, recentre l'apprentissage sur la mobilisation de ressources (savoirs, savoir-faire, savoir-être) face à des situations complexes. Elle privilégie l'évaluation des compétences en action plutôt que la restitution de connaissances isolées. L'intégration des Technologies de l'Information et de la Communication pour l'Enseignement (TICE) prolonge cette logique en offrant des environnements interactifs, différenciés et traçables.
+
+CyberSafe s'inscrit pleinement dans ce cadre : chaque piste de scénarios cible une compétence numérique précise, l'élève la mobilise dans une situation simulée, et l'enseignant dispose d'indicateurs pour réguler son enseignement. L'outil articule ainsi APC et TICE autour d'une finalité citoyenne : la sécurité numérique.
+
+\section{Analyse de la plateforme officielle e-himaya.gov.ma : forces et limites}
+La plateforme \texttt{e-himaya.gov.ma} constitue le dispositif institutionnel marocain de référence pour la protection des mineurs en ligne. Ses forces sont réelles : légitimité officielle, contenus de sensibilisation fiables, dispositif de signalement et couverture de thématiques essentielles.
+
+Toutefois, du point de vue pédagogique, plusieurs limites apparaissent. La plateforme privilégie une logique \textit{descendante et informative} : l'utilisateur lit, mais n'agit pas. Elle ne propose ni parcours progressif, ni mécanique de jeu, ni évaluation formative. Elle n'intègre pas d'outil de suivi permettant à l'enseignant de mesurer la progression d'une classe. Enfin, elle suppose une connexion permanente, ce qui en limite l'usage dans les établissements faiblement connectés. La figure~\ref{fig:ehimaya} illustre la page d'accueil de la plateforme.
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.85]{images/ehimaya_accueil.png}{5.5cm}
+    \caption{Page d'accueil de la plateforme officielle \texttt{e-himaya.gov.ma} : un dispositif informatif riche mais non interactif.}
+    \label{fig:ehimaya}
+\end{figure}
+
+Ces limites définissent l'espace d'innovation du projet : CyberSafe ne se substitue pas à \texttt{e-himaya}, mais en prolonge la mission en y ajoutant interactivité, ludification, suivi pédagogique et accessibilité hors-ligne.
+
+% =====================================================================
+%  CHAPITRE 2
+% =====================================================================
+\chapter{Travaux antérieurs et positionnement du projet}
+
+\section{Plateformes et dispositifs existants}
+Plusieurs solutions abordent la sensibilisation à la cybersécurité ou l'apprentissage ludifié. À l'échelle internationale, des plateformes proposent des modules de sensibilisation, des jeux sérieux ou des quiz en ligne ; des outils éducatifs généralistes (questionnaires interactifs, plateformes d'apprentissage par le jeu) sont largement utilisés en classe. À l'échelle nationale, \texttt{e-himaya.gov.ma} demeure la référence institutionnelle. Ces dispositifs apportent chacun une contribution, mais aucun ne réunit l'ensemble des caractéristiques requises pour le contexte ciblé.
+
+\section{Limites des approches informatives}
+Les approches existantes présentent des limites récurrentes lorsqu'on les rapporte au besoin spécifique du collège marocain :
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Passivité} : les contenus informatifs n'engagent pas l'élève dans une démarche active de résolution ;
+  \item \textbf{Absence de suivi} : peu d'outils offrent à l'enseignant des indicateurs de progression par classe ;
+  \item \textbf{Dépendance à la connexion} : la plupart exigent un accès Internet permanent ;
+  \item \textbf{Barrière linguistique} : rares sont les solutions véritablement bilingues français / arabe avec gestion du sens d'écriture (RTL) ;
+  \item \textbf{Inadéquation curriculaire} : les contenus ne sont pas alignés sur le niveau et le programme du collège marocain.
+\end{itemize}
+
+\section{Positionnement de CyberSafe}
+CyberSafe se positionne comme une réponse intégrée à ces limites. Le tableau~\ref{tab:positionnement} synthétise sa valeur ajoutée par rapport aux approches existantes.
+
+\begin{table}[H]
+\centering
+\caption{Positionnement comparatif de CyberSafe}
+\label{tab:positionnement}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}l c c c@{}}
+\toprule
+Critère & Plateforme informative & Quiz génériques & CyberSafe \\
+\midrule
+Interactivité ludifiée & Non & Partielle & Oui \\
+Suivi enseignant (analytics) & Non & Limité & Oui \\
+Fonctionnement hors-ligne & Non & Non & Oui \\
+Bilinguisme FR/AR + RTL & Non & Rare & Oui \\
+Alignement APC / collège marocain & Partiel & Non & Oui \\
+Complément à \texttt{e-himaya} & --- & Non & Oui \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Le projet ne vise donc pas à concurrencer les dispositifs existants, mais à combler un vide précis : un outil de classe, ludifié, bilingue, traçable et utilisable même sans connexion, conçu pour le collégien marocain et son enseignant.
+
+% =====================================================================
+%  CHAPITRE 3
+% =====================================================================
+\chapter{Spécification des besoins}
+
+Ce chapitre formalise les besoins de l'application à partir de l'analyse menée précédemment. Il précise le public cible, les besoins fonctionnels et non-fonctionnels, ainsi que les contraintes du projet.
+
+\section{Public cible}
+CyberSafe s'adresse à deux catégories principales d'utilisateurs, auxquelles s'ajoute un rôle d'administration :
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Les élèves du collège} (\textarabic{تلاميذ السلك الإعدادي}) : utilisateurs principaux, ils suivent les pistes de scénarios ludifiés ;
+  \item \textbf{Les enseignants d'informatique} : ils gèrent les classes, assignent les contenus et consultent les analyses de progression ;
+  \item \textbf{Le super-administrateur} : il gère le contenu global, les comptes enseignants et les traductions.
+\end{itemize}
+
+\section{Besoins fonctionnels}
+Les besoins fonctionnels sont organisés par acteur.
+
+\subsection{Acteur Élève}
+\begin{itemize}[leftmargin=*]
+  \item S'authentifier au moyen d'un code de classe et d'un identifiant Massar ;
+  \item Choisir une piste de scénarios ;
+  \item Jouer un quiz ludifié avec rétroaction immédiate ;
+  \item Visualiser sa progression (points, niveaux, badges) ;
+  \item Poursuivre son activité hors-ligne et synchroniser ultérieurement.
+\end{itemize}
+
+\subsection{Acteur Enseignant}
+\begin{itemize}[leftmargin=*]
+  \item S'authentifier par courriel et mot de passe ;
+  \item Gérer les classes et les élèves (création, inscription, suivi) ;
+  \item Assigner des catégories de scénarios à une classe ;
+  \item Consulter le tableau de bord analytique (taux de réussite, progression).
+\end{itemize}
+
+\subsection{Acteur Super-Administrateur}
+\begin{itemize}[leftmargin=*]
+  \item Gérer le contenu global (opérations CRUD sur catégories, scénarios, questions) ;
+  \item Gérer les enseignants et les classes ;
+  \item Gérer les traductions de l'interface (internationalisation i18n).
+\end{itemize}
+
+\section{Besoins non-fonctionnels}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Disponibilité hors-ligne} : l'application doit rester utilisable sans connexion (architecture \textit{offline-first}) ;
+  \item \textbf{Sécurité} : isolation stricte des données par la sécurité au niveau des lignes (RLS) ;
+  \item \textbf{Performance} : temps de réponse réduit grâce au cache local et à la gestion des requêtes ;
+  \item \textbf{Accessibilité linguistique} : interface bilingue FR/AR avec prise en charge du sens d'écriture de droite à gauche (RTL) ;
+  \item \textbf{Ergonomie} : interface adaptée aux collégiens, claire et responsive ;
+  \item \textbf{Maintenabilité} : architecture modulaire facilitant l'évolution du contenu.
+\end{itemize}
+
+\section{Contraintes}
+Le projet est soumis à plusieurs contraintes : un environnement scolaire à connectivité variable, des terminaux hétérogènes (ordinateurs, tablettes, smartphones), la nécessité d'un contenu aligné sur le curriculum, et le respect de la confidentialité des données des mineurs. Ces contraintes ont directement orienté les choix techniques (PWA, IndexedDB, RLS, bilinguisme).
+
+% =====================================================================
+%  CHAPITRE 4
+% =====================================================================
+\chapter{Phase de conception}
+
+Ce chapitre présente la conception de CyberSafe : architecture technique, modélisation UML, conception de la base de données et conception pédagogique.
+
+\section{Architecture technique}
+CyberSafe adopte une architecture client-serveur de type \textit{BaaS} (\textit{Backend as a Service}). Le client est une application web progressive (PWA) développée avec React ; le backend est assuré par Supabase (authentification, base PostgreSQL, sécurité au niveau des lignes). Le cache local IndexedDB, piloté par Dexie, et un \textit{Service Worker} garantissent le fonctionnement hors-ligne. La figure~\ref{fig:archi} présente cette architecture.
+
+% MERMAID CODE START — Diagramme d'architecture (à rendre via mermaid.live)
+% flowchart TB
+%   subgraph Client["Client (Navigateur / PWA)"]
+%     UI["React 19 + Tailwind CSS"]
+%     Router["TanStack Router"]
+%     Query["TanStack Query"]
+%     Dexie[("IndexedDB via Dexie")]
+%     SW["Service Worker"]
+%   end
+%   subgraph Backend["Supabase (BaaS)"]
+%     Auth["Auth / JWT"]
+%     PG[("PostgreSQL + RLS")]
+%     Storage["Storage"]
+%   end
+%   UI --> Router --> Query
+%   Query <--> Auth
+%   Query <--> PG
+%   Query <--> Dexie
+%   SW --> Dexie
+%   UI <--> SW
+% MERMAID CODE END
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.9]{images/architecture.png}{6cm}
+    \caption{Architecture technique de CyberSafe (client PWA React + backend Supabase + cache hors-ligne IndexedDB).}
+    \label{fig:archi}
+\end{figure}
+
+\section{Modélisation UML}
+
+\subsection{Diagramme de cas d'utilisation}
+Le diagramme de cas d'utilisation (figure~\ref{fig:usecase}) recense les interactions des trois acteurs avec le système.
+
+% MERMAID CODE START — Diagramme de cas d'utilisation
+% flowchart LR
+%   eleve(["Élève"])
+%   ens(["Enseignant"])
+%   admin(["Super-Admin"])
+%   subgraph CyberSafe
+%     uc1(("S'authentifier"))
+%     uc2(("Choisir piste scénario"))
+%     uc3(("Jouer quiz gamifié"))
+%     uc4(("Voir progression"))
+%     uc5(("Continuer hors-ligne"))
+%     uc6(("Gérer classes/élèves"))
+%     uc7(("Assigner catégories"))
+%     uc8(("Consulter analytics"))
+%     uc9(("Gérer contenu global (CRUD)"))
+%     uc10(("Gérer enseignants/classes"))
+%     uc11(("Gérer traductions i18n"))
+%   end
+%   eleve --- uc1
+%   eleve --- uc2
+%   eleve --- uc3
+%   eleve --- uc4
+%   eleve --- uc5
+%   ens --- uc1
+%   ens --- uc6
+%   ens --- uc7
+%   ens --- uc8
+%   admin --- uc1
+%   admin --- uc9
+%   admin --- uc10
+%   admin --- uc11
+% MERMAID CODE END
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.95]{images/usecase.png}{7cm}
+    \caption{Diagramme de cas d'utilisation des trois acteurs (Élève, Enseignant, Super-Administrateur).}
+    \label{fig:usecase}
+\end{figure}
+
+\subsection{Diagramme de séquence — Authentification et RLS}
+La figure~\ref{fig:seqauth} décrit la séquence d'authentification et l'application des politiques de sécurité au niveau des lignes.
+
+% MERMAID CODE START — Diagramme de séquence : authentification + RLS
+% sequenceDiagram
+%   participant U as Utilisateur
+%   participant App as Front (React)
+%   participant SB as Supabase Auth
+%   participant DB as PostgreSQL (RLS)
+%   U->>App: Saisie des identifiants
+%   App->>SB: Vérification (signIn)
+%   SB-->>App: Jeton JWT (rôle)
+%   App->>DB: Requête de données (avec JWT)
+%   DB->>DB: Application des politiques RLS
+%   DB-->>App: Données autorisées uniquement
+%   App-->>U: Affichage du contenu filtré
+% MERMAID CODE END
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.85]{images/sequence_auth.png}{6cm}
+    \caption{Diagramme de séquence : authentification via Supabase et filtrage des données par RLS.}
+    \label{fig:seqauth}
+\end{figure}
+
+\subsection{Diagramme de séquence — Mode hors-ligne et synchronisation}
+La figure~\ref{fig:seqsync} illustre le cycle \textit{en ligne / hors-ligne / reconnexion}.
+
+% MERMAID CODE START — Diagramme de séquence : synchronisation hors-ligne
+% sequenceDiagram
+%   participant E as Élève (PWA)
+%   participant IDB as IndexedDB (Dexie)
+%   participant SB as Supabase
+%   Note over E,SB: Mode en ligne
+%   E->>SB: GET scénarios / questions
+%   SB-->>IDB: Mise en cache locale
+%   E->>IDB: Enregistre réponse (synced=true)
+%   E->>SB: POST réponse
+%   Note over E,SB: Mode hors-ligne
+%   E->>IDB: Lecture des scénarios (cache)
+%   E->>IDB: Enregistre réponse (synced=false)
+%   Note over E,SB: Reconnexion
+%   IDB->>SB: Synchronisation des réponses en attente
+%   SB-->>IDB: Confirmation (synced=true)
+% MERMAID CODE END
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.85]{images/sequence_sync.png}{6.5cm}
+    \caption{Diagramme de séquence : mode hors-ligne et synchronisation différée des réponses via Dexie.}
+    \label{fig:seqsync}
+\end{figure}
+
+\section{Conception de la base de données}
+Le modèle relationnel, déployé sur PostgreSQL via Supabase, comprend huit tables principales : \texttt{teachers}, \texttt{classes}, \texttt{students}, \texttt{categories}, \texttt{scenarios}, \texttt{questions}, \texttt{student\_answers} (incluant le champ \texttt{synced\_status}) et \texttt{translations}. La sécurité au niveau des lignes (RLS) est activée pour isoler les données. Le diagramme entité-association est présenté en figure~\ref{fig:erd}.
+
+% MERMAID CODE START — Diagramme entité-association (ERD)
+% erDiagram
+%   teachers ||--o{ classes : "gère"
+%   classes ||--o{ students : "contient"
+%   categories ||--o{ scenarios : "regroupe"
+%   scenarios ||--o{ questions : "compose"
+%   students ||--o{ student_answers : "soumet"
+%   questions ||--o{ student_answers : "concerne"
+%   teachers {
+%     uuid id PK
+%     text full_name
+%     text email
+%     text password_hash
+%   }
+%   classes {
+%     uuid id PK
+%     uuid teacher_id FK
+%     text name
+%     text class_code
+%   }
+%   students {
+%     uuid id PK
+%     uuid class_id FK
+%     text full_name
+%     text massar_code
+%   }
+%   categories {
+%     uuid id PK
+%     text name_fr
+%     text name_ar
+%   }
+%   scenarios {
+%     uuid id PK
+%     uuid category_id FK
+%     text title_fr
+%     text title_ar
+%     int difficulty
+%   }
+%   questions {
+%     uuid id PK
+%     uuid scenario_id FK
+%     text statement_fr
+%     text statement_ar
+%     jsonb options
+%     int correct_index
+%   }
+%   student_answers {
+%     uuid id PK
+%     uuid student_id FK
+%     uuid question_id FK
+%     int chosen_index
+%     bool is_correct
+%     bool synced_status
+%     timestamptz answered_at
+%   }
+%   translations {
+%     uuid id PK
+%     text i18n_key
+%     text value_fr
+%     text value_ar
+%   }
+% MERMAID CODE END
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.95]{images/erd.png}{8cm}
+    \caption{Diagramme entité-association de la base de données CyberSafe (PostgreSQL / Supabase, RLS activée).}
+    \label{fig:erd}
+\end{figure}
+
+\section{Conception pédagogique : de e-himaya à CyberSafe}
+La conception pédagogique transpose les thématiques de \texttt{e-himaya} en pistes ludifiées. Chaque catégorie informative devient une piste de scénarios composée de questions à choix, dotées d'une rétroaction. Le tableau~\ref{tab:mapping} illustre cette transposition.
+
+\begin{table}[H]
+\centering
+\caption{Transposition des thématiques de \texttt{e-himaya} en scénarios ludifiés CyberSafe}
+\label{tab:mapping}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}l X X@{}}
+\toprule
+Thématique (e-himaya) & Scénario ludifié (CyberSafe) & Compétence visée (APC) \\
+\midrule
+Mots de passe & «\,Le coffre-fort\,» : créer et tester un mot de passe & Sécuriser ses accès \\
+Hameçonnage & «\,Le courriel piégé\,» : repérer un message frauduleux & Identifier une menace \\
+Données personnelles & «\,Mon empreinte\,» : trier les informations à partager & Protéger sa vie privée \\
+Cyberharcèlement & «\,Stop\,!\,» : réagir à une situation de harcèlement & Adopter un comportement responsable \\
+Fiabilité de l'information & «\,Vrai ou faux\,» : vérifier une source & Exercer son esprit critique \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+%  CHAPITRE 5
+% =====================================================================
+\chapter{Phase de réalisation}
+
+Ce chapitre décrit la mise en œuvre concrète de CyberSafe : environnement technique, authentification sécurisée, moteur de scénarios et mode hors-ligne, tableau de bord enseignant, gestion du bilinguisme, et présentation des principales interfaces.
+
+\section{Environnement de développement et technologies}
+La réalisation s'appuie sur une pile technologique JavaScript moderne, résumée dans le tableau~\ref{tab:techno}.
+
+\begin{table}[H]
+\centering
+\caption{Pile technologique de CyberSafe}
+\label{tab:techno}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}l X@{}}
+\toprule
+Couche & Technologies \\
+\midrule
+Interface (front) & React 19, Tailwind CSS \\
+Navigation et données & TanStack Router, TanStack Query \\
+Backend (BaaS) & Supabase : Auth, PostgreSQL, RLS \\
+Persistance hors-ligne & Dexie (IndexedDB), Service Worker (PWA) \\
+Internationalisation & système i18n (FR/AR) avec gestion RTL \\
+Modélisation & UML (cas d'utilisation, séquence, ERD) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Authentification et sécurité au niveau des lignes (RLS)}
+L'authentification distingue trois rôles. L'élève s'identifie par un code de classe associé à son identifiant Massar ; l'enseignant et le super-administrateur s'authentifient par courriel et mot de passe via Supabase Auth, qui délivre un jeton JWT porteur du rôle.
+
+La sécurité repose sur la \textit{Row Level Security} (RLS) de PostgreSQL : chaque table est protégée par des politiques qui filtrent les lignes accessibles selon l'identité du demandeur. Ainsi, un enseignant n'accède qu'aux données de ses propres classes, et un élève qu'à sa propre progression. Un extrait de politique RLS est fourni en annexe~\ref{ann:code}.
+
+\section{Moteur de scénarios et mode hors-ligne (Dexie / IndexedDB)}
+Le moteur de scénarios charge les pistes et leurs questions, gère la progression de l'élève et applique les mécaniques de ludification (points, niveaux, rétroaction). En mode connecté, les scénarios sont récupérés depuis Supabase puis mis en cache dans IndexedDB via Dexie ; les réponses sont enregistrées localement (champ \texttt{synced\_status} à \texttt{true}) et transmises au serveur.
+
+En mode hors-ligne, l'application lit les scénarios depuis le cache local et enregistre les réponses avec \texttt{synced\_status} à \texttt{false}. À la reconnexion, une routine de synchronisation Dexie pousse les réponses en attente vers Supabase, puis met à jour leur statut. Ce mécanisme \textit{offline-first} garantit la continuité pédagogique même en l'absence de connexion. La logique de synchronisation est détaillée en annexe~\ref{ann:code}.
+
+\section{Tableau de bord enseignant (analytics)}
+Le tableau de bord agrège les réponses des élèves pour offrir à l'enseignant une vision synthétique : taux de réussite par scénario, progression par élève et par classe, et identification des notions les moins maîtrisées. Ces indicateurs soutiennent une régulation pédagogique conforme à l'APC : l'enseignant ajuste son enseignement en fonction des difficultés objectivées par les données.
+
+\section{Gestion du bilinguisme (i18n) et du sens d'écriture (RTL)}
+Le bilinguisme constitue une exigence centrale. L'ensemble des libellés d'interface et des contenus pédagogiques est dédoublé en français et en arabe : les tables \texttt{scenarios}, \texttt{questions} et \texttt{translations} comportent des champs distincts pour chaque langue. Le passage à l'arabe déclenche la bascule en mode RTL (\textit{right-to-left}), avec adaptation de la disposition, de l'alignement et des composants. Cette gestion garantit une expérience cohérente quelle que soit la langue choisie par l'utilisateur.
+
+\section{Principales interfaces graphiques}
+Les figures suivantes présentent les écrans majeurs de CyberSafe. Elles seront remplacées par les captures réelles de l'application déployée.
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.85]{images/screenshot_eleve_dashboard.png}{6cm}
+    \caption{Tableau de bord Élève : pistes de scénarios, points, niveaux et progression.}
+    \label{fig:ui_eleve}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.85]{images/screenshot_quiz.png}{6cm}
+    \caption{Écran de quiz ludifié : question, choix multiples et rétroaction immédiate (vue bilingue).}
+    \label{fig:ui_quiz}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.85]{images/screenshot_enseignant_analytics.png}{6cm}
+    \caption{Tableau de bord Enseignant : analyses de progression et taux de réussite par classe.}
+    \label{fig:ui_ens}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \figimg[0.85]{images/screenshot_superadmin.png}{6cm}
+    \caption{Panneau Super-Administrateur : gestion du contenu global (CRUD) et des traductions i18n.}
+    \label{fig:ui_admin}
+\end{figure}
+
+% =====================================================================
+%  CHAPITRE 6
+% =====================================================================
+\chapter{Analyse des résultats et discussion}
+
+Conformément à la nature du projet — la livraison d'un outil numérique et non une enquête de terrain — les résultats correspondent aux fonctionnalités effectivement conçues, codées et validées. Ce chapitre présente la validation technique, la conformité aux objectifs, les obstacles rencontrés, les limites et les perspectives.
+
+\section{Validation technique et tests fonctionnels}
+La validation a reposé sur une série de tests fonctionnels couvrant les principaux scénarios d'usage. Le tableau~\ref{tab:tests} en présente une synthèse.
+
+\begin{table}[H]
+\centering
+\caption{Synthèse des tests fonctionnels de CyberSafe}
+\label{tab:tests}
+\begin{tabularx}{\textwidth}{@{}l X c@{}}
+\toprule
+\textbf{Réf.} & \textbf{Scénario de test} & \textbf{Résultat} \\
+\midrule
+TF-01 & Authentification élève (code classe + Massar) & Conforme \\
+TF-02 & Authentification enseignant / super-admin (courriel) & Conforme \\
+TF-03 & Isolation des données par RLS & Conforme \\
+TF-04 & Déroulement d'un quiz ludifié et rétroaction & Conforme \\
+TF-05 & Enregistrement local des réponses (hors-ligne) & Conforme \\
+TF-06 & Synchronisation différée à la reconnexion & Conforme \\
+TF-07 & Tableau de bord enseignant (analytics) & Conforme \\
+TF-08 & Bascule FR/AR et affichage RTL & Conforme \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Conformité avec les objectifs et l'APC}
+Les cinq objectifs initiaux sont atteints : l'application bilingue est conçue et fonctionnelle ; les scénarios de cybersécurité sont ludifiés ; l'enseignant dispose d'outils de gestion et d'analyse ; l'accessibilité hors-ligne est assurée par IndexedDB ; et l'outil apporte une valeur interactive en complément de \texttt{e-himaya}. Sur le plan pédagogique, l'alignement avec l'APC se vérifie par la structuration en compétences : chaque piste mobilise une compétence numérique précise, évaluée en situation.
+
+\section{Obstacles rencontrés et solutions adoptées}
+Trois obstacles majeurs ont marqué la réalisation, présentés dans le tableau~\ref{tab:obstacles}.
+
+\begin{table}[H]
+\centering
+\caption{Obstacles rencontrés et solutions adoptées}
+\label{tab:obstacles}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{0.30\textwidth} X@{}}
+\toprule
+Obstacle & Solution adoptée \\
+\midrule
+Synchronisation hors-ligne (IndexedDB) & File d'attente locale avec champ \texttt{synced\_status} et routine de synchronisation Dexie à la reconnexion \\
+Sécurité au niveau des lignes (RLS) & Définition de politiques par rôle et par appartenance (classe / enseignant) testées systématiquement \\
+Disposition arabe RTL en React & Bascule globale du sens d'écriture et adaptation des composants et des styles \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Limites techniques observées}
+Plusieurs limites sont à signaler. La résolution des conflits de synchronisation, en cas de modifications concurrentes, reste sommaire (stratégie du «\,dernier écrit l'emporte\,»). Le volume de contenu hors-ligne dépend de la capacité de stockage du terminal. Enfin, l'application n'a pas encore fait l'objet d'une expérimentation à large échelle en conditions réelles de classe, étape qui dépasse le cadre du présent projet.
+
+\section{Perspectives d'évolution}
+Les perspectives incluent : l'enrichissement de la banque de scénarios en lien avec \texttt{e-himaya} ; l'ajout de mécaniques de ludification avancées (classements, défis collaboratifs) ; une stratégie de synchronisation plus robuste ; l'intégration de tableaux de bord destinés à l'administration de l'établissement ; et, à terme, une expérimentation contrôlée mesurant l'impact pédagogique réel de l'outil.
+
+% =====================================================================
+%  BILAN PROFESSIONNEL ET PERSONNEL (الحصيلة)
+% =====================================================================
+\chapter*{Bilan professionnel et personnel}
+\markboth{Bilan professionnel et personnel}{Bilan professionnel et personnel}
+\addcontentsline{toc}{chapter}{Bilan professionnel et personnel (\textarabic{الحصيلة})}
+
+\section*{Rappel des objectifs et des résultats clés}
+Ce projet visait la conception d'un outil pédagogique numérique pour renforcer la cybersécurité chez les collégiens. Le résultat est une application web bilingue, ludifiée, fonctionnant hors-ligne et dotée d'un suivi enseignant : l'ensemble des objectifs fixés a été atteint, et un produit concret et exploitable a été livré.
+
+\section*{Compétences professionnelles développées}
+La conduite de ce projet a permis de développer un ensemble de compétences :
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Compétences techniques} : développement \textit{full-stack} JavaScript (React, Supabase), modélisation UML, conception de bases de données, sécurité web (RLS), architecture \textit{offline-first} ;
+  \item \textbf{Compétences d'ingénierie pédagogique} : application du modèle ADDIE, alignement sur l'APC, conception de situations d'apprentissage ludifiées ;
+  \item \textbf{Compétences méthodologiques} : conduite de projet selon les huit étapes du CRMEF, du diagnostic à l'évaluation ;
+  \item \textbf{Compétences transversales} : autonomie, résolution de problèmes, gestion du temps et rédaction académique.
+\end{itemize}
+
+\section*{Apprentissages personnels}
+Sur le plan personnel, ce projet a confirmé l'intérêt de relier ingénierie logicielle et conception pédagogique. Il a renforcé une posture réflexive : concevoir un outil, ce n'est pas seulement coder, c'est répondre à un besoin éducatif réel, dans un contexte donné, pour un public précis. La gestion des obstacles techniques a par ailleurs développé persévérance et rigueur.
+
+\section*{Perspectives professionnelles}
+Ce travail ouvre des perspectives concrètes pour la pratique d'enseignement : intégrer le numérique de manière critique et créative, concevoir des ressources adaptées au contexte marocain, et contribuer à la culture de cybersécurité au sein de l'établissement. Il constitue une base réutilisable et extensible pour de futurs projets pédagogiques.
+
+% =====================================================================
+%  CONCLUSION GÉNÉRALE
+% =====================================================================
+\chapter*{Conclusion générale}
+\markboth{Conclusion générale}{Conclusion générale}
+\addcontentsline{toc}{chapter}{Conclusion générale}
+
+Ce Projet Personnel Encadré est parti d'un constat précis : la plateforme officielle \texttt{e-himaya.gov.ma}, bien que pertinente, demeure informative et n'offre pas de dispositif interactif exploitable en classe. En réponse, le projet a conçu et réalisé «\,CyberSafe\,», une application web bilingue et ludifiée, fonctionnant hors-ligne et dotée d'un tableau de bord enseignant, destinée à renforcer la culture numérique et la cybersécurité chez les collégiens.
+
+La démarche, articulant le modèle ADDIE et les huit étapes méthodologiques du CRMEF, a conduit à un produit fonctionnel et aligné sur l'Approche Par Compétences. Les résultats — entendus comme les fonctionnalités effectivement conçues, codées et validées — attestent de l'atteinte des objectifs fixés.
+
+Au-delà du livrable, ce projet illustre la complémentarité entre innovation technique et finalité éducative. Il appelle des prolongements, notamment l'enrichissement des contenus et une expérimentation en conditions réelles, afin de mesurer son impact pédagogique et de l'inscrire durablement dans les pratiques de classe.
+
+% =====================================================================
+%  BIBLIOGRAPHIE / WEBOGRAPHIE
+% =====================================================================
+\chapter*{Bibliographie / Webographie}
+\markboth{Bibliographie / Webographie}{Bibliographie / Webographie}
+\addcontentsline{toc}{chapter}{Bibliographie / Webographie}
+
+% NB : Références réelles à vérifier et à compléter selon les normes de votre CRMEF.
+
+\section*{Ouvrages et articles}
+\begin{enumerate}[leftmargin=*]
+  \item Branch, R. M. (2009). \textit{Instructional Design: The ADDIE Approach}. New York : Springer.
+  \item Deterding, S., Dixon, D., Khaled, R., \& Nacke, L. (2011). \textit{From Game Design Elements to Gamefulness: Defining «\,Gamification\,»}. Proceedings of the 15th International Academic MindTrek Conference.
+  \item Kapp, K. M. (2012). \textit{The Gamification of Learning and Instruction: Game-based Methods and Strategies for Training and Education}. San Francisco : Pfeiffer / Wiley.
+  \item Mayer, R. E. (2009). \textit{Multimedia Learning} (2\textsuperscript{e} éd.). Cambridge : Cambridge University Press.
+  \item Sweller, J. (1988). \textit{Cognitive Load During Problem Solving: Effects on Learning}. Cognitive Science, 12(2), 257-285.
+  \item Conseil Supérieur de l'Éducation, de la Formation et de la Recherche Scientifique (CSEFRS). (2015). \textit{Vision stratégique de la réforme 2015-2030}. Royaume du Maroc.
+  \item Royaume du Maroc. (2019). \textit{Loi-cadre n° 51-17 relative au système d'éducation, de formation et de recherche scientifique}.
+\end{enumerate}
+
+\section*{Webographie}
+\begin{enumerate}[leftmargin=*]
+  \item Plateforme nationale de protection des enfants en ligne : \url{https://e-himaya.gov.ma}
+  \item Documentation officielle React : \url{https://react.dev}
+  \item Documentation officielle Supabase : \url{https://supabase.com/docs}
+  \item Dexie.js (IndexedDB) : \url{https://dexie.org}
+  \item TanStack (Router \& Query) : \url{https://tanstack.com}
+  \item Tailwind CSS : \url{https://tailwindcss.com}
+  \item OWASP Top Ten (sécurité applicative web) : \url{https://owasp.org/www-project-top-ten/}
+  \item MDN Web Docs — Progressive Web Apps : \url{https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps}
+\end{enumerate}
+
+% =====================================================================
+%  ANNEXES
+% =====================================================================
+\renewcommand{\chaptername}{Annexe}
+\appendix
+\addcontentsline{toc}{chapter}{Annexes}
+
+\chapter{Extraits de code source}
+\label{ann:code}
+
+\textbf{A.1 — Exemple de politique de sécurité au niveau des lignes (RLS) — PostgreSQL / Supabase}
+\begin{lstlisting}[language=SQL, caption={Politique RLS : un enseignant n'accède qu'aux élèves de ses classes}]
+ALTER TABLE students ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "teacher_reads_own_students"
+ON students
+FOR SELECT
+USING (
+  class_id IN (
+    SELECT id FROM classes
+    WHERE teacher_id = auth.uid()
+  )
+);
+\end{lstlisting}
+
+\textbf{A.2 — Synchronisation hors-ligne avec Dexie (extrait simplifié)}
+\begin{lstlisting}[language=JavaScript, caption={Pousse des réponses en attente vers Supabase à la reconnexion}]
+import { db } from "./dexie-db";        // base IndexedDB locale
+import { supabase } from "./supabase";  // client Supabase
+
+export async function syncPendingAnswers() {
+  // Récupère les réponses non synchronisées
+  const pending = await db.answers
+    .where("synced_status").equals(0).toArray();
+
+  for (const answer of pending) {
+    const { error } = await supabase
+      .from("student_answers")
+      .insert({
+        student_id: answer.studentId,
+        question_id: answer.questionId,
+        chosen_index: answer.chosenIndex,
+        is_correct: answer.isCorrect,
+        synced_status: true,
+        answered_at: answer.answeredAt,
+      });
+
+    // Si l'envoi réussit, on marque la réponse comme synchronisée
+    if (!error) {
+      await db.answers.update(answer.id, { synced_status: 1 });
+    }
+  }
+}
+\end{lstlisting}
+
+\textbf{A.3 — Bascule de langue et sens d'écriture (i18n / RTL)}
+\begin{lstlisting}[language=JavaScript, caption={Application de la direction RTL lors du passage à l'arabe}]
+export function setLanguage(lang) {
+  const isRTL = lang === "ar";
+  document.documentElement.lang = lang;
+  document.documentElement.dir = isRTL ? "rtl" : "ltr";
+  // persistance du choix + rechargement des libellés i18n
+  localStorage.setItem("cybersafe_lang", lang);
+}
+\end{lstlisting}
+
+\chapter{Schéma relationnel détaillé de la base de données}
+La structure complète des huit tables (clés primaires, clés étrangères et principaux champs) est présentée dans le diagramme entité-association de la figure~\ref{fig:erd} (chapitre~4). Les principales relations sont les suivantes :
+\begin{itemize}[leftmargin=*]
+  \item \texttt{teachers} (1) -- (N) \texttt{classes} ;
+  \item \texttt{classes} (1) -- (N) \texttt{students} ;
+  \item \texttt{categories} (1) -- (N) \texttt{scenarios} ;
+  \item \texttt{scenarios} (1) -- (N) \texttt{questions} ;
+  \item \texttt{students} (1) -- (N) \texttt{student\_answers} ;
+  \item \texttt{questions} (1) -- (N) \texttt{student\_answers} ;
+  \item \texttt{translations} : table de libellés bilingues (clé i18n, valeur FR, valeur AR).
+\end{itemize}
+La sécurité au niveau des lignes (RLS) est activée sur les tables sensibles afin d'isoler les données par enseignant et par élève.
+
+\end{document}

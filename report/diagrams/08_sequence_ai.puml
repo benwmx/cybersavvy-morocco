@@ -1,0 +1,68 @@
+@startuml sequence_ai
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam sequenceArrowColor #5B21B6
+skinparam sequenceLifeLineBackgroundColor #F5F3FF
+skinparam sequenceLifeLineBorderColor #5B21B6
+skinparam sequenceParticipantBackgroundColor #F5F3FF
+skinparam sequenceParticipantBorderColor #5B21B6
+skinparam sequenceNoteBackgroundColor #FFFDE7
+skinparam sequenceNoteBorderColor #F9A825
+
+title Assistant pédagogique IA — Flux d'obtention des recommandations (Enseignant)
+
+actor "Enseignant" as T
+participant "Page Analytique\n(React)" as App
+participant "useAIRecommendations\n(hook)" as Hook
+participant "callGemini()\n(lib/gemini.ts)" as GLib
+participant "Gemini 2.0 Flash\n(Google AI — externe)" as API
+
+== Configuration préalable (Page Paramètres) ==
+T -> App : Saisit sa clé API Gemini
+App -> API : POST generateContent\n("Reply with one word: ready")
+API --> App : HTTP 200 (clé valide)\nou HTTP 429 (rate-limited → valide aussi)
+App -> App : localStorage.setItem(\n  "gemini_api_key_{userId}", key)
+App --> T : ✓ Clé configurée
+
+note right of App
+  La clé est stockée uniquement
+  dans le localStorage du navigateur.
+  Elle n'est jamais transmise
+  au serveur Supabase.
+end note
+
+== Génération des recommandations (Page Analytique) ==
+T -> App : Consulte le tableau de bord analytique
+App -> App : Calcule stats agrégées depuis\nles résultats filtrés par classe :
+note right of App
+  - Moyenne globale (%)
+  - Nombre de tentatives
+  - Score par catégorie (%)
+  - Scénarios ≤ 70% (les plus faibles)
+  - Nb d'erreurs fréquentes (sans noms)
+end note
+
+T -> App : Clique "Générer les recommandations"
+App -> Hook : aiMutation.mutate()
+Hook -> GLib : callGemini(apiKey, buildPrompt(stats, lang))
+
+note right of GLib
+  Aucune donnée nominative
+  dans le prompt :
+  ✗ Pas de noms d'élèves
+  ✗ Pas d'identifiants
+  ✓ Uniquement des statistiques
+    agrégées et anonymisées
+end note
+
+GLib -> API : POST /v1beta/models/gemini-2.0-flash\n:generateContent?key={apiKey}\n(prompt structuré en FR ou AR)
+API --> GLib : { candidates[0].content.parts[0].text }
+
+GLib --> Hook : texte Markdown structuré
+Hook --> App : aiMutation.data (4 sections)
+App --> T : Affiche recommandations :\n**1. Diagnostic**\n**2. Actions prioritaires**\n**3. Méthodes pédagogiques**\n**4. Tutoriels à créer dans CyberSafe**
+
+T -> App : (optionnel) Clique "Régénérer"
+App -> Hook : aiMutation.mutate() [nouveau appel]
+
+@enduml

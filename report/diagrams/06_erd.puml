@@ -1,0 +1,138 @@
+@startuml erd
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam entity {
+  BackgroundColor #EEF5FF
+  BorderColor #0F3A6E
+  FontColor #1A1A2E
+}
+skinparam arrow {
+  Color #0F3A6E
+}
+
+title Diagramme Entité-Association — Base de données CyberSafe\n(PostgreSQL / Supabase, RLS activé sur toutes les tables)
+
+entity "auth.users\n(Supabase Auth)" as AU {
+  * id : uuid <<PK>>
+  --
+  email : text
+  raw_user_meta_data : jsonb\n  { first_name, last_name }
+  raw_app_meta_data : jsonb\n  { is_admin: true }
+  created_at : timestamptz
+}
+
+entity "profiles" as PRF {
+  * id : uuid <<PK, FK→auth.users>>
+  --
+  first_name : text
+  last_name : text
+  updated_at : timestamptz
+}
+
+entity "categories" as CAT {
+  * id : uuid <<PK>>
+  --
+  teacher_id : uuid <<FK→auth.users>>\n  (NULL = catégorie globale admin)
+  source_category_id : uuid <<FK→self>>\n  (NULL = originale, ≠NULL = fork)
+  name : jsonb { fr, ar }
+  color_code : text
+}
+
+entity "scenarios" as SC {
+  * id : uuid <<PK>>
+  --
+  category_id : uuid <<FK→categories>>
+  teacher_id : uuid <<FK→auth.users>>\n  (NULL = scénario global admin)
+  title : jsonb { fr, ar }
+  description : jsonb { fr, ar }
+  questions : jsonb[]\n  [ { id, prompt{fr,ar},\n    choices{fr[],ar[]},\n    correctIndex,\n    explanation{fr,ar},\n    media_url } ]
+  image_url : text
+  is_public : boolean
+  created_at : timestamptz
+}
+
+entity "classes" as CL {
+  * id : uuid <<PK>>
+  --
+  teacher_id : uuid <<FK→auth.users>>
+  name : text
+  access_code : text <<UNIQUE>>\n  (code 6 car. pour les élèves)
+  created_at : timestamptz
+}
+
+entity "students" as STU {
+  * id : uuid <<PK>>
+  --
+  class_id : uuid <<FK→classes>>
+  massar_code : text
+  name_fr : text
+  name_ar : text
+}
+
+entity "class_scenario_status" as CSS {
+  * class_id : uuid <<FK→classes>>
+  * scenario_id : uuid <<FK→scenarios>>
+  --
+  is_visible : boolean
+}
+
+entity "results" as RES {
+  * id : uuid <<PK>>
+  --
+  student_id : uuid <<FK→students>>
+  class_id : uuid <<FK→classes>>
+  scenario_id : uuid <<FK→scenarios>>
+  score : integer
+  max_score : integer
+  mistakes : text[]
+  created_at : timestamptz
+}
+
+entity "tutorials" as TUT {
+  * id : uuid <<PK>>
+  --
+  teacher_id : uuid <<FK→auth.users>>\n  (NULL = tutoriel global admin)
+  category_id : uuid <<FK→categories>>
+  title : jsonb { fr, ar }
+  content : jsonb { fr, ar }
+  image_url : text
+  created_at : timestamptz
+}
+
+entity "translations" as TR {
+  * key : text <<PK>>
+  --
+  fr : text
+  ar : text
+}
+
+' Relations
+AU ||--|| PRF : "1:1\n(trigger auto)"
+AU ||--o{ CL : "gère (1:N)"
+AU ||--o{ CAT : "crée fork (1:N)"
+CAT ||--o{ SC : "regroupe (1:N)"
+CAT }o..o| CAT : "fork\n(self-ref)"
+CL ||--o{ STU : "contient (1:N)"
+CL ||--o{ CSS : "(1:N)"
+SC ||--o{ CSS : "(1:N)"
+STU ||--o{ RES : "soumet (1:N)"
+SC ||--o{ RES : "concerne (1:N)"
+CL ||--o{ RES : "(1:N)"
+CAT ||--o{ TUT : "regroupe (1:N)"
+AU ||--o{ TUT : "crée (optionnel, 1:N)"
+
+note right of TR
+  Surchargeable par l'admin
+  depuis /admin/translations.
+  Défauts dans translations.ts
+  (frontend).
+end note
+
+note right of CSS
+  Contrôle la visibilité
+  des scénarios par classe.
+  is_visible = false → masqué
+  pour les élèves de cette classe.
+end note
+
+@enduml

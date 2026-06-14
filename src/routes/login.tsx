@@ -106,7 +106,7 @@ function StudentForm() {
         name_ar: student.name_ar
       });
       toast.success(`${t("welcome")}, ${lang === "fr" ? student.name_fr : student.name_ar}`);
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/game" });
     } catch (error) {
       console.error('Login error:', error);
       toast.error(t("loginError"));
@@ -163,9 +163,9 @@ function StudentForm() {
 }
 
 function TeacherForm() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<"in" | "up" | "forgot">("in");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -176,15 +176,20 @@ function TeacherForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      let session;
-      if (mode === "in") {
-        session = await api.signIn(email, password);
+      if (mode === "forgot") {
+        await api.sendPasswordReset(email);
+        toast.success(t("resetLinkSent"));
+        setMode("in");
+        setEmail("");
+      } else if (mode === "in") {
+        const session = await api.signIn(email, password);
         toast.success(t("welcomeBack"));
+        navigate({ to: session.isAdmin ? "/admin/overview" : "/dashboard" });
       } else {
-        session = await api.signUp(email, password, firstName, lastName);
+        const session = await api.signUp(email, password, firstName, lastName);
         toast.success(t("accountCreated"));
+        navigate({ to: session.isAdmin ? "/admin/overview" : "/dashboard" });
       }
-      navigate({ to: session.isAdmin ? "/admin/overview" : "/dashboard" });
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -197,7 +202,9 @@ function TeacherForm() {
       <div className="h-1.5 bg-emerald-500" />
       <CardHeader className="px-8 pt-8">
         <CardTitle className="text-xl font-bold text-emerald-600">{t("trainerSpace")}</CardTitle>
-        <CardDescription>{mode === "in" ? t("signIn") : t("signUp")}</CardDescription>
+        <CardDescription>
+          {mode === "in" ? t("signIn") : mode === "up" ? t("signUp") : t("resetYourPassword")}
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-8">
         <form onSubmit={onSubmit} className="space-y-6">
@@ -229,27 +236,45 @@ function TeacherForm() {
             <Label htmlFor="email">{t("email")}</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl bg-slate-50/50 border-slate-200" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">{t("password")}</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={4}
-              className="h-11 rounded-xl bg-slate-50/50 border-slate-200"
-            />
-          </div>
+          {mode !== "forgot" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{t("password")}</Label>
+                {mode === "in" && (
+                  <button
+                    type="button"
+                    onClick={() => { setMode("forgot"); setPassword(""); }}
+                    className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    {t("forgotPassword")}
+                  </button>
+                )}
+              </div>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={4}
+                className="h-11 rounded-xl bg-slate-50/50 border-slate-200"
+              />
+            </div>
+          )}
           <Button type="submit" className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold shadow-lg shadow-emerald-900/10 active:scale-95 transition-all" disabled={loading}>
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (mode === "in" ? t("signIn") : t("signUp"))}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+              mode === "in" ? t("signIn") : mode === "up" ? t("signUp") : t("sendResetLink")
+            )}
           </Button>
           <button
             type="button"
-            onClick={() => { setMode(mode === "in" ? "up" : "in"); setFirstName(""); setLastName(""); }}
+            onClick={() => {
+              if (mode === "forgot") { setMode("in"); }
+              else { setMode(mode === "in" ? "up" : "in"); setFirstName(""); setLastName(""); }
+            }}
             className="text-sm text-muted-foreground hover:text-[#1E3A8A] font-medium w-full text-center py-2"
           >
-            {mode === "in" ? t("needAccount") : t("haveAccount")}
+            {mode === "in" ? t("needAccount") : mode === "up" ? t("haveAccount") : t("backToLogin")}
           </button>
         </form>
       </CardContent>
