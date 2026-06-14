@@ -37,6 +37,7 @@ dist-ssr
 .gemini/
 GEMINI.md
 CLAUDE.md
+.claudignore
 .lovable/
 graphify-out/
 .claude/
