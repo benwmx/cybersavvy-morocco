@@ -36,11 +36,14 @@ dist-ssr
 # AI tool artifacts
 .gemini/
 GEMINI.md
+CLAUDE.md
 graphify-out/
+.claude/
 .claude/context/
 .claude/*
 
 # Report / UML generation artifacts
+report/
 
 # Sandbox / shell environment artifacts
 .bash_profile
