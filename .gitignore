@@ -45,6 +45,9 @@ graphify-out/
 # Report / UML generation artifacts
 report/
 
+# Supabase migrations (local only)
+supabase/migrations/
+
 # Sandbox / shell environment artifacts
 .bash_profile
 .bashrc
