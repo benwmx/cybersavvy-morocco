@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { callGemini } from "@/lib/gemini";
+import { callAI, type AIConfig } from "@/lib/ai";
 import type { Lang } from "@/lib/i18n/translations";
 
 interface CategoryStat { name: string; score: number; max: number; }
@@ -61,15 +61,15 @@ Structure your response with exactly these 4 sections:
 }
 
 export function useAIRecommendations(
-  apiKey: string | null,
+  config: AIConfig | null,
   stats: AnalyticsStats | null,
   lang: Lang,
 ) {
   return useMutation({
     mutationFn: async () => {
-      if (!apiKey) throw new Error("no_key");
+      if (!config) throw new Error("no_key");
       if (!stats) throw new Error("no_data");
-      return callGemini(apiKey, buildPrompt(stats, lang));
+      return callAI(config, buildPrompt(stats, lang));
     },
   });
 }

@@ -38,9 +38,9 @@ dist-ssr
 GEMINI.md
 graphify-out/
 .claude/context/
+.claude/*
 
 # Report / UML generation artifacts
-report/
 
 # Sandbox / shell environment artifacts
 .bash_profile

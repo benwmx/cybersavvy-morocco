@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { KeyRound, User, Sparkles, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getGeminiKey, saveGeminiKey, removeGeminiKey, callGemini, GeminiError } from "@/lib/gemini";
+import { getAIConfig, saveAIConfig, removeAIConfig, callAI, AIError, PROVIDER_META, type AIProvider } from "@/lib/ai";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -31,17 +32,30 @@ function SettingsPage() {
   const [password, setPassword] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
 
-  const [geminiKey, setGeminiKey] = useState("");
+  const [provider, setProvider] = useState<AIProvider>("gemini");
+  const [model, setModel] = useState(PROVIDER_META.gemini.defaultModel);
+  const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keyStatus, setKeyStatus] = useState<"idle" | "testing" | "valid" | "invalid">("idle");
   const [hasSavedKey, setHasSavedKey] = useState(false);
 
   useEffect(() => {
     if (session?.id) {
-      const saved = getGeminiKey(session.id);
+      const saved = getAIConfig(session.id);
       setHasSavedKey(!!saved);
+      if (saved) {
+        setProvider(saved.provider);
+        setModel(saved.model);
+      }
     }
   }, [session?.id]);
+
+  const handleProviderChange = (p: AIProvider) => {
+    setProvider(p);
+    setModel(PROVIDER_META[p].defaultModel);
+    setApiKey("");
+    setKeyStatus("idle");
+  };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,25 +71,26 @@ function SettingsPage() {
     }
   };
 
-  const handleSaveGeminiKey = async (e: React.FormEvent) => {
+  const handleSaveApiKey = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = geminiKey.trim();
+    const trimmed = apiKey.trim();
     if (!trimmed || !session?.id) return;
+    const config = { provider, model: model.trim() || PROVIDER_META[provider].defaultModel, apiKey: trimmed };
     setKeyStatus("testing");
     try {
-      await callGemini(trimmed, "Reply with one word: ready");
-      saveGeminiKey(session.id, trimmed);
+      await callAI(config, "Reply with one word: ready");
+      saveAIConfig(session.id, config);
       setHasSavedKey(true);
-      setGeminiKey("");
+      setApiKey("");
       setKeyStatus("valid");
       toast.success(t("apiKeySaved"));
       setTimeout(() => setKeyStatus("idle"), 3000);
     } catch (err) {
-      // 429 = rate-limited but the key IS valid — save it
-      if (err instanceof GeminiError && err.status === 429) {
-        saveGeminiKey(session.id, trimmed);
+      // 429 = rate-limited but the key IS valid — save anyway
+      if (err instanceof AIError && err.status === 429) {
+        saveAIConfig(session.id, config);
         setHasSavedKey(true);
-        setGeminiKey("");
+        setApiKey("");
         setKeyStatus("valid");
         toast.success(t("apiKeySaved"));
         setTimeout(() => setKeyStatus("idle"), 3000);
@@ -86,9 +101,9 @@ function SettingsPage() {
     }
   };
 
-  const handleRemoveGeminiKey = () => {
+  const handleRemoveApiKey = () => {
     if (!session?.id) return;
-    removeGeminiKey(session.id);
+    removeAIConfig(session.id);
     setHasSavedKey(false);
     toast.success(t("removeApiKey"));
   };
@@ -186,23 +201,45 @@ function SettingsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleRemoveGeminiKey}
+                  onClick={handleRemoveApiKey}
                   className="h-6 text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2"
                 >
                   {t("removeApiKey")}
                 </Button>
               </div>
             )}
-            <form onSubmit={handleSaveGeminiKey} className="space-y-3">
+            <form onSubmit={handleSaveApiKey} className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="gemini-key" className="text-xs text-slate-500">{t("geminiApiKey")}</Label>
+                <Label className="text-xs text-slate-500">{t("aiProvider")}</Label>
+                <Select value={provider} onValueChange={v => handleProviderChange(v as AIProvider)}>
+                  <SelectTrigger className="h-8 rounded border-slate-200 bg-slate-50/50 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(PROVIDER_META) as AIProvider[]).map(p => (
+                      <SelectItem key={p} value={p}>{PROVIDER_META[p].label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ai-model" className="text-xs text-slate-500">{t("aiModel")}</Label>
+                <Input
+                  id="ai-model"
+                  value={model}
+                  onChange={e => setModel(e.target.value)}
+                  className="h-8 rounded border-slate-200 bg-slate-50/50 text-sm font-mono"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ai-key" className="text-xs text-slate-500">{t("aiApiKey")}</Label>
                 <div className="relative">
                   <Input
-                    id="gemini-key"
+                    id="ai-key"
                     type={showKey ? "text" : "password"}
-                    value={geminiKey}
-                    onChange={e => setGeminiKey(e.target.value)}
-                    placeholder={t("geminiApiKeyPlaceholder")}
+                    value={apiKey}
+                    onChange={e => setApiKey(e.target.value)}
+                    placeholder={PROVIDER_META[provider].placeholder}
                     className="h-8 rounded border-slate-200 bg-slate-50/50 text-sm pe-8 font-mono"
                   />
                   <button
@@ -213,7 +250,7 @@ function SettingsPage() {
                     {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   </button>
                 </div>
-                <p className="text-xs text-slate-400">{t("geminiApiKeyHint")}</p>
+                <p className="text-xs text-slate-400">{PROVIDER_META[provider].hint}</p>
               </div>
               {keyStatus === "valid" && (
                 <div className="flex items-center gap-1.5 text-xs text-emerald-600">
@@ -229,7 +266,7 @@ function SettingsPage() {
               )}
               <Button
                 type="submit"
-                disabled={!geminiKey.trim() || keyStatus === "testing"}
+                disabled={!apiKey.trim() || keyStatus === "testing"}
                 className="h-8 px-4 rounded bg-violet-600 hover:bg-violet-700 text-sm font-medium"
               >
                 {keyStatus === "testing" ? t("testingKey") : t("saveApiKey")}

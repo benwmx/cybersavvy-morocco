@@ -1,0 +1,47 @@
+Voici une version complète et détaillée du Chapitre 3 : Conception Technique. Ce chapitre est le « plan d'architecte » de votre projet. Il transforme les besoins identifiés au chapitre précédent en une structure technique concrète et robuste.
+
+CHAPITRE 3 — CONCEPTION TECHNIQUE ET ARCHITECTURE DU SYSTÈME
+La phase de conception constitue l'étape charnière entre l'analyse des besoins et la réalisation technique. Elle vise à définir les fondations structurelles, logiques et relationnelles de la plateforme « CyberSafe ». Ce chapitre détaille les choix architecturaux — en particulier l'approche « Offline-first » et l'intégration sécurisée de l'intelligence artificielle — qui garantissent la robustesse, la scalabilité et la conformité du système aux exigences du milieu scolaire.
+
+3.1 Architecture globale du système
+Le système « CyberSafe » adopte une architecture de type Single Page Application (SPA), choisie pour sa capacité à offrir une expérience utilisateur fluide, semblable à une application native, tout en étant déployable via le web.
+
+L'architecture est structurée en trois couches distinctes :
+
+Couche Présentation (Frontend) : Développée avec React et le framework Vite, elle gère l'interface, le routage et, surtout, l'état local via une base de données embarquée (IndexedDB). C'est cette couche qui assure la continuité de service en mode déconnecté.
+
+Couche Service (Backend) : Utilisation de Supabase comme plateforme Backend-as-a-Service (BaaS). Supabase centralise l'authentification des utilisateurs, la gestion de la base de données PostgreSQL et les politiques de sécurité (Row Level Security - RLS).
+
+Couche Intelligence (IA Proxy) : Un service intermédiaire sécurisé fait le pont avec l'API de Google Gemini. Ce proxy assure la transformation et l'anonymisation des données avant leur envoi vers le modèle d'IA.
+
+3.2 Modélisation de la base de données (Schéma ERD)
+La modélisation des données suit une approche relationnelle rigoureuse afin d'assurer l'intégrité référentielle, cruciale pour le suivi pédagogique des élèves. Le modèle est structuré autour des entités suivantes :
+
+Gestion des utilisateurs : Table teachers et classes pour structurer le suivi pédagogique.
+
+Contenu Pédagogique : Tables scenarios, questions et categories permettant une modularité totale des contenus.
+
+Traçabilité des apprentissages : Table student_answers, qui enregistre non seulement les réponses, mais aussi les métadonnées (temps de réponse, état de synchronisation) pour permettre une analyse fine par l'IA.
+
+3.3 Logique de fonctionnement de l'Assistant IA (Intégration Sécurisée)
+L'intégration de l'intelligence artificielle dans un cadre éducatif impose des contraintes strictes en matière de protection des données. La conception intègre un « filtre d'anonymisation » :
+
+Agrégation : Le backend extrait uniquement les données chiffrées (taux de réussite, occurrences d'erreurs) pour une classe donnée.
+
+Anonymisation : Le système supprime toute référence nominative.
+
+Prompting Expert : Le système envoie ces données à l'API Gemini avec une instruction système (System Prompt) rigoureuse : « Agis comme un conseiller pédagogique expert. Analyse ces statistiques et propose des stratégies de remédiation adaptées au niveau collégial marocain. »
+
+3.4 Architecture de résilience (Offline-first)
+Pour pallier les instabilités du réseau scolaire, la conception repose sur une gestion asynchrone des données. Le mécanisme de synchronisation fonctionne sur le principe suivant :
+
+Mode local : Toute interaction de l'élève (réponse aux quiz) est enregistrée dans le stockage local du navigateur via IndexedDB.
+
+File d'attente (Sync Queue) : Chaque action est horodatée et marquée d'un indicateur de synchronisation (synced: false).
+
+Synchronisation background : Un service de fond surveille l'état du réseau (via l'API navigator.onLine). Dès qu'une connexion stable est rétablie, l'application vide la file d'attente vers la base de données distante Supabase.
+
+3.5 Synthèse de la conception
+Ce chapitre a permis de définir un cadre technique rigoureux. Le passage d'une architecture monolithique classique à une architecture « Offline-first » couplée à une interface d'IA sécurisée permet de répondre aux objectifs du projet : l'accessibilité, l'équité pédagogique et l'innovation numérique.
+
+La structure ainsi définie permet maintenant d'aborder la phase de réalisation technique (Chapitre 4) en toute sérénité, en sachant que les fondations logiques sont prêtes à supporter les fonctionnalités développées.
