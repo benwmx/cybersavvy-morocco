@@ -78,7 +78,7 @@ async function callGemini(config: AIConfig, prompt: string): Promise<string> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1200 },
+        generationConfig: { temperature: 0.3, maxOutputTokens: 2000 },
       }),
     }
   );
@@ -103,8 +103,8 @@ async function callOpenAICompat(config: AIConfig, prompt: string): Promise<strin
     body: JSON.stringify({
       model: config.model,
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 1200,
+      temperature: 0.3,
+      max_tokens: 2000,
     }),
   });
   if (!res.ok) {
