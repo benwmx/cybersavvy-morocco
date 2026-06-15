@@ -78,7 +78,7 @@ function SettingsPage() {
     const config = { provider, model: model.trim() || PROVIDER_META[provider].defaultModel, apiKey: trimmed };
     setKeyStatus("testing");
     try {
-      await callAI(config, "Reply with one word: ready");
+      await callAI(config, { system: "You are a helpful assistant.", user: "Reply with one word: ready" });
       saveAIConfig(session.id, config);
       setHasSavedKey(true);
       setApiKey("");
