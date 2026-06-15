@@ -1,0 +1,192 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api, type DocArticleRow } from "@/lib/supabase/api";
+import { useLang } from "@/lib/i18n/LanguageContext";
+import { BookOpen, FileText, Loader2, ChevronRight, Search } from "lucide-react";
+import { DocMarkdown } from "@/components/DocMarkdown";
+
+export const Route = createFileRoute("/_authenticated/docs")({
+  component: DocsPage,
+});
+
+// ── Main page ────────────────────────────────────────────────────────────────
+
+function DocsPage() {
+  const { t, lang } = useLang();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+
+  const { data: articles = [], isLoading } = useQuery({
+    queryKey: ["doc_articles"],
+    queryFn: () => api.listDocArticles(),
+  });
+
+  const filtered = useMemo<DocArticleRow[]>(() => {
+    if (!query.trim()) return articles;
+    const q = query.toLowerCase();
+    return articles.filter(a => {
+      const title = lang === "ar" ? (a.title as any)?.ar : (a.title as any)?.fr;
+      const content = lang === "ar" ? (a.content as any)?.ar : (a.content as any)?.fr;
+      return title?.toLowerCase().includes(q) || content?.toLowerCase().includes(q);
+    });
+  }, [articles, query, lang]);
+
+  const sections = useMemo(() => {
+    const map = new Map<string, { label: string; items: DocArticleRow[] }>();
+    filtered.forEach(a => {
+      const label = lang === "ar"
+        ? (a.section_label as any)?.ar ?? (a.section_label as any)?.fr ?? a.section_key
+        : (a.section_label as any)?.fr ?? a.section_key;
+      if (!map.has(a.section_key)) map.set(a.section_key, { label, items: [] });
+      map.get(a.section_key)!.items.push(a);
+    });
+    return Array.from(map.values());
+  }, [filtered, lang]);
+
+  const selected = articles.find(a => a.id === selectedId)
+    ?? (filtered.length > 0 ? filtered[0] : null);
+
+  const title = (a: DocArticleRow) =>
+    lang === "ar" ? (a.title as any)?.ar ?? (a.title as any)?.fr : (a.title as any)?.fr;
+
+  const content = (a: DocArticleRow) =>
+    lang === "ar"
+      ? (a.content as any)?.ar ?? (a.content as any)?.fr ?? ""
+      : (a.content as any)?.fr ?? "";
+
+  const sectionLabel = (a: DocArticleRow) =>
+    lang === "ar"
+      ? (a.section_label as any)?.ar ?? (a.section_label as any)?.fr
+      : (a.section_label as any)?.fr;
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="space-y-0.5">
+          <h1 className="text-xl font-semibold text-slate-900">{t("docs")}</h1>
+          <p className="text-sm text-slate-500">{t("docsDesc")}</p>
+        </div>
+        <div className="relative w-56 shrink-0">
+          <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+          <input
+            value={query}
+            onChange={e => { setQuery(e.target.value); setSelectedId(null); }}
+            placeholder={lang === "ar" ? "بحث..." : "Rechercher..."}
+            className="w-full h-8 rounded border border-slate-200 bg-white text-sm ps-8 pe-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-slate-400"
+          />
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="py-20 flex justify-center">
+          <Loader2 className="h-5 w-5 text-[#1E3A8A] animate-spin" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="py-24 flex flex-col items-center gap-3 text-slate-400">
+          <BookOpen className="h-8 w-8" />
+          <p className="text-sm">{query ? (lang === "ar" ? "لا نتائج" : "Aucun résultat") : t("noArticles")}</p>
+        </div>
+      ) : (
+        <div className="flex gap-6 items-start">
+          {/* Desktop nav */}
+          <aside className="hidden md:block w-56 shrink-0 sticky top-4">
+            <nav className="space-y-5">
+              {sections.map(section => (
+                <div key={section.label}>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1.5 px-2">
+                    {section.label}
+                  </p>
+                  <ul className="space-y-0.5">
+                    {section.items.map(a => {
+                      const isActive = selected?.id === a.id;
+                      return (
+                        <li key={a.id}>
+                          <button
+                            onClick={() => setSelectedId(a.id)}
+                            className={`w-full text-start flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors ${
+                              isActive
+                                ? "bg-blue-50 text-[#1E3A8A] font-medium"
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                            }`}
+                          >
+                            <FileText className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-[#1E3A8A]" : "text-slate-300"}`} />
+                            <span className="truncate leading-snug">{title(a)}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </nav>
+          </aside>
+
+          {/* Mobile picker */}
+          <div className="md:hidden w-full mb-4">
+            <select
+              className="w-full h-9 rounded border border-slate-200 bg-white text-sm px-3 text-slate-700"
+              value={selected?.id ?? ""}
+              onChange={e => setSelectedId(e.target.value)}
+            >
+              {sections.map(section => (
+                <optgroup key={section.label} label={section.label}>
+                  {section.items.map(a => (
+                    <option key={a.id} value={a.id}>{title(a)}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {/* Content panel */}
+          {selected && (
+            <article className="flex-1 min-w-0 border border-slate-200 rounded-sm bg-white">
+              {/* Article header */}
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-1.5 text-xs text-slate-400">
+                <span className="font-medium text-slate-500">{sectionLabel(selected)}</span>
+                <ChevronRight className="h-3 w-3 shrink-0" />
+                <span className="text-slate-700 font-semibold truncate">{title(selected)}</span>
+              </div>
+              {/* Article body */}
+              <div className="px-6 py-5">
+                <DocMarkdown text={content(selected)} />
+              </div>
+              {/* Navigation footer */}
+              <div className="px-6 py-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                {(() => {
+                  const idx = filtered.findIndex(a => a.id === selected.id);
+                  const prev = filtered[idx - 1];
+                  const next = filtered[idx + 1];
+                  return (
+                    <>
+                      {prev ? (
+                        <button
+                          onClick={() => setSelectedId(prev.id)}
+                          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#1E3A8A] transition-colors"
+                        >
+                          <ChevronRight className="h-3 w-3 rotate-180" />
+                          <span className="truncate max-w-[160px]">{title(prev)}</span>
+                        </button>
+                      ) : <span />}
+                      {next ? (
+                        <button
+                          onClick={() => setSelectedId(next.id)}
+                          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#1E3A8A] transition-colors ms-auto"
+                        >
+                          <span className="truncate max-w-[160px]">{title(next)}</span>
+                          <ChevronRight className="h-3 w-3" />
+                        </button>
+                      ) : <span />}
+                    </>
+                  );
+                })()}
+              </div>
+            </article>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

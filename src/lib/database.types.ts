@@ -196,6 +196,41 @@ export interface Database {
           name_ar?: string
         }
       }
+      doc_articles: {
+        Row: {
+          id: string
+          section_key: string
+          section_label: Json
+          title: Json
+          content: Json
+          sort_order: number
+          is_published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          section_key: string
+          section_label: Json
+          title: Json
+          content: Json
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          section_key?: string
+          section_label?: Json
+          title?: Json
+          content?: Json
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
       recommendations: {
         Row: {
           id: string

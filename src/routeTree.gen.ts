@@ -17,12 +17,14 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GameTrackIdRouteImport } from './routes/game.$trackId'
+import { Route as AdminDocsRouteImport } from './routes/admin/docs'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTranslationsRouteImport } from './routes/admin/translations'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminOverviewRouteImport } from './routes/admin/overview'
 import { Route as AdminContentRouteImport } from './routes/admin/content'
 import { Route as AdminClassesRouteImport } from './routes/admin/classes'
+import { Route as AuthenticatedDocsRouteImport } from './routes/_authenticated/docs'
 import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
 import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated/students'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -71,6 +73,11 @@ const GameTrackIdRoute = GameTrackIdRouteImport.update({
   path: '/$trackId',
   getParentRoute: () => GameRoute,
 } as any)
+const AdminDocsRoute = AdminDocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -100,6 +107,11 @@ const AdminClassesRoute = AdminClassesRouteImport.update({
   id: '/classes',
   path: '/classes',
   getParentRoute: () => AdminRoute,
+} as any)
+const AuthenticatedDocsRoute = AuthenticatedDocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTutorialsRoute = AuthenticatedTutorialsRouteImport.update({
   id: '/tutorials',
@@ -152,12 +164,14 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/docs': typeof AuthenticatedDocsRoute
   '/quizzes': typeof AuthenticatedQuizzesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
   '/admin/classes': typeof AdminClassesRoute
   '/admin/content': typeof AdminContentRoute
+  '/admin/docs': typeof AdminDocsRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
@@ -174,12 +188,14 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/classes': typeof AuthenticatedClassesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/docs': typeof AuthenticatedDocsRoute
   '/quizzes': typeof AuthenticatedQuizzesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
   '/admin/classes': typeof AdminClassesRoute
   '/admin/content': typeof AdminContentRoute
+  '/admin/docs': typeof AdminDocsRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
@@ -199,12 +215,14 @@ export interface FileRoutesById {
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/classes': typeof AuthenticatedClassesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/docs': typeof AuthenticatedDocsRoute
   '/_authenticated/quizzes': typeof AuthenticatedQuizzesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/tutorials': typeof AuthenticatedTutorialsRoute
   '/admin/classes': typeof AdminClassesRoute
   '/admin/content': typeof AdminContentRoute
+  '/admin/docs': typeof AdminDocsRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
@@ -223,12 +241,14 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/classes'
     | '/dashboard'
+    | '/docs'
     | '/quizzes'
     | '/settings'
     | '/students'
     | '/tutorials'
     | '/admin/classes'
     | '/admin/content'
+    | '/admin/docs'
     | '/admin/overview'
     | '/admin/settings'
     | '/admin/translations'
@@ -245,12 +265,14 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/classes'
     | '/dashboard'
+    | '/docs'
     | '/quizzes'
     | '/settings'
     | '/students'
     | '/tutorials'
     | '/admin/classes'
     | '/admin/content'
+    | '/admin/docs'
     | '/admin/overview'
     | '/admin/settings'
     | '/admin/translations'
@@ -269,12 +291,14 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics'
     | '/_authenticated/classes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/docs'
     | '/_authenticated/quizzes'
     | '/_authenticated/settings'
     | '/_authenticated/students'
     | '/_authenticated/tutorials'
     | '/admin/classes'
     | '/admin/content'
+    | '/admin/docs'
     | '/admin/overview'
     | '/admin/settings'
     | '/admin/translations'
@@ -294,6 +318,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_authenticated/docs': {
+      id: '/_authenticated/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof AuthenticatedDocsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/admin/docs': {
+      id: '/admin/docs'
+      path: '/docs'
+      fullPath: '/admin/docs'
+      preLoaderRoute: typeof AdminDocsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -456,6 +494,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedClassesRoute: typeof AuthenticatedClassesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDocsRoute: typeof AuthenticatedDocsRoute
   AuthenticatedQuizzesRoute: typeof AuthenticatedQuizzesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStudentsRoute: typeof AuthenticatedStudentsRoute
@@ -467,6 +506,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedClassesRoute: AuthenticatedClassesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDocsRoute: AuthenticatedDocsRoute,
   AuthenticatedQuizzesRoute: AuthenticatedQuizzesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStudentsRoute: AuthenticatedStudentsRoute,
@@ -480,6 +520,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminClassesRoute: typeof AdminClassesRoute
   AdminContentRoute: typeof AdminContentRoute
+  AdminDocsRoute: typeof AdminDocsRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminTranslationsRoute: typeof AdminTranslationsRoute
@@ -489,6 +530,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminClassesRoute: AdminClassesRoute,
   AdminContentRoute: AdminContentRoute,
+  AdminDocsRoute: AdminDocsRoute,
   AdminOverviewRoute: AdminOverviewRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminTranslationsRoute: AdminTranslationsRoute,
