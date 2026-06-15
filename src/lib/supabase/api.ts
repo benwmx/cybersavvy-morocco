@@ -9,6 +9,7 @@ export type ResultRow = PublicTables["results"]["Row"];
 export type CategoryRow = PublicTables["categories"]["Row"];
 export type TutorialRow = PublicTables["tutorials"]["Row"];
 export type TranslationRow = PublicTables["translations"]["Row"];
+export type RecommendationRow = PublicTables["recommendations"]["Row"];
 
 export const supabaseClient = supabase;
 
@@ -612,5 +613,34 @@ export const api = {
 
     if (error) throw error;
     return data || [];
+  },
+
+  async saveRecommendation(
+    classId: string | null,
+    className: string | null,
+    content: string,
+  ): Promise<void> {
+    const session = await api.getSession();
+    if (!session) throw new Error("Not authenticated");
+    const { error } = await supabase
+      .from("recommendations")
+      .insert({ teacher_id: session.id, class_id: classId, class_name: className, content });
+    if (error) throw error;
+  },
+
+  async getLastRecommendation(classId: string | null): Promise<RecommendationRow | null> {
+    let query = supabase
+      .from("recommendations")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (classId) {
+      query = query.eq("class_id", classId);
+    } else {
+      query = query.is("class_id", null);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    return data?.[0] ?? null;
   },
 };

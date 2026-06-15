@@ -196,6 +196,32 @@ export interface Database {
           name_ar?: string
         }
       }
+      recommendations: {
+        Row: {
+          id: string
+          teacher_id: string
+          class_id: string | null
+          class_name: string | null
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          teacher_id: string
+          class_id?: string | null
+          class_name?: string | null
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          teacher_id?: string
+          class_id?: string | null
+          class_name?: string | null
+          content?: string
+          created_at?: string
+        }
+      }
       results: {
         Row: {
           id: string

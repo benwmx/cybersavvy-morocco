@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -9,7 +9,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { useAIRecommendations } from "@/hooks/useAIRecommendations";
 import { getAIConfig } from "@/lib/ai";
-import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2, Sparkles, Settings } from "lucide-react";
+import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2, Sparkles, Settings, Bookmark, BookmarkCheck } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
@@ -71,6 +71,7 @@ function GeminiMarkdown({ text }: { text: string }) {
 function AnalyticsPage() {
   const { t, lang } = useLang();
   const { translate } = useI18n();
+  const queryClient = useQueryClient();
   const [selectedClassId, setSelectedClassId] = useState<string>("all");
 
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: () => api.getSession() });
@@ -169,6 +170,17 @@ function AnalyticsPage() {
     ? null
     : (classes.find(c => c.id === selectedClassId)?.name ?? null);
   const aiMutation = useAIRecommendations(aiConfig, stats, lang, selectedClassName);
+
+  const classIdForQuery = selectedClassId === "all" ? null : selectedClassId;
+  const { data: savedRec } = useQuery({
+    queryKey: ["recommendation", classIdForQuery],
+    queryFn: () => api.getLastRecommendation(classIdForQuery),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: () => api.saveRecommendation(classIdForQuery, selectedClassName, aiMutation.data!),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["recommendation", classIdForQuery] }),
+  });
 
   if (isLoading) return (
     <div className="py-20 flex flex-col items-center gap-3">
@@ -394,17 +406,49 @@ function AnalyticsPage() {
                   <div className="p-4 rounded border border-violet-100 bg-violet-50/30">
                     <GeminiMarkdown text={aiMutation.data} />
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <p className="text-xs text-slate-400 italic">{t("aiDisclaimer")}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => aiMutation.mutate()}
-                      disabled={aiMutation.isPending}
-                      className="h-7 px-3 text-xs text-violet-600 hover:bg-violet-50 rounded"
-                    >
-                      {t("regenerate")}
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {saveMutation.isSuccess ? (
+                        <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                          <BookmarkCheck className="h-3.5 w-3.5" />
+                          {t("saved")}
+                        </span>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => saveMutation.mutate()}
+                          disabled={saveMutation.isPending}
+                          className="h-7 px-3 text-xs rounded border-violet-200 text-violet-700 hover:bg-violet-50"
+                        >
+                          {saveMutation.isPending
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <Bookmark className="h-3.5 w-3.5 me-1" />}
+                          {t("saveRecommendation")}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => aiMutation.mutate()}
+                        disabled={aiMutation.isPending}
+                        className="h-7 px-3 text-xs text-violet-600 hover:bg-violet-50 rounded"
+                      >
+                        {t("regenerate")}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!aiMutation.data && savedRec && (
+                <div className="space-y-3">
+                  <p className="text-xs text-slate-400">
+                    {t("lastSaved")} {new Date(savedRec.created_at).toLocaleDateString(lang === "ar" ? "ar-MA" : "fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                  <div className="p-4 rounded border border-slate-100 bg-slate-50/50">
+                    <GeminiMarkdown text={savedRec.content} />
                   </div>
                 </div>
               )}
