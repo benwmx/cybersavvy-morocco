@@ -1,6 +1,6 @@
 import { getDB, type LocalClassScenarioStatus } from "./db";
 import { supabase } from "@/lib/supabase/client";
-import type { ScenarioRow, CategoryRow } from "@/lib/supabase/api";
+import type { ScenarioRow, CategoryRow, DocArticleRow } from "@/lib/supabase/api";
 import type { LocalTranslation } from "./db";
 
 type SB = typeof supabase;
@@ -105,6 +105,23 @@ export async function syncPrivateScenarios(teacherId: string): Promise<void> {
 
   if (scenarios.length) await db.scenarios.bulkPut(scenarios);
   if (statuses.length) await db.class_scenario_status.bulkPut(statuses);
+}
+
+// Fetch all published doc articles and cache them in Dexie.
+// Runs anonymously on app init — no auth required.
+export async function syncDocArticles(): Promise<void> {
+  if (!navigator.onLine) return;
+  const db = getDB();
+  if (!db) return;
+
+  const { data } = await supabase
+    .from("doc_articles")
+    .select("*")
+    .eq("is_published", true)
+    .order("section_key")
+    .order("sort_order");
+
+  if (data?.length) await db.doc_articles.bulkPut(data as DocArticleRow[]);
 }
 
 // Remove all private (non-public) scenarios and class-specific data on logout.
