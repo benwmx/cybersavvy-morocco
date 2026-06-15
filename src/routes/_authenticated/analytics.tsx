@@ -145,7 +145,10 @@ function AnalyticsPage() {
   }, [filteredResults, scenarios, categories, translate]);
 
   const aiConfig = session?.id ? getAIConfig(session.id) : null;
-  const aiMutation = useAIRecommendations(aiConfig, stats, lang);
+  const selectedClassName = selectedClassId === "all"
+    ? null
+    : (classes.find(c => c.id === selectedClassId)?.name ?? null);
+  const aiMutation = useAIRecommendations(aiConfig, stats, lang, selectedClassName);
 
   if (isLoading) return (
     <div className="py-20 flex flex-col items-center gap-3">

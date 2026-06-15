@@ -41,7 +41,7 @@ const PROMPT_STRINGS = {
   },
 } as const;
 
-function buildMessage(stats: AnalyticsStats, lang: Lang): AIMessage {
+function buildMessage(stats: AnalyticsStats, lang: Lang, className: string | null): AIMessage {
   const s = PROMPT_STRINGS[lang];
 
   const system = `You are a pedagogical advisor for Moroccan secondary school teachers (collèges and lycées) using the CyberSafe platform to teach digital citizenship and cybersecurity.
@@ -75,10 +75,13 @@ ${s.s4desc}`;
     .map(sc => `  - ${sc.name}: ${sc.score}%`)
     .join("\n") || s.noWeak;
 
+  const scope = className ?? "all classes combined";
+
   const user = `CLASS PERFORMANCE DATA:
-- Global average: ${Math.round(stats.average)}%
-- Total quiz attempts: ${stats.totalAttempts}
+- Scope: ${scope}
 - Students participated: ${stats.uniqueStudents}
+- Total quiz attempts: ${stats.totalAttempts}
+- Global average: ${Math.round(stats.average)}%
 
 Performance by cybersecurity category:
 ${catLines}
@@ -95,12 +98,13 @@ export function useAIRecommendations(
   config: AIConfig | null,
   stats: AnalyticsStats | null,
   lang: Lang,
+  className: string | null,
 ) {
   return useMutation({
     mutationFn: async () => {
       if (!config) throw new Error("no_key");
       if (!stats) throw new Error("no_data");
-      return callAI(config, buildMessage(stats, lang));
+      return callAI(config, buildMessage(stats, lang, className));
     },
   });
 }
