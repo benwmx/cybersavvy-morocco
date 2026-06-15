@@ -1,4 +1,4 @@
-export type AIProvider = "gemini" | "openai" | "openrouter";
+export type AIProvider = "gemini" | "openai" | "openrouter" | "groq";
 
 export interface AIConfig {
   provider: AIProvider;
@@ -31,6 +31,12 @@ export const PROVIDER_META: Record<AIProvider, ProviderMeta> = {
     defaultModel: "google/gemini-2.0-flash-exp:free",
     placeholder: "sk-or-...",
     hint: "openrouter.ai/keys — accès à des dizaines de modèles gratuits",
+  },
+  groq: {
+    label: "Groq",
+    defaultModel: "llama-3.3-70b-versatile",
+    placeholder: "gsk_...",
+    hint: "console.groq.com/keys — inférence rapide, niveau gratuit disponible",
   },
 };
 
@@ -99,6 +105,8 @@ async function callGemini(config: AIConfig, { system, user }: AIMessage): Promis
 async function callOpenAICompat(config: AIConfig, { system, user }: AIMessage): Promise<string> {
   const base = config.provider === "openrouter"
     ? "https://openrouter.ai/api/v1"
+    : config.provider === "groq"
+    ? "https://api.groq.com/openai/v1"
     : "https://api.openai.com/v1";
   const res = await fetch(`${base}/chat/completions`, {
     method: "POST",
