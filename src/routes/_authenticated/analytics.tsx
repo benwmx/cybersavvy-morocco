@@ -84,6 +84,19 @@ function AnalyticsPage() {
     return results.filter(r => r.class_id === selectedClassId);
   }, [results, selectedClassId]);
 
+  const questionTextMap = useMemo(() => {
+    const map: Record<string, { fr: string; ar: string }> = {};
+    scenarios.forEach(s => {
+      const qs = s.questions as any[];
+      if (Array.isArray(qs)) {
+        qs.forEach(q => {
+          if (q?.id && q?.prompt?.fr) map[q.id] = { fr: q.prompt.fr, ar: q.prompt.ar ?? q.prompt.fr };
+        });
+      }
+    });
+    return map;
+  }, [scenarios]);
+
   const stats = useMemo(() => {
     if (filteredResults.length === 0) return null;
 
@@ -120,7 +133,14 @@ function AnalyticsPage() {
       }
     });
 
-    const commonMistakes = Object.entries(mistakeCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const commonMistakes = Object.entries(mistakeCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([id, count]) => ({
+        fr: questionTextMap[id]?.fr ?? id,
+        ar: questionTextMap[id]?.ar ?? id,
+        count,
+      }));
 
     const scenarioChartData = Object.values(scenarioStats)
       .sort((a, b) => b.attempts - a.attempts)
@@ -268,16 +288,10 @@ function AnalyticsPage() {
                     {t("noFrequentErrors")}
                   </p>
                 ) : (
-                  stats.commonMistakes.map(([mistakeId, count], i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded border border-rose-100 bg-rose-50/30">
-                      <div className="space-y-0.5">
-                        <p className="text-xs font-medium text-rose-600">
-                          Question ID: {mistakeId.substring(0, 8)}
-                        </p>
-                        <p className="text-sm text-slate-700">
-                          {count} {t("studentsFailed")}
-                        </p>
-                      </div>
+                  stats.commonMistakes.map((m, i) => (
+                    <div key={i} className="flex items-start justify-between gap-2 p-3 rounded border border-rose-100 bg-rose-50/30">
+                      <p className="text-sm text-slate-700 leading-snug">{lang === "ar" ? m.ar : m.fr}</p>
+                      <span className="text-xs font-semibold text-rose-600 shrink-0">{m.count}×</span>
                     </div>
                   ))
                 )}

@@ -3,12 +3,13 @@ import { callAI, type AIConfig, type AIMessage } from "@/lib/ai";
 import type { Lang } from "@/lib/i18n/translations";
 
 interface CategoryStat { name: string; score: number; max: number; }
+interface MistakeStat { fr: string; ar: string; count: number; }
 interface AnalyticsStats {
   average: number;
   totalAttempts: number;
   uniqueStudents: number;
   categoryStats: CategoryStat[];
-  commonMistakes: [string, number][];
+  commonMistakes: MistakeStat[];
   scenarioChartData: { name: string; score: number }[];
 }
 
@@ -77,6 +78,12 @@ ${s.s4desc}`;
 
   const scope = className ?? "all classes combined";
 
+  const mistakeLines = stats.commonMistakes.length > 0
+    ? stats.commonMistakes
+        .map(m => `  - "${lang === "ar" ? m.ar : m.fr}" (${m.count} students failed)`)
+        .join("\n")
+    : s.noWeak;
+
   const user = `CLASS PERFORMANCE DATA:
 - Scope: ${scope}
 - Students participated: ${stats.uniqueStudents}
@@ -89,7 +96,8 @@ ${catLines}
 Scenarios where students performed weakest:
 ${weakScenarios}
 
-Frequently failed questions: ${stats.commonMistakes.length} patterns identified`;
+Questions most frequently failed by students:
+${mistakeLines}`;
 
   return { system, user };
 }
