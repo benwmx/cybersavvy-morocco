@@ -64,20 +64,26 @@ export class AIError extends Error {
   }
 }
 
-export async function callAI(config: AIConfig, prompt: string): Promise<string> {
-  return config.provider === "gemini"
-    ? callGemini(config, prompt)
-    : callOpenAICompat(config, prompt);
+export interface AIMessage {
+  system: string;
+  user: string;
 }
 
-async function callGemini(config: AIConfig, prompt: string): Promise<string> {
+export async function callAI(config: AIConfig, message: AIMessage): Promise<string> {
+  return config.provider === "gemini"
+    ? callGemini(config, message)
+    : callOpenAICompat(config, message);
+}
+
+async function callGemini(config: AIConfig, { system, user }: AIMessage): Promise<string> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ parts: [{ text: user }] }],
         generationConfig: { temperature: 0.3, maxOutputTokens: 2000 },
       }),
     }
@@ -90,7 +96,7 @@ async function callGemini(config: AIConfig, prompt: string): Promise<string> {
   return (data as any).candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
-async function callOpenAICompat(config: AIConfig, prompt: string): Promise<string> {
+async function callOpenAICompat(config: AIConfig, { system, user }: AIMessage): Promise<string> {
   const base = config.provider === "openrouter"
     ? "https://openrouter.ai/api/v1"
     : "https://api.openai.com/v1";
@@ -102,7 +108,10 @@ async function callOpenAICompat(config: AIConfig, prompt: string): Promise<strin
     },
     body: JSON.stringify({
       model: config.model,
-      messages: [{ role: "user", content: prompt }],
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
       temperature: 0.3,
       max_tokens: 2000,
     }),

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { callAI, type AIConfig } from "@/lib/ai";
+import { callAI, type AIConfig, type AIMessage } from "@/lib/ai";
 import type { Lang } from "@/lib/i18n/translations";
 
 interface CategoryStat { name: string; score: number; max: number; }
@@ -41,38 +41,14 @@ const PROMPT_STRINGS = {
   },
 } as const;
 
-function buildPrompt(stats: AnalyticsStats, lang: Lang): string {
+function buildMessage(stats: AnalyticsStats, lang: Lang): AIMessage {
   const s = PROMPT_STRINGS[lang];
 
-  const catLines = stats.categoryStats
-    .map(c => `  - ${c.name}: ${Math.round((c.score / c.max) * 100)}%`)
-    .join("\n") || s.noData;
+  const system = `You are a pedagogical advisor for Moroccan secondary school teachers (collèges and lycées) using the CyberSafe platform to teach digital citizenship and cybersecurity.
 
-  const weakScenarios = [...stats.scenarioChartData]
-    .sort((a, b) => a.score - b.score)
-    .slice(0, 5)
-    .filter(s => s.score < 70)
-    .map(s => `  - ${s.name}: ${s.score}%`)
-    .join("\n") || s.noWeak;
+Based on the class performance data the teacher provides and the Moroccan national digital competency framework (programme GENIE / CNTE), generate structured, practical recommendations.
 
-  return `You are a pedagogical advisor for Moroccan secondary school teachers (collèges and lycées) using the CyberSafe platform to teach digital citizenship and cybersecurity.
-
-CLASS PERFORMANCE DATA:
-- Global average: ${Math.round(stats.average)}%
-- Total quiz attempts: ${stats.totalAttempts}
-- Students participated: ${stats.uniqueStudents}
-
-Performance by cybersecurity category:
-${catLines}
-
-Scenarios where students performed weakest:
-${weakScenarios}
-
-Frequently failed questions: ${stats.commonMistakes.length} patterns identified
-
-Based on this data and the Moroccan national digital competency framework (programme GENIE / CNTE):
-
-Respond ONLY in ${s.respondIn}. Use clear headers with ** and bullet points with -. Be specific, practical, and concise.
+Respond ONLY in ${s.respondIn}. Use clear headers with ** and bullet points with -. Be specific and concise.
 
 Structure your response with exactly these 4 sections:
 
@@ -87,6 +63,32 @@ ${s.s3desc}
 
 **4. ${s.s4}**
 ${s.s4desc}`;
+
+  const catLines = stats.categoryStats
+    .map(c => `  - ${c.name}: ${Math.round((c.score / c.max) * 100)}%`)
+    .join("\n") || s.noData;
+
+  const weakScenarios = [...stats.scenarioChartData]
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 5)
+    .filter(sc => sc.score < 70)
+    .map(sc => `  - ${sc.name}: ${sc.score}%`)
+    .join("\n") || s.noWeak;
+
+  const user = `CLASS PERFORMANCE DATA:
+- Global average: ${Math.round(stats.average)}%
+- Total quiz attempts: ${stats.totalAttempts}
+- Students participated: ${stats.uniqueStudents}
+
+Performance by cybersecurity category:
+${catLines}
+
+Scenarios where students performed weakest:
+${weakScenarios}
+
+Frequently failed questions: ${stats.commonMistakes.length} patterns identified`;
+
+  return { system, user };
 }
 
 export function useAIRecommendations(
@@ -98,7 +100,7 @@ export function useAIRecommendations(
     mutationFn: async () => {
       if (!config) throw new Error("no_key");
       if (!stats) throw new Error("no_data");
-      return callAI(config, buildPrompt(stats, lang));
+      return callAI(config, buildMessage(stats, lang));
     },
   });
 }
