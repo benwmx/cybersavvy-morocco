@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { flushQueue } from "./queue";
-import { syncPublicScenarios, syncPrivateScenarios, scrubPrivateData, syncTranslations, syncDocArticles } from "./syncService";
+import { syncPublicScenarios, syncPrivateScenarios, scrubPrivateData, syncTranslations, syncDocArticles, syncDocSections } from "./syncService";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -21,7 +21,7 @@ export function OfflineSyncProvider({ children }: { children: ReactNode }) {
     const runSync = async () => {
       setSyncing(true);
       try {
-        await Promise.all([syncPublicScenarios(), syncTranslations(), syncDocArticles()]);
+        await Promise.all([syncPublicScenarios(), syncTranslations(), syncDocArticles(), syncDocSections()]);
         const n = await flushQueue();
         if (n > 0) toast.success(`Sync: ${n}`);
       } catch (err) {

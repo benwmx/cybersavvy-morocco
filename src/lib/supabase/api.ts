@@ -12,6 +12,7 @@ export type TutorialRow = PublicTables["tutorials"]["Row"];
 export type TranslationRow = PublicTables["translations"]["Row"];
 export type RecommendationRow = PublicTables["recommendations"]["Row"];
 export type DocArticleRow = PublicTables["doc_articles"]["Row"];
+export type DocSectionRow = PublicTables["doc_sections"]["Row"];
 
 export const supabaseClient = supabase;
 
@@ -683,6 +684,72 @@ export const api = {
     if (error) throw error;
     const db = getDB();
     if (db) await db.doc_articles.delete(id);
+  },
+
+  // ── Doc sections ────────────────────────────────────────────────────────────
+
+  async listDocSections(): Promise<DocSectionRow[]> {
+    if (navigator.onLine) {
+      const { data, error } = await supabase
+        .from("doc_sections").select("*").order("sort_order");
+      if (error) throw error;
+      const rows = (data ?? []) as DocSectionRow[];
+      const db = getDB();
+      if (db && rows.length) db.doc_sections.bulkPut(rows).catch(() => {});
+      return rows;
+    }
+    const db = getDB();
+    if (db) return db.doc_sections.orderBy("sort_order").toArray();
+    return [];
+  },
+
+  async adminListDocSections(): Promise<DocSectionRow[]> {
+    const { data, error } = await supabase
+      .from("doc_sections").select("*").order("sort_order");
+    if (error) throw error;
+    return (data ?? []) as DocSectionRow[];
+  },
+
+  async adminSaveSection(section: Omit<DocSectionRow, "id" | "created_at"> & { id?: string }): Promise<DocSectionRow> {
+    const { id, ...fields } = section;
+    let row: DocSectionRow;
+    if (id) {
+      const { data, error } = await supabase
+        .from("doc_sections").update(fields).eq("id", id).select().single();
+      if (error) throw error;
+      row = data as DocSectionRow;
+    } else {
+      const { data, error } = await supabase
+        .from("doc_sections").insert(fields).select().single();
+      if (error) throw error;
+      row = data as DocSectionRow;
+    }
+    const db = getDB();
+    if (db) await db.doc_sections.put(row);
+    return row;
+  },
+
+  async adminDeleteSection(id: string): Promise<void> {
+    const { error } = await supabase.from("doc_sections").delete().eq("id", id);
+    if (error) throw error;
+    const db = getDB();
+    if (db) await db.doc_sections.delete(id);
+  },
+
+  async adminUpdateSectionOrders(updates: { id: string; sort_order: number }[]): Promise<void> {
+    await Promise.all(
+      updates.map(({ id, sort_order }) =>
+        supabase.from("doc_sections").update({ sort_order }).eq("id", id)
+      )
+    );
+    const db = getDB();
+    if (db) {
+      await Promise.all(
+        updates.map(({ id, sort_order }) =>
+          db.doc_sections.where("id").equals(id).modify({ sort_order })
+        )
+      );
+    }
   },
 
   async adminUpdateSortOrders(updates: { id: string; sort_order: number }[]): Promise<void> {

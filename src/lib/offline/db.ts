@@ -1,5 +1,5 @@
 import Dexie, { type Table } from "dexie";
-import type { ScenarioRow, CategoryRow, DocArticleRow } from "@/lib/supabase/api";
+import type { ScenarioRow, CategoryRow, DocArticleRow, DocSectionRow } from "@/lib/supabase/api";
 
 // Outbox item for results that need to be synced to Supabase
 export interface QueuedResult {
@@ -34,6 +34,7 @@ class CyberDB extends Dexie {
   class_scenario_status!: Table<LocalClassScenarioStatus, [string, string]>;
   translations!: Table<LocalTranslation, string>;
   doc_articles!: Table<DocArticleRow, string>;
+  doc_sections!: Table<DocSectionRow, string>;
 
   constructor() {
     super("cyber-safety-db");
@@ -60,6 +61,15 @@ class CyberDB extends Dexie {
       class_scenario_status: "[class_id+scenario_id], class_id, scenario_id",
       translations: "key",
       doc_articles: "id, section_key, is_published, sort_order",
+    });
+    this.version(5).stores({
+      offline_queue: "++id, createdAt",
+      scenarios: "id, teacher_id, category_id, is_public",
+      categories: "id, teacher_id",
+      class_scenario_status: "[class_id+scenario_id], class_id, scenario_id",
+      translations: "key",
+      doc_articles: "id, section_key, is_published, sort_order",
+      doc_sections: "id, &key, sort_order",
     });
   }
 }

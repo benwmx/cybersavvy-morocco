@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api, type DocArticleRow } from "@/lib/supabase/api";
+import { api, type DocArticleRow, type DocSectionRow } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { BookOpen, FileText, Loader2, ChevronRight, Search } from "lucide-react";
 import { DocMarkdown } from "@/components/DocMarkdown";
@@ -17,10 +17,21 @@ function DocsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
+  const { data: sections = [] } = useQuery({
+    queryKey: ["doc_sections"],
+    queryFn: () => api.listDocSections(),
+  });
+
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ["doc_articles"],
     queryFn: () => api.listDocArticles(),
   });
+
+  const sectionOrder = useMemo(() => {
+    const map = new Map<string, number>();
+    sections.forEach((s: DocSectionRow) => map.set(s.key, s.sort_order));
+    return map;
+  }, [sections]);
 
   const filtered = useMemo<DocArticleRow[]>(() => {
     if (!query.trim()) return articles;
@@ -32,17 +43,21 @@ function DocsPage() {
     });
   }, [articles, query, lang]);
 
-  const sections = useMemo(() => {
-    const map = new Map<string, { label: string; items: DocArticleRow[] }>();
+  const groupedSections = useMemo(() => {
+    const map = new Map<string, { label: string; order: number; items: DocArticleRow[] }>();
     filtered.forEach(a => {
-      const label = lang === "ar"
-        ? (a.section_label as any)?.ar ?? (a.section_label as any)?.fr ?? a.section_key
-        : (a.section_label as any)?.fr ?? a.section_key;
-      if (!map.has(a.section_key)) map.set(a.section_key, { label, items: [] });
+      const sec = sections.find((s: DocSectionRow) => s.key === a.section_key);
+      const label = sec
+        ? (lang === "ar" ? sec.label_ar || sec.label_fr : sec.label_fr)
+        : lang === "ar"
+          ? (a.section_label as any)?.ar ?? (a.section_label as any)?.fr ?? a.section_key
+          : (a.section_label as any)?.fr ?? a.section_key;
+      const order = sectionOrder.get(a.section_key) ?? 999;
+      if (!map.has(a.section_key)) map.set(a.section_key, { label, order, items: [] });
       map.get(a.section_key)!.items.push(a);
     });
-    return Array.from(map.values());
-  }, [filtered, lang]);
+    return Array.from(map.values()).sort((a, b) => a.order - b.order);
+  }, [filtered, lang, sections, sectionOrder]);
 
   const selected = articles.find(a => a.id === selectedId)
     ?? (filtered.length > 0 ? filtered[0] : null);
@@ -93,7 +108,7 @@ function DocsPage() {
           {/* Desktop nav */}
           <aside className="hidden md:block w-56 shrink-0 sticky top-4">
             <nav className="space-y-5">
-              {sections.map(section => (
+              {groupedSections.map(section => (
                 <div key={section.label}>
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1.5 px-2">
                     {section.label}
@@ -130,7 +145,7 @@ function DocsPage() {
               value={selected?.id ?? ""}
               onChange={e => setSelectedId(e.target.value)}
             >
-              {sections.map(section => (
+              {groupedSections.map(section => (
                 <optgroup key={section.label} label={section.label}>
                   {section.items.map(a => (
                     <option key={a.id} value={a.id}>{title(a)}</option>

@@ -1,6 +1,6 @@
 import { getDB, type LocalClassScenarioStatus } from "./db";
 import { supabase } from "@/lib/supabase/client";
-import type { ScenarioRow, CategoryRow, DocArticleRow } from "@/lib/supabase/api";
+import type { ScenarioRow, CategoryRow, DocArticleRow, DocSectionRow } from "@/lib/supabase/api";
 import type { LocalTranslation } from "./db";
 
 type SB = typeof supabase;
@@ -105,6 +105,20 @@ export async function syncPrivateScenarios(teacherId: string): Promise<void> {
 
   if (scenarios.length) await db.scenarios.bulkPut(scenarios);
   if (statuses.length) await db.class_scenario_status.bulkPut(statuses);
+}
+
+// Fetch all doc sections and cache them in Dexie.
+export async function syncDocSections(): Promise<void> {
+  if (!navigator.onLine) return;
+  const db = getDB();
+  if (!db) return;
+
+  const { data } = await supabase
+    .from("doc_sections")
+    .select("*")
+    .order("sort_order");
+
+  if (data?.length) await db.doc_sections.bulkPut(data as DocSectionRow[]);
 }
 
 // Fetch all published doc articles and cache them in Dexie.
