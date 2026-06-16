@@ -685,6 +685,22 @@ export const api = {
     if (db) await db.doc_articles.delete(id);
   },
 
+  async adminUpdateSortOrders(updates: { id: string; sort_order: number }[]): Promise<void> {
+    await Promise.all(
+      updates.map(({ id, sort_order }) =>
+        supabase.from("doc_articles").update({ sort_order }).eq("id", id)
+      )
+    );
+    const db = getDB();
+    if (db) {
+      await Promise.all(
+        updates.map(({ id, sort_order }) =>
+          db.doc_articles.where("id").equals(id).modify({ sort_order })
+        )
+      );
+    }
+  },
+
   async saveRecommendation(
     classId: string | null,
     className: string | null,
