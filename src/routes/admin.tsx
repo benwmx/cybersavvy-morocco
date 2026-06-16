@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { Shield, Languages, LogOut, Type, LayoutDashboard, Users, Layers, GraduationCap, Settings } from "lucide-react";
+import { Shield, Languages, LogOut, Type, LayoutDashboard, Users, Layers, GraduationCap, Settings, BookText } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
@@ -29,6 +29,7 @@ function AdminLayout() {
     { to: "/admin/content",       icon: Layers,          label: lang === "fr" ? "Contenu"         : "المحتوى" },
     { to: "/admin/classes",       icon: GraduationCap,   label: lang === "fr" ? "Classes"          : "الأقسام" },
     { to: "/admin/translations",  icon: Type,            label: lang === "fr" ? "Traductions"     : "الترجمات" },
+    { to: "/admin/docs",          icon: BookText,        label: lang === "fr" ? "Documentation"   : "التوثيق" },
     { to: "/admin/settings",      icon: Settings,        label: lang === "fr" ? "Paramètres"      : "الإعدادات" },
   ];
 
