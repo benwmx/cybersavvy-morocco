@@ -196,6 +196,32 @@ export interface Database {
           name_ar?: string
         }
       }
+      doc_sections: {
+        Row: {
+          id: string
+          key: string
+          label_fr: string
+          label_ar: string
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          label_fr: string
+          label_ar: string
+          sort_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          label_fr?: string
+          label_ar?: string
+          sort_order?: number
+          created_at?: string
+        }
+      }
       doc_articles: {
         Row: {
           id: string
