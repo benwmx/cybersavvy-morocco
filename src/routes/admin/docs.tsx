@@ -240,7 +240,7 @@ function AdminDocsPage() {
         <div className="w-56 shrink-0 flex flex-col border-e border-slate-200 bg-slate-50">
           <div className="px-3 py-2.5 border-b border-slate-200">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              {lang === "ar" ? "الأقسام" : "Sections"}
+              {t("sections")}
             </p>
           </div>
 
@@ -251,7 +251,7 @@ function AdminDocsPage() {
               </div>
             ) : sections.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-8">
-                {lang === "ar" ? "لا أقسام بعد" : "Aucune section"}
+                {t("noSections")}
               </p>
             ) : (
               sections.map(s => {
@@ -299,7 +299,7 @@ function AdminDocsPage() {
               className="w-full flex items-center justify-center gap-1.5 h-7 rounded text-xs font-medium text-slate-500 hover:bg-white hover:text-slate-800 transition-colors border border-dashed border-slate-300 hover:border-slate-400"
             >
               <Plus className="h-3 w-3" />
-              {lang === "ar" ? "قسم جديد" : "Nouveau section"}
+              {t("newSection")}
             </button>
           </div>
         </div>
@@ -309,7 +309,7 @@ function AdminDocsPage() {
           {!selectedSection ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 text-slate-300 py-20">
               <FolderOpen className="h-8 w-8" />
-              <p className="text-sm">{lang === "ar" ? "اختر قسماً من اليسار" : "Sélectionnez une section"}</p>
+              <p className="text-sm">{t("selectSection")}</p>
             </div>
           ) : (
             <>
@@ -325,7 +325,7 @@ function AdminDocsPage() {
                   <button
                     onClick={() => setDeleteSection(selectedSection)}
                     className="h-7 px-2.5 text-xs text-rose-500 hover:bg-rose-50 rounded transition-colors"
-                    title={lang === "ar" ? "حذف القسم" : "Supprimer la section"}
+                    title={t("deleteSection")}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -351,7 +351,7 @@ function AdminDocsPage() {
                   </div>
                 ) : sectionArticles.length === 0 ? (
                   <div className="py-16 text-center text-sm text-slate-300">
-                    {lang === "ar" ? "لا مقالات في هذا القسم" : "Aucun article dans cette section"}
+                    {t("noArticlesInSection")}
                   </div>
                 ) : (
                   <table className="w-full text-sm">
@@ -384,7 +384,7 @@ function AdminDocsPage() {
                                 }`}
                               >
                                 {a.is_published ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                                {a.is_published ? t("published") : "Draft"}
+                                {a.is_published ? t("published") : t("draft")}
                               </button>
                             </td>
                             <td className="px-3 py-3 whitespace-nowrap">
@@ -421,7 +421,7 @@ function AdminDocsPage() {
           <div className="bg-white rounded-sm shadow-xl w-full max-w-sm">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
               <h2 className="text-sm font-semibold text-slate-900">
-                {sectionForm.id ? (lang === "ar" ? "تعديل القسم" : "Modifier la section") : (lang === "ar" ? "قسم جديد" : "Nouvelle section")}
+                {sectionForm.id ? t("editSection") : t("newSection")}
               </h2>
               <button onClick={() => setSectionForm(null)} className="text-slate-400 hover:text-slate-700">
                 <X className="h-4 w-4" />
@@ -491,7 +491,7 @@ function AdminDocsPage() {
             <div className="p-5 space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-xs font-medium text-slate-600 mb-1">{lang === "ar" ? "القسم" : "Section"}</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">{t("sectionInArticleForm")}</label>
                   <select
                     className="h-8 w-full rounded border border-slate-200 px-3 text-sm bg-white"
                     value={articleForm.section_key}
@@ -533,7 +533,7 @@ function AdminDocsPage() {
                     onClick={() => setShowPreview(p => !p)}
                     className={`h-6 px-2.5 text-xs rounded transition-colors ${showPreview ? "bg-[#1E3A8A] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                   >
-                    {showPreview ? "Masquer" : "Aperçu"}
+                    {showPreview ? t("hidePreview") : t("showPreview")}
                   </button>
                 </div>
                 <div className={showPreview ? "grid grid-cols-2 gap-3" : "space-y-3"}>
@@ -559,7 +559,7 @@ function AdminDocsPage() {
                       <div className={`p-3 h-64 overflow-y-auto ${previewLang === "ar" ? "rtl" : ""}`}>
                         {(previewLang === "fr" ? articleForm.content_fr : articleForm.content_ar)
                           ? <DocMarkdown text={previewLang === "fr" ? articleForm.content_fr : articleForm.content_ar} />
-                          : <p className="text-slate-300 text-xs italic">Aucun contenu</p>
+                          : <p className="text-slate-300 text-xs italic">{t("noArticles")}</p>
                         }
                       </div>
                     </div>
@@ -600,9 +600,7 @@ function AdminDocsPage() {
             {allArticles.filter(a => a.section_key === deleteSection.key).length > 0 ? (
               <>
                 <p className="text-sm text-slate-700">
-                  {lang === "ar"
-                    ? "لا يمكن حذف قسم يحتوي على مقالات. احذف المقالات أولاً."
-                    : "Impossible de supprimer une section qui contient des articles. Supprimez d'abord les articles."}
+                  {t("cannotDeleteSection")}
                 </p>
                 <div className="flex justify-end">
                   <button onClick={() => setDeleteSection(null)} className="h-8 px-4 text-sm rounded bg-slate-100 hover:bg-slate-200">{t("adminCancel")}</button>
@@ -611,7 +609,7 @@ function AdminDocsPage() {
             ) : (
               <>
                 <p className="text-sm text-slate-700">
-                  {lang === "ar" ? `حذف قسم "${deleteSection.label_ar || deleteSection.label_fr}"؟` : `Supprimer la section "${deleteSection.label_fr}" ?`}
+                  {t("confirmDeleteSection")}
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button onClick={() => setDeleteSection(null)} className="h-8 px-4 text-sm rounded hover:bg-slate-100">{t("adminCancel")}</button>
