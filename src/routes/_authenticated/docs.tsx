@@ -88,7 +88,7 @@ function DocsPage() {
           <input
             value={query}
             onChange={e => { setQuery(e.target.value); setSelectedId(null); }}
-            placeholder={lang === "ar" ? "بحث..." : "Rechercher..."}
+            placeholder={t("searchPlaceholder")}
             className="w-full h-8 rounded border border-slate-200 bg-white text-sm ps-8 pe-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-slate-400"
           />
         </div>
@@ -101,7 +101,7 @@ function DocsPage() {
       ) : filtered.length === 0 ? (
         <div className="py-24 flex flex-col items-center gap-3 text-slate-400">
           <BookOpen className="h-8 w-8" />
-          <p className="text-sm">{query ? (lang === "ar" ? "لا نتائج" : "Aucun résultat") : t("noArticles")}</p>
+          <p className="text-sm">{query ? t("noResults") : t("noArticles")}</p>
         </div>
       ) : (
         <div className="flex gap-6 items-start">

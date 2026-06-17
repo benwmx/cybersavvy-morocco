@@ -14,7 +14,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminLayout() {
-  const { lang, setLang } = useLang();
+  const { lang, setLang, t } = useLang();
   const navigate = useNavigate();
   const path = useRouterState({ select: s => s.location.pathname });
 
@@ -24,13 +24,13 @@ function AdminLayout() {
   };
 
   const navItems = [
-    { to: "/admin/overview",      icon: LayoutDashboard, label: lang === "fr" ? "Vue d'ensemble" : "نظرة عامة" },
-    { to: "/admin/users",         icon: Users,           label: lang === "fr" ? "Utilisateurs"   : "المستخدمون" },
-    { to: "/admin/content",       icon: Layers,          label: lang === "fr" ? "Contenu"         : "المحتوى" },
-    { to: "/admin/classes",       icon: GraduationCap,   label: lang === "fr" ? "Classes"          : "الأقسام" },
-    { to: "/admin/translations",  icon: Type,            label: lang === "fr" ? "Traductions"     : "الترجمات" },
-    { to: "/admin/docs",          icon: BookText,        label: lang === "fr" ? "Documentation"   : "التوثيق" },
-    { to: "/admin/settings",      icon: Settings,        label: lang === "fr" ? "Paramètres"      : "الإعدادات" },
+    { to: "/admin/overview",      icon: LayoutDashboard, label: t("overview") },
+    { to: "/admin/users",         icon: Users,           label: t("adminNavUsers") },
+    { to: "/admin/content",       icon: Layers,          label: t("adminNavContent") },
+    { to: "/admin/classes",       icon: GraduationCap,   label: t("adminNavClasses") },
+    { to: "/admin/translations",  icon: Type,            label: t("adminNavTranslations") },
+    { to: "/admin/docs",          icon: BookText,        label: t("docsLabel") },
+    { to: "/admin/settings",      icon: Settings,        label: t("settings") },
   ];
 
   return (
@@ -96,7 +96,7 @@ function AdminLayout() {
             className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            {lang === "fr" ? "Déconnexion" : "تسجيل الخروج"}
+            {t("logout")}
           </button>
         </div>
       </aside>
