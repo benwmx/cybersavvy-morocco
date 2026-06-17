@@ -50,6 +50,9 @@ report/
 # Supabase migrations (local only)
 supabase/migrations/
 
+# Personal reference docs
+explanations/
+
 # Sandbox / shell environment artifacts
 .bash_profile
 .bashrc
