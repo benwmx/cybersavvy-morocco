@@ -1,9 +1,13 @@
-export type AIProvider = "gemini" | "openai" | "openrouter" | "groq";
+export type AIProvider = "gemini" | "openai" | "openrouter" | "groq" | "anthropic" | "mistral" | "deepseek";
 
 export interface AIConfig {
   provider: AIProvider;
   apiKey: string;
   model: string;
+  temperature?: number;
+  maxTokens?: number;
+  customPromptFr?: string;
+  customPromptAr?: string;
 }
 
 export interface ProviderMeta {
@@ -37,6 +41,24 @@ export const PROVIDER_META: Record<AIProvider, ProviderMeta> = {
     defaultModel: "llama-3.3-70b-versatile",
     placeholder: "gsk_...",
     hint: "console.groq.com/keys — inférence rapide, niveau gratuit disponible",
+  },
+  anthropic: {
+    label: "Anthropic (Claude)",
+    defaultModel: "claude-sonnet-4-6",
+    placeholder: "sk-ant-...",
+    hint: "console.anthropic.com/keys",
+  },
+  mistral: {
+    label: "Mistral AI",
+    defaultModel: "mistral-small-latest",
+    placeholder: "...",
+    hint: "console.mistral.ai/api-keys — niveau gratuit disponible",
+  },
+  deepseek: {
+    label: "DeepSeek",
+    defaultModel: "deepseek-chat",
+    placeholder: "sk-...",
+    hint: "platform.deepseek.com/api_keys — très abordable",
   },
 };
 
@@ -76,9 +98,9 @@ export interface AIMessage {
 }
 
 export async function callAI(config: AIConfig, message: AIMessage): Promise<string> {
-  return config.provider === "gemini"
-    ? callGemini(config, message)
-    : callOpenAICompat(config, message);
+  if (config.provider === "gemini") return callGemini(config, message);
+  if (config.provider === "anthropic") return callAnthropic(config, message);
+  return callOpenAICompat(config, message);
 }
 
 async function callGemini(config: AIConfig, { system, user }: AIMessage): Promise<string> {
@@ -90,7 +112,10 @@ async function callGemini(config: AIConfig, { system, user }: AIMessage): Promis
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
         contents: [{ parts: [{ text: user }] }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 2000 },
+        generationConfig: {
+          temperature: config.temperature ?? 0.3,
+          maxOutputTokens: config.maxTokens ?? 2000,
+        },
       }),
     }
   );
@@ -102,12 +127,38 @@ async function callGemini(config: AIConfig, { system, user }: AIMessage): Promis
   return (data as any).candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
+async function callAnthropic(config: AIConfig, { system, user }: AIMessage): Promise<string> {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": config.apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: config.model,
+      max_tokens: config.maxTokens ?? 2000,
+      system,
+      messages: [{ role: "user", content: user }],
+      temperature: config.temperature ?? 0.3,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new AIError((err as any)?.error?.message ?? `Anthropic error ${res.status}`, res.status);
+  }
+  const data = await res.json();
+  return (data as any).content?.[0]?.text ?? "";
+}
+
 async function callOpenAICompat(config: AIConfig, { system, user }: AIMessage): Promise<string> {
-  const base = config.provider === "openrouter"
-    ? "https://openrouter.ai/api/v1"
-    : config.provider === "groq"
-    ? "https://api.groq.com/openai/v1"
-    : "https://api.openai.com/v1";
+  const baseUrls: Partial<Record<AIProvider, string>> = {
+    openrouter: "https://openrouter.ai/api/v1",
+    groq: "https://api.groq.com/openai/v1",
+    mistral: "https://api.mistral.ai/v1",
+    deepseek: "https://api.deepseek.com/v1",
+  };
+  const base = baseUrls[config.provider] ?? "https://api.openai.com/v1";
   const res = await fetch(`${base}/chat/completions`, {
     method: "POST",
     headers: {
@@ -120,8 +171,8 @@ async function callOpenAICompat(config: AIConfig, { system, user }: AIMessage): 
         { role: "system", content: system },
         { role: "user", content: user },
       ],
-      temperature: 0.3,
-      max_tokens: 2000,
+      temperature: config.temperature ?? 0.3,
+      max_tokens: config.maxTokens ?? 2000,
     }),
   });
   if (!res.ok) {

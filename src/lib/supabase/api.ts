@@ -781,12 +781,11 @@ export const api = {
     if (error) throw error;
   },
 
-  async getLastRecommendation(classId: string | null): Promise<RecommendationRow | null> {
+  async getRecommendations(classId: string | null): Promise<RecommendationRow[]> {
     let query = supabase
       .from("recommendations")
       .select("*")
-      .order("created_at", { ascending: false })
-      .limit(1);
+      .order("created_at", { ascending: false });
     if (classId) {
       query = query.eq("class_id", classId);
     } else {
@@ -794,6 +793,6 @@ export const api = {
     }
     const { data, error } = await query;
     if (error) throw error;
-    return data?.[0] ?? null;
+    return data ?? [];
   },
 };

@@ -9,7 +9,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { useAIRecommendations } from "@/hooks/useAIRecommendations";
 import { getAIConfig } from "@/lib/ai";
-import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2, Sparkles, Settings, Bookmark, BookmarkCheck } from "lucide-react";
+import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2, Sparkles, Settings, Bookmark, BookmarkCheck, ChevronDown } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
@@ -172,14 +172,16 @@ function AnalyticsPage() {
   const aiMutation = useAIRecommendations(aiConfig, stats, lang, selectedClassName);
 
   const classIdForQuery = selectedClassId === "all" ? null : selectedClassId;
-  const { data: savedRec } = useQuery({
-    queryKey: ["recommendation", classIdForQuery],
-    queryFn: () => api.getLastRecommendation(classIdForQuery),
+  const { data: savedRecs } = useQuery({
+    queryKey: ["recommendations", classIdForQuery],
+    queryFn: () => api.getRecommendations(classIdForQuery),
   });
+
+  const [expandedRecId, setExpandedRecId] = useState<string | null>(null);
 
   const saveMutation = useMutation({
     mutationFn: () => api.saveRecommendation(classIdForQuery, selectedClassName, aiMutation.data!),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["recommendation", classIdForQuery] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["recommendations", classIdForQuery] }),
   });
 
   if (isLoading) return (
@@ -442,13 +444,34 @@ function AnalyticsPage() {
                 </div>
               )}
 
-              {!aiMutation.data && savedRec && (
+              {!aiMutation.data && savedRecs && savedRecs.length > 0 && (
                 <div className="space-y-3">
-                  <p className="text-xs text-slate-400">
-                    {t("lastSaved")} {new Date(savedRec.created_at).toLocaleDateString(lang === "ar" ? "ar-MA" : "fr-FR", { day: "numeric", month: "long", year: "numeric" })}
-                  </p>
-                  <div className="p-4 rounded border border-slate-100 bg-slate-50/50">
-                    <GeminiMarkdown text={savedRec.content} />
+                  <p className="text-xs font-medium text-slate-500">{t("recHistory")}</p>
+                  <div className="space-y-2">
+                    {savedRecs.map((rec, i) => {
+                      const isOpen = expandedRecId === null ? i === 0 : expandedRecId === rec.id;
+                      const dateLabel = new Date(rec.created_at).toLocaleDateString(
+                        lang === "ar" ? "ar-MA" : "fr-FR",
+                        { day: "numeric", month: "long", year: "numeric" },
+                      );
+                      return (
+                        <div key={rec.id} className="rounded border border-slate-100 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedRecId(isOpen ? "__none__" : rec.id)}
+                            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors text-start"
+                          >
+                            <span className="text-xs text-slate-500">{t("lastSaved")} {dateLabel}</span>
+                            <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+                          </button>
+                          {isOpen && (
+                            <div className="p-4 bg-white">
+                              <GeminiMarkdown text={rec.content} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
