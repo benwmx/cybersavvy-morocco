@@ -12,14 +12,20 @@ import { OfflineSyncProvider } from "@/lib/offline/OfflineSyncProvider";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
+  return (
+    <LanguageProvider>
+      <NotFoundContent />
+    </LanguageProvider>
+  );
+}
+
+function NotFoundContent() {
   const { t } = useLang();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("notFoundDesc")}
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("notFoundDesc")}</p>
         <div className="mt-6">
           <Link
             to="/"
@@ -34,8 +40,16 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  const { t } = useLang();
   console.error(error);
+  return (
+    <LanguageProvider>
+      <ErrorContent error={error} reset={reset} />
+    </LanguageProvider>
+  );
+}
+
+function ErrorContent({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useLang();
   const router = useRouter();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

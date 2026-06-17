@@ -4,7 +4,7 @@ import type { Lang } from "@/lib/i18n/translations";
 
 interface CategoryStat { name: string; score: number; max: number; }
 interface MistakeStat { fr: string; ar: string; count: number; }
-interface AnalyticsStats {
+export interface AnalyticsStats {
   average: number;
   totalAttempts: number;
   uniqueStudents: number;
@@ -42,10 +42,9 @@ const PROMPT_STRINGS = {
   },
 } as const;
 
-function buildMessage(stats: AnalyticsStats, lang: Lang, className: string | null): AIMessage {
+export function getDefaultSystemPrompt(lang: Lang): string {
   const s = PROMPT_STRINGS[lang];
-
-  const system = `You are a pedagogical advisor for Moroccan secondary school teachers (collèges and lycées) using the CyberSafe platform to teach digital citizenship and cybersecurity.
+  return `You are a pedagogical advisor for Moroccan secondary school teachers (collèges and lycées) using the CyberSafe platform to teach digital citizenship and cybersecurity.
 
 Based on the class performance data the teacher provides and the Moroccan national digital competency framework (programme GENIE / CNTE), generate structured, practical recommendations.
 
@@ -64,6 +63,13 @@ ${s.s3desc}
 
 **4. ${s.s4}**
 ${s.s4desc}`;
+}
+
+function buildMessage(stats: AnalyticsStats, lang: Lang, className: string | null, config: AIConfig): AIMessage {
+  const s = PROMPT_STRINGS[lang];
+
+  const customPrompt = lang === "ar" ? config.customPromptAr : config.customPromptFr;
+  const system = customPrompt ?? getDefaultSystemPrompt(lang);
 
   const catLines = stats.categoryStats
     .map(c => `  - ${c.name}: ${Math.round((c.score / c.max) * 100)}%`)
@@ -112,7 +118,7 @@ export function useAIRecommendations(
     mutationFn: async () => {
       if (!config) throw new Error("no_key");
       if (!stats) throw new Error("no_data");
-      return callAI(config, buildMessage(stats, lang, className));
+      return callAI(config, buildMessage(stats, lang, className, config));
     },
   });
 }
