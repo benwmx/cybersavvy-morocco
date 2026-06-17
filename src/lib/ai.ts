@@ -14,52 +14,16 @@ export interface ProviderMeta {
   label: string;
   defaultModel: string;
   placeholder: string;
-  hint: string;
 }
 
 export const PROVIDER_META: Record<AIProvider, ProviderMeta> = {
-  gemini: {
-    label: "Gemini (Google)",
-    defaultModel: "gemini-2.0-flash",
-    placeholder: "AIzaSy...",
-    hint: "aistudio.google.com — clé gratuite disponible",
-  },
-  openai: {
-    label: "OpenAI (ChatGPT)",
-    defaultModel: "gpt-4o-mini",
-    placeholder: "sk-...",
-    hint: "platform.openai.com/api-keys",
-  },
-  openrouter: {
-    label: "OpenRouter",
-    defaultModel: "google/gemini-2.0-flash-exp:free",
-    placeholder: "sk-or-...",
-    hint: "openrouter.ai/keys — accès à des dizaines de modèles gratuits",
-  },
-  groq: {
-    label: "Groq",
-    defaultModel: "llama-3.3-70b-versatile",
-    placeholder: "gsk_...",
-    hint: "console.groq.com/keys — inférence rapide, niveau gratuit disponible",
-  },
-  anthropic: {
-    label: "Anthropic (Claude)",
-    defaultModel: "claude-sonnet-4-6",
-    placeholder: "sk-ant-...",
-    hint: "console.anthropic.com/keys",
-  },
-  mistral: {
-    label: "Mistral AI",
-    defaultModel: "mistral-small-latest",
-    placeholder: "...",
-    hint: "console.mistral.ai/api-keys — niveau gratuit disponible",
-  },
-  deepseek: {
-    label: "DeepSeek",
-    defaultModel: "deepseek-chat",
-    placeholder: "sk-...",
-    hint: "platform.deepseek.com/api_keys — très abordable",
-  },
+  gemini:    { label: "Gemini (Google)",    defaultModel: "gemini-2.0-flash",             placeholder: "AIzaSy..."  },
+  openai:    { label: "OpenAI (ChatGPT)",   defaultModel: "gpt-4o-mini",                  placeholder: "sk-..."     },
+  openrouter:{ label: "OpenRouter",         defaultModel: "google/gemini-2.0-flash-exp:free", placeholder: "sk-or-..." },
+  groq:      { label: "Groq",              defaultModel: "llama-3.3-70b-versatile",       placeholder: "gsk_..."    },
+  anthropic: { label: "Anthropic (Claude)", defaultModel: "claude-sonnet-4-6",            placeholder: "sk-ant-..." },
+  mistral:   { label: "Mistral AI",         defaultModel: "mistral-small-latest",         placeholder: "..."        },
+  deepseek:  { label: "DeepSeek",           defaultModel: "deepseek-chat",                placeholder: "sk-..."     },
 };
 
 const configKey = (userId: string) => `ai_config_${userId}`;

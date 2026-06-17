@@ -445,7 +445,7 @@ function AdminDocsPage() {
                   className="h-8 w-full rounded border border-slate-200 px-3 text-sm"
                   value={sectionForm.label_fr}
                   onChange={e => setSF("label_fr", e.target.value)}
-                  placeholder="Démarrage"
+                  placeholder={t("adminSectionExampleFr")}
                 />
               </div>
               <div>
@@ -455,7 +455,7 @@ function AdminDocsPage() {
                   className="h-8 w-full rounded border border-slate-200 px-3 text-sm"
                   value={sectionForm.label_ar}
                   onChange={e => setSF("label_ar", e.target.value)}
-                  placeholder="البدء"
+                  placeholder={t("adminSectionExampleAr")}
                 />
               </div>
             </div>
