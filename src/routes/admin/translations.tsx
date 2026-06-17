@@ -87,7 +87,7 @@ function TranslationsPage() {
 
     // Catch-all for keys not in any group
     const ungrouped = merged.filter(e => !assigned.has(e.key));
-    if (ungrouped.length > 0) result.push({ label: "Divers", entries: ungrouped });
+    if (ungrouped.length > 0) result.push({ label: otherGroupLabel, entries: ungrouped });
 
     return result;
   }, [merged]);
@@ -142,6 +142,7 @@ function TranslationsPage() {
 
   const customCount = merged.filter(e => e.isCustom).length;
   const isSearching = search.trim().length > 0;
+  const otherGroupLabel = t("adminGroupOther");
 
   const ColHeader = () => (
     <div className="grid grid-cols-[16px_160px_1fr_1fr_72px] gap-3 px-5 py-2.5 bg-slate-50 border-y border-slate-100 text-xs font-medium text-slate-500">
@@ -185,8 +186,8 @@ function TranslationsPage() {
               <Pencil className="h-3.5 w-3.5" />
             </Button>
             {entry.isCustom && (
-              <Button size="icon" variant="ghost" title="Réinitialiser aux valeurs par défaut"
-                onClick={() => { if (confirm(`Réinitialiser "${entry.key}" aux valeurs par défaut ?`)) del.mutate(entry.key); }}
+              <Button size="icon" variant="ghost" title={t("adminResetDefault")}
+                onClick={() => { if (confirm(t("adminResetConfirm"))) del.mutate(entry.key); }}
                 className="h-8 w-8 rounded text-slate-400 hover:text-amber-500 hover:bg-amber-50">
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
@@ -224,7 +225,7 @@ function TranslationsPage() {
               {merged.length} {t("adminEntriesLabel")}
               {customCount > 0 && (
                 <span className="text-xs font-medium bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded">
-                  {customCount} personnalisées
+                  {customCount} {t("adminCustomized")}
                 </span>
               )}
             </CardTitle>
@@ -258,8 +259,8 @@ function TranslationsPage() {
               <div className="grid grid-cols-[16px_160px_1fr_1fr_72px] gap-3 px-5 py-2.5 border-b border-slate-100 bg-blue-50/40 items-center">
                 <span />
                 <Input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="new_key" className="h-8 rounded font-mono text-sm" autoFocus />
-                <Input value={newFr} onChange={e => setNewFr(e.target.value)} placeholder="Texte français..." className="h-8 rounded text-sm" />
-                <Input value={newAr} onChange={e => setNewAr(e.target.value)} placeholder="النص بالعربية..." className="h-8 rounded text-sm text-right" dir="rtl" />
+                <Input value={newFr} onChange={e => setNewFr(e.target.value)} placeholder={t("adminFrPlaceholder")} className="h-8 rounded text-sm" />
+                <Input value={newAr} onChange={e => setNewAr(e.target.value)} placeholder={t("adminArPlaceholder")} className="h-8 rounded text-sm text-right" dir="rtl" />
                 <div className="flex gap-1">
                   <Button size="icon" variant="ghost" onClick={() => upsert.mutate({ key: newKey.trim(), fr: newFr, ar: newAr })} disabled={!newKey.trim() || !newFr || !newAr || upsert.isPending} className="h-8 w-8 rounded text-emerald-600 hover:bg-emerald-50">
                     <Check className="h-4 w-4" />
@@ -303,10 +304,10 @@ function TranslationsPage() {
                         : <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                       }
                       <span className="text-xs font-semibold text-slate-600 flex-1">{group.label}</span>
-                      <span className="text-[10px] text-slate-400 tabular-nums">{group.entries.length} clés</span>
+                      <span className="text-[10px] text-slate-400 tabular-nums">{group.entries.length} {t("adminKeysCount")}</span>
                       {groupCustom > 0 && (
                         <span className="text-[10px] font-medium bg-indigo-50 text-indigo-500 px-1.5 py-0.5 rounded">
-                          {groupCustom} perso.
+                          {groupCustom} {t("adminCustomShort")}
                         </span>
                       )}
                     </button>

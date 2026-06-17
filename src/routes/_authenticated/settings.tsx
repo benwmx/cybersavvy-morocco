@@ -11,6 +11,17 @@ import { KeyRound, User, Sparkles, Eye, EyeOff, CheckCircle2, XCircle, RotateCcw
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAIConfig, saveAIConfig, removeAIConfig, callAI, AIError, PROVIDER_META, type AIProvider } from "@/lib/ai";
+import type { TKey } from "@/lib/i18n/translations";
+
+const PROVIDER_HINT_KEYS: Record<AIProvider, TKey> = {
+  gemini:     "aiHintGemini",
+  openai:     "aiHintOpenai",
+  openrouter: "aiHintOpenrouter",
+  groq:       "aiHintGroq",
+  anthropic:  "aiHintAnthropic",
+  mistral:    "aiHintMistral",
+  deepseek:   "aiHintDeepseek",
+};
 import { getDefaultSystemPrompt } from "@/hooks/useAIRecommendations";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -304,7 +315,7 @@ function SettingsPage() {
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-slate-400">{PROVIDER_META[provider].hint}</p>
+                <p className="text-xs text-slate-400">{t(PROVIDER_HINT_KEYS[provider])}</p>
                 <div className="flex items-center gap-3">
                   {keyStatus === "valid" && (
                     <span className="flex items-center gap-1.5 text-xs text-emerald-600">
