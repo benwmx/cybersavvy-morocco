@@ -1,37 +1,29 @@
-export type AIProvider = "gemini" | "openai" | "openrouter";
+export type AIProvider = "gemini" | "openai" | "openrouter" | "groq" | "anthropic" | "mistral" | "deepseek";
 
 export interface AIConfig {
   provider: AIProvider;
   apiKey: string;
   model: string;
+  temperature?: number;
+  maxTokens?: number;
+  customPromptFr?: string;
+  customPromptAr?: string;
 }
 
 export interface ProviderMeta {
   label: string;
   defaultModel: string;
   placeholder: string;
-  hint: string;
 }
 
 export const PROVIDER_META: Record<AIProvider, ProviderMeta> = {
-  gemini: {
-    label: "Gemini (Google)",
-    defaultModel: "gemini-2.0-flash",
-    placeholder: "AIzaSy...",
-    hint: "aistudio.google.com — clé gratuite disponible",
-  },
-  openai: {
-    label: "OpenAI (ChatGPT)",
-    defaultModel: "gpt-4o-mini",
-    placeholder: "sk-...",
-    hint: "platform.openai.com/api-keys",
-  },
-  openrouter: {
-    label: "OpenRouter",
-    defaultModel: "google/gemini-2.0-flash-exp:free",
-    placeholder: "sk-or-...",
-    hint: "openrouter.ai/keys — accès à des dizaines de modèles gratuits",
-  },
+  gemini:    { label: "Gemini (Google)",    defaultModel: "gemini-2.0-flash",             placeholder: "AIzaSy..."  },
+  openai:    { label: "OpenAI (ChatGPT)",   defaultModel: "gpt-4o-mini",                  placeholder: "sk-..."     },
+  openrouter:{ label: "OpenRouter",         defaultModel: "google/gemini-2.0-flash-exp:free", placeholder: "sk-or-..." },
+  groq:      { label: "Groq",              defaultModel: "llama-3.3-70b-versatile",       placeholder: "gsk_..."    },
+  anthropic: { label: "Anthropic (Claude)", defaultModel: "claude-sonnet-4-6",            placeholder: "sk-ant-..." },
+  mistral:   { label: "Mistral AI",         defaultModel: "mistral-small-latest",         placeholder: "..."        },
+  deepseek:  { label: "DeepSeek",           defaultModel: "deepseek-chat",                placeholder: "sk-..."     },
 };
 
 const configKey = (userId: string) => `ai_config_${userId}`;
@@ -64,21 +56,30 @@ export class AIError extends Error {
   }
 }
 
-export async function callAI(config: AIConfig, prompt: string): Promise<string> {
-  return config.provider === "gemini"
-    ? callGemini(config, prompt)
-    : callOpenAICompat(config, prompt);
+export interface AIMessage {
+  system: string;
+  user: string;
 }
 
-async function callGemini(config: AIConfig, prompt: string): Promise<string> {
+export async function callAI(config: AIConfig, message: AIMessage): Promise<string> {
+  if (config.provider === "gemini") return callGemini(config, message);
+  if (config.provider === "anthropic") return callAnthropic(config, message);
+  return callOpenAICompat(config, message);
+}
+
+async function callGemini(config: AIConfig, { system, user }: AIMessage): Promise<string> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1200 },
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ parts: [{ text: user }] }],
+        generationConfig: {
+          temperature: config.temperature ?? 0.3,
+          maxOutputTokens: config.maxTokens ?? 2000,
+        },
       }),
     }
   );
@@ -90,10 +91,38 @@ async function callGemini(config: AIConfig, prompt: string): Promise<string> {
   return (data as any).candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
-async function callOpenAICompat(config: AIConfig, prompt: string): Promise<string> {
-  const base = config.provider === "openrouter"
-    ? "https://openrouter.ai/api/v1"
-    : "https://api.openai.com/v1";
+async function callAnthropic(config: AIConfig, { system, user }: AIMessage): Promise<string> {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": config.apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: config.model,
+      max_tokens: config.maxTokens ?? 2000,
+      system,
+      messages: [{ role: "user", content: user }],
+      temperature: config.temperature ?? 0.3,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new AIError((err as any)?.error?.message ?? `Anthropic error ${res.status}`, res.status);
+  }
+  const data = await res.json();
+  return (data as any).content?.[0]?.text ?? "";
+}
+
+async function callOpenAICompat(config: AIConfig, { system, user }: AIMessage): Promise<string> {
+  const baseUrls: Partial<Record<AIProvider, string>> = {
+    openrouter: "https://openrouter.ai/api/v1",
+    groq: "https://api.groq.com/openai/v1",
+    mistral: "https://api.mistral.ai/v1",
+    deepseek: "https://api.deepseek.com/v1",
+  };
+  const base = baseUrls[config.provider] ?? "https://api.openai.com/v1";
   const res = await fetch(`${base}/chat/completions`, {
     method: "POST",
     headers: {
@@ -102,9 +131,12 @@ async function callOpenAICompat(config: AIConfig, prompt: string): Promise<strin
     },
     body: JSON.stringify({
       model: config.model,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 1200,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      temperature: config.temperature ?? 0.3,
+      max_tokens: config.maxTokens ?? 2000,
     }),
   });
   if (!res.ok) {

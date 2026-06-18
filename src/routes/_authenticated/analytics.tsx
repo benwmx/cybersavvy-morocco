@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -9,7 +9,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { useAIRecommendations } from "@/hooks/useAIRecommendations";
 import { getAIConfig } from "@/lib/ai";
-import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2, Sparkles, Settings } from "lucide-react";
+import { BarChart3, TrendingUp, AlertCircle, Layout, Users, BookOpen, Loader2, Sparkles, Settings, Bookmark, BookmarkCheck, ChevronDown } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
@@ -71,6 +71,7 @@ function GeminiMarkdown({ text }: { text: string }) {
 function AnalyticsPage() {
   const { t, lang } = useLang();
   const { translate } = useI18n();
+  const queryClient = useQueryClient();
   const [selectedClassId, setSelectedClassId] = useState<string>("all");
 
   const { data: session } = useQuery({ queryKey: ["session"], queryFn: () => api.getSession() });
@@ -83,6 +84,19 @@ function AnalyticsPage() {
     if (selectedClassId === "all") return results;
     return results.filter(r => r.class_id === selectedClassId);
   }, [results, selectedClassId]);
+
+  const questionTextMap = useMemo(() => {
+    const map: Record<string, { fr: string; ar: string }> = {};
+    scenarios.forEach(s => {
+      const qs = s.questions as any[];
+      if (Array.isArray(qs)) {
+        qs.forEach(q => {
+          if (q?.id && q?.prompt?.fr) map[q.id] = { fr: q.prompt.fr, ar: q.prompt.ar ?? q.prompt.fr };
+        });
+      }
+    });
+    return map;
+  }, [scenarios]);
 
   const stats = useMemo(() => {
     if (filteredResults.length === 0) return null;
@@ -120,7 +134,14 @@ function AnalyticsPage() {
       }
     });
 
-    const commonMistakes = Object.entries(mistakeCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const commonMistakes = Object.entries(mistakeCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([id, count]) => ({
+        fr: questionTextMap[id]?.fr ?? id,
+        ar: questionTextMap[id]?.ar ?? id,
+        count,
+      }));
 
     const scenarioChartData = Object.values(scenarioStats)
       .sort((a, b) => b.attempts - a.attempts)
@@ -145,7 +166,23 @@ function AnalyticsPage() {
   }, [filteredResults, scenarios, categories, translate]);
 
   const aiConfig = session?.id ? getAIConfig(session.id) : null;
-  const aiMutation = useAIRecommendations(aiConfig, stats, lang);
+  const selectedClassName = selectedClassId === "all"
+    ? null
+    : (classes.find(c => c.id === selectedClassId)?.name ?? null);
+  const aiMutation = useAIRecommendations(aiConfig, stats, lang, selectedClassName);
+
+  const classIdForQuery = selectedClassId === "all" ? null : selectedClassId;
+  const { data: savedRecs } = useQuery({
+    queryKey: ["recommendations", classIdForQuery],
+    queryFn: () => api.getRecommendations(classIdForQuery),
+  });
+
+  const [expandedRecId, setExpandedRecId] = useState<string | null>(null);
+
+  const saveMutation = useMutation({
+    mutationFn: () => api.saveRecommendation(classIdForQuery, selectedClassName, aiMutation.data!),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["recommendations", classIdForQuery] }),
+  });
 
   if (isLoading) return (
     <div className="py-20 flex flex-col items-center gap-3">
@@ -265,16 +302,10 @@ function AnalyticsPage() {
                     {t("noFrequentErrors")}
                   </p>
                 ) : (
-                  stats.commonMistakes.map(([mistakeId, count], i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded border border-rose-100 bg-rose-50/30">
-                      <div className="space-y-0.5">
-                        <p className="text-xs font-medium text-rose-600">
-                          Question ID: {mistakeId.substring(0, 8)}
-                        </p>
-                        <p className="text-sm text-slate-700">
-                          {count} {t("studentsFailed")}
-                        </p>
-                      </div>
+                  stats.commonMistakes.map((m, i) => (
+                    <div key={i} className="flex items-start justify-between gap-2 p-3 rounded border border-rose-100 bg-rose-50/30">
+                      <p className="text-sm text-slate-700 leading-snug">{lang === "ar" ? m.ar : m.fr}</p>
+                      <span className="text-xs font-semibold text-rose-600 shrink-0">{m.count}×</span>
                     </div>
                   ))
                 )}
@@ -377,17 +408,70 @@ function AnalyticsPage() {
                   <div className="p-4 rounded border border-violet-100 bg-violet-50/30">
                     <GeminiMarkdown text={aiMutation.data} />
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <p className="text-xs text-slate-400 italic">{t("aiDisclaimer")}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => aiMutation.mutate()}
-                      disabled={aiMutation.isPending}
-                      className="h-7 px-3 text-xs text-violet-600 hover:bg-violet-50 rounded"
-                    >
-                      {t("regenerate")}
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {saveMutation.isSuccess ? (
+                        <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                          <BookmarkCheck className="h-3.5 w-3.5" />
+                          {t("saved")}
+                        </span>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => saveMutation.mutate()}
+                          disabled={saveMutation.isPending}
+                          className="h-7 px-3 text-xs rounded border-violet-200 text-violet-700 hover:bg-violet-50"
+                        >
+                          {saveMutation.isPending
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <Bookmark className="h-3.5 w-3.5 me-1" />}
+                          {t("saveRecommendation")}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => aiMutation.mutate()}
+                        disabled={aiMutation.isPending}
+                        className="h-7 px-3 text-xs text-violet-600 hover:bg-violet-50 rounded"
+                      >
+                        {t("regenerate")}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!aiMutation.data && savedRecs && savedRecs.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-slate-500">{t("recHistory")}</p>
+                  <div className="space-y-2">
+                    {savedRecs.map((rec, i) => {
+                      const isOpen = expandedRecId === null ? i === 0 : expandedRecId === rec.id;
+                      const dateLabel = new Date(rec.created_at).toLocaleDateString(
+                        lang === "ar" ? "ar-MA" : "fr-FR",
+                        { day: "numeric", month: "long", year: "numeric" },
+                      );
+                      return (
+                        <div key={rec.id} className="rounded border border-slate-100 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedRecId(isOpen ? "__none__" : rec.id)}
+                            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors text-start"
+                          >
+                            <span className="text-xs text-slate-500">{t("lastSaved")} {dateLabel}</span>
+                            <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+                          </button>
+                          {isOpen && (
+                            <div className="p-4 bg-white">
+                              <GeminiMarkdown text={rec.content} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

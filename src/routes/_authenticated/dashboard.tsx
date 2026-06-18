@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { GraduationCap, Users, BookOpen, BarChart3, TrendingUp, BookMarked, ArrowRight } from "lucide-react";
+import { GraduationCap, Users, BookOpen, BarChart3, TrendingUp, BookMarked, BookText, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -44,6 +44,7 @@ function DashboardPage() {
     { label: t("tracks"),        desc: t("tracksDesc"),      icon: BookOpen,   to: "/quizzes",   accent: "bg-violet-500"   },
     { label: t("studentsLabel"), desc: t("studentsDesc"),    icon: Users,      to: "/students",  accent: "bg-amber-500"    },
     { label: t("tutorialsLabel"),desc: t("tutorialsDesc"),   icon: BookMarked, to: "/tutorials", accent: "bg-rose-500"     },
+    { label: t("docsLabel"),     desc: t("docsDesc"),        icon: BookText,   to: "/docs",      accent: "bg-slate-600"    },
   ];
 
   const fullName = session
