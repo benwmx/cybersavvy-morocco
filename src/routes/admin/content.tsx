@@ -16,9 +16,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, Layers, BookOpen, ChevronRight, HelpCircle, ImageIcon } from "lucide-react";
+import { Pencil, Trash2, Plus, Layers, BookOpen, ChevronRight, HelpCircle, ImageIcon, Layout, X } from "lucide-react";
 import type { Json } from "@/lib/database.types";
 import { ImageUpload } from "@/components/ImageUpload";
+import { VISUAL_CATEGORIES, DEFAULT_CONFIGS } from "@/lib/visuals";
+import type { VisualType, ChatMessage, SmsMessage, Comment, DownloadButton } from "@/lib/visuals";
 
 export const Route = createFileRoute("/admin/content")({
   component: ContentPage,
@@ -44,6 +46,8 @@ interface Question {
   correctIndex: number;
   explanation: { fr: string; ar: string };
   media_url?: string | null;
+  visual_type?: VisualType | null;
+  visual_config?: Record<string, unknown> | null;
 }
 
 function parseQuestions(json: Json): Question[] {
@@ -63,6 +67,348 @@ const BLANK_QUESTION = (): Question => ({
   explanation: { fr: "", ar: "" },
   media_url: null,
 });
+
+// ─── Visual template editor ───────────────────────────────────────────────────
+
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+  phishing: "visualCategoryPhishing",
+  passwords: "visualCategoryPasswords",
+  "social-media": "visualCategorySocial",
+  cyberbullying: "visualCategoryCyber",
+  privacy: "visualCategoryPrivacy",
+  malware: "visualCategoryMalware",
+};
+
+const TEMPLATE_LABEL_KEYS: Record<VisualType, string> = {
+  email_client: "visualEmailClient",
+  browser_login: "visualBrowserLogin",
+  sms_phishing: "visualSmsPhishing",
+  password_form: "visualPasswordForm",
+  two_factor: "visualTwoFactor",
+  social_feed: "visualSocialFeed",
+  dm_request: "visualDmRequest",
+  chat_group: "visualChatGroup",
+  comment_section: "visualCommentSection",
+  phone_permissions: "visualPhonePermissions",
+  cookie_consent: "visualCookieConsent",
+  browser_popup: "visualBrowserPopup",
+  fake_download: "visualFakeDownload",
+};
+
+function VisualTemplateEditor({
+  visualType,
+  visualConfig,
+  onChange,
+}: {
+  visualType: VisualType | null | undefined;
+  visualConfig: Record<string, unknown> | null | undefined;
+  onChange: (type: VisualType | null, config: Record<string, unknown> | null) => void;
+}) {
+  const { t } = useLang();
+  const cfg = (visualConfig ?? {}) as Record<string, unknown>;
+
+  const set = (patch: Record<string, unknown>) => onChange(visualType!, { ...cfg, ...patch });
+  const setMsg = (msgs: ChatMessage[]) => set({ messages: msgs });
+  const setComments = (comments: Comment[]) => set({ comments });
+  const setSmsMessages = (messages: SmsMessage[]) => set({ messages });
+  const setButtons = (buttons: DownloadButton[]) => set({ buttons });
+
+  const inp = "w-full rounded border border-slate-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#1E3A8A] transition-colors";
+  const row = "grid grid-cols-2 gap-2";
+  const fieldLabel = "text-[10px] font-medium text-slate-500 mb-0.5";
+
+  return (
+    <div className="space-y-3">
+      {/* Template type selector */}
+      <div className="flex items-center gap-2">
+        <Layout className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+        <label className="text-xs font-medium text-slate-600">{t("visualTemplateLabel")}</label>
+      </div>
+      <select
+        value={visualType ?? ""}
+        onChange={e => {
+          const val = e.target.value as VisualType | "";
+          if (!val) { onChange(null, null); return; }
+          onChange(val, DEFAULT_CONFIGS[val] as unknown as Record<string, unknown>);
+        }}
+        className="w-full rounded border border-slate-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#1E3A8A] transition-colors"
+      >
+        <option value="">{t("visualNone")}</option>
+        {Object.entries(VISUAL_CATEGORIES).map(([cat, types]) => (
+          <optgroup key={cat} label={t((CATEGORY_LABEL_KEYS[cat] ?? cat) as any)}>
+            {types.map(vt => (
+              <option key={vt} value={vt}>{t((TEMPLATE_LABEL_KEYS[vt]) as any)}</option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+      {visualType && (
+        <p className="text-[10px] text-slate-400 italic">{t("visualTemplateHint")}</p>
+      )}
+
+      {/* Config fields */}
+      {visualType === "email_client" && (
+        <div className="space-y-2 pt-1">
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualSenderName")}</p><input className={inp} value={String(cfg.sender_name ?? "")} onChange={e => set({ sender_name: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualSenderEmail")}</p><input className={inp} value={String(cfg.sender_email ?? "")} onChange={e => set({ sender_email: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualSubjectFr")}</p><input className={inp} value={String(cfg.subject_fr ?? "")} onChange={e => set({ subject_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualSubjectAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.subject_ar ?? "")} onChange={e => set({ subject_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualBodyFr")}</p><textarea className={`${inp} resize-none h-14`} value={String(cfg.body_fr ?? "")} onChange={e => set({ body_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualBodyAr")}</p><textarea className={`${inp} resize-none h-14 text-right`} dir="rtl" value={String(cfg.body_ar ?? "")} onChange={e => set({ body_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualCtaFr")}</p><input className={inp} value={String(cfg.cta_fr ?? "")} onChange={e => set({ cta_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualCtaAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.cta_ar ?? "")} onChange={e => set({ cta_ar: e.target.value })} /></div>
+          </div>
+        </div>
+      )}
+
+      {visualType === "browser_login" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualUrl")}</p><input className={inp} value={String(cfg.url ?? "")} onChange={e => set({ url: e.target.value })} /></div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualBrandFr")}</p><input className={inp} value={String(cfg.brand_fr ?? "")} onChange={e => set({ brand_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualBrandAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.brand_ar ?? "")} onChange={e => set({ brand_ar: e.target.value })} /></div>
+          </div>
+        </div>
+      )}
+
+      {visualType === "sms_phishing" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualSmsSender")}</p><input className={inp} value={String(cfg.sender ?? "")} onChange={e => set({ sender: e.target.value })} /></div>
+          <p className={`${fieldLabel} pt-1`}>{t("visualMessages")}</p>
+          {((cfg.messages ?? []) as SmsMessage[]).map((msg, i) => (
+            <div key={i} className="border border-slate-100 rounded p-2 space-y-1.5 bg-slate-50/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400">#{i + 1}</span>
+                <button type="button" onClick={() => setSmsMessages(((cfg.messages ?? []) as SmsMessage[]).filter((_, j) => j !== i))} className="text-rose-400 hover:text-rose-600"><X className="h-3 w-3" /></button>
+              </div>
+              <div className={row}>
+                <div><p className={fieldLabel}>{t("visualMsgTextFr")}</p><textarea className={`${inp} resize-none h-14`} value={msg.text_fr} onChange={e => { const msgs = [...((cfg.messages ?? []) as SmsMessage[])]; msgs[i] = { ...msg, text_fr: e.target.value }; setSmsMessages(msgs); }} /></div>
+                <div><p className={fieldLabel}>{t("visualMsgTextAr")}</p><textarea className={`${inp} resize-none h-14 text-right`} dir="rtl" value={msg.text_ar} onChange={e => { const msgs = [...((cfg.messages ?? []) as SmsMessage[])]; msgs[i] = { ...msg, text_ar: e.target.value }; setSmsMessages(msgs); }} /></div>
+              </div>
+              <div>
+                <p className={fieldLabel}>{t("visualMsgSide")}</p>
+                <select className={`${inp} w-auto`} value={msg.side} onChange={e => { const msgs = [...((cfg.messages ?? []) as SmsMessage[])]; msgs[i] = { ...msg, side: e.target.value as "left" | "right" }; setSmsMessages(msgs); }}>
+                  <option value="left">{t("visualLeft")}</option>
+                  <option value="right">{t("visualRight")}</option>
+                </select>
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={() => setSmsMessages([...((cfg.messages ?? []) as SmsMessage[]), { text_fr: "", text_ar: "", side: "left" }])} className="text-xs font-bold text-[#1E3A8A] hover:underline">{t("visualAddMessage")}</button>
+        </div>
+      )}
+
+      {visualType === "password_form" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualPassword")}</p><input className={`${inp} font-mono`} value={String(cfg.password ?? "")} onChange={e => set({ password: e.target.value })} /></div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={!!cfg.strong} onChange={e => set({ strong: e.target.checked })} className="h-3.5 w-3.5 accent-emerald-500 rounded" />
+            <span className="text-xs text-slate-600">{t("visualStrongToggle")}</span>
+          </label>
+        </div>
+      )}
+
+      {visualType === "two_factor" && (
+        <div className="space-y-2 pt-1">
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualServiceFr")}</p><input className={inp} value={String(cfg.service_fr ?? "")} onChange={e => set({ service_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualServiceAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.service_ar ?? "")} onChange={e => set({ service_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualMaskedEmail")}</p><input className={`${inp} font-mono`} value={String(cfg.email ?? "")} onChange={e => set({ email: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualOtpCode")}</p><input className={`${inp} font-mono`} value={String(cfg.code ?? "")} onChange={e => set({ code: e.target.value })} /></div>
+          </div>
+        </div>
+      )}
+
+      {visualType === "social_feed" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualUsername")}</p><input className={inp} value={String(cfg.username ?? "")} onChange={e => set({ username: e.target.value })} /></div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualCaptionFr")}</p><input className={inp} value={String(cfg.caption_fr ?? "")} onChange={e => set({ caption_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualCaptionAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.caption_ar ?? "")} onChange={e => set({ caption_ar: e.target.value })} /></div>
+          </div>
+          <div><p className={fieldLabel}>{t("visualImageUrlOpt")}</p><input className={inp} value={String(cfg.image_url ?? "")} onChange={e => set({ image_url: e.target.value || undefined })} /></div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={!!cfg.show_location} onChange={e => set({ show_location: e.target.checked })} className="h-3.5 w-3.5 accent-[#1E3A8A] rounded" />
+            <span className="text-xs text-slate-600">{t("visualShowLocation")}</span>
+          </label>
+          {!!cfg.show_location && (
+            <div className={row}>
+              <div><p className={fieldLabel}>{t("visualLocationFr")}</p><input className={inp} value={String(cfg.location_fr ?? "")} onChange={e => set({ location_fr: e.target.value })} /></div>
+              <div><p className={fieldLabel}>{t("visualLocationAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.location_ar ?? "")} onChange={e => set({ location_ar: e.target.value })} /></div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {visualType === "dm_request" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualUsername")}</p><input className={inp} value={String(cfg.username ?? "")} onChange={e => set({ username: e.target.value })} /></div>
+          <div><p className={fieldLabel}>{t("visualMutualCount")}</p><input type="number" min={0} className={`${inp} w-24`} value={Number(cfg.mutual_count ?? 0)} onChange={e => set({ mutual_count: Number(e.target.value) })} /></div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualPreviewFr")}</p><textarea className={`${inp} resize-none h-14`} value={String(cfg.preview_fr ?? "")} onChange={e => set({ preview_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualPreviewAr")}</p><textarea className={`${inp} resize-none h-14 text-right`} dir="rtl" value={String(cfg.preview_ar ?? "")} onChange={e => set({ preview_ar: e.target.value })} /></div>
+          </div>
+        </div>
+      )}
+
+      {visualType === "chat_group" && (
+        <div className="space-y-2 pt-1">
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualGroupNameFr")}</p><input className={inp} value={String(cfg.group_name_fr ?? "")} onChange={e => set({ group_name_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualGroupNameAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.group_name_ar ?? "")} onChange={e => set({ group_name_ar: e.target.value })} /></div>
+          </div>
+          <p className={`${fieldLabel} pt-1`}>{t("visualMessages")}</p>
+          {((cfg.messages ?? []) as ChatMessage[]).map((msg, i) => (
+            <div key={i} className="border border-slate-100 rounded p-2 space-y-1.5 bg-slate-50/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400">#{i + 1}</span>
+                <button type="button" onClick={() => setMsg(((cfg.messages ?? []) as ChatMessage[]).filter((_, j) => j !== i))} className="text-rose-400 hover:text-rose-600"><X className="h-3 w-3" /></button>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1"><p className={fieldLabel}>{t("visualUsername")}</p><input className={inp} value={msg.username} onChange={e => { const m = [...((cfg.messages ?? []) as ChatMessage[])]; m[i] = { ...msg, username: e.target.value }; setMsg(m); }} /></div>
+                <div className="w-20"><p className={fieldLabel}>{t("visualMsgColor")}</p><input type="color" className="h-[30px] w-full rounded border border-slate-200 cursor-pointer" value={msg.color || "#94a3b8"} onChange={e => { const m = [...((cfg.messages ?? []) as ChatMessage[])]; m[i] = { ...msg, color: e.target.value }; setMsg(m); }} /></div>
+                <div><p className={fieldLabel}>{t("visualMsgSide")}</p><select className={`${inp} w-auto`} value={msg.side} onChange={e => { const m = [...((cfg.messages ?? []) as ChatMessage[])]; m[i] = { ...msg, side: e.target.value as "left" | "right" }; setMsg(m); }}><option value="left">{t("visualLeft")}</option><option value="right">{t("visualRight")}</option></select></div>
+              </div>
+              <div className={row}>
+                <div><p className={fieldLabel}>{t("visualMsgTextFr")}</p><textarea className={`${inp} resize-none h-14`} value={msg.text_fr} onChange={e => { const m = [...((cfg.messages ?? []) as ChatMessage[])]; m[i] = { ...msg, text_fr: e.target.value }; setMsg(m); }} /></div>
+                <div><p className={fieldLabel}>{t("visualMsgTextAr")}</p><textarea className={`${inp} resize-none h-14 text-right`} dir="rtl" value={msg.text_ar} onChange={e => { const m = [...((cfg.messages ?? []) as ChatMessage[])]; m[i] = { ...msg, text_ar: e.target.value }; setMsg(m); }} /></div>
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={() => setMsg([...((cfg.messages ?? []) as ChatMessage[]), { username: "", color: "#94a3b8", text_fr: "", text_ar: "", side: "left" }])} className="text-xs font-bold text-[#1E3A8A] hover:underline">{t("visualAddMessage")}</button>
+        </div>
+      )}
+
+      {visualType === "comment_section" && (
+        <div className="space-y-2 pt-1">
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualPostCaptionFr")}</p><input className={inp} value={String(cfg.post_caption_fr ?? "")} onChange={e => set({ post_caption_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualPostCaptionAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.post_caption_ar ?? "")} onChange={e => set({ post_caption_ar: e.target.value })} /></div>
+          </div>
+          <p className={`${fieldLabel} pt-1`}>{t("visualComments")}</p>
+          {((cfg.comments ?? []) as Comment[]).map((comment, i) => (
+            <div key={i} className="border border-slate-100 rounded p-2 space-y-1.5 bg-slate-50/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400">#{i + 1}</span>
+                <button type="button" onClick={() => setComments(((cfg.comments ?? []) as Comment[]).filter((_, j) => j !== i))} className="text-rose-400 hover:text-rose-600"><X className="h-3 w-3" /></button>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1"><p className={fieldLabel}>{t("visualUsername")}</p><input className={inp} value={comment.username} onChange={e => { const c = [...((cfg.comments ?? []) as Comment[])]; c[i] = { ...comment, username: e.target.value }; setComments(c); }} /></div>
+                <div><p className={fieldLabel}>{t("visualCommentType")}</p>
+                  <select className={`${inp} w-auto`} value={comment.type} onChange={e => { const c = [...((cfg.comments ?? []) as Comment[])]; c[i] = { ...comment, type: e.target.value as Comment["type"] }; setComments(c); }}>
+                    <option value="normal">{t("visualCommentNormal")}</option>
+                    <option value="mean">{t("visualCommentMean")}</option>
+                    <option value="supportive">{t("visualCommentSupportive")}</option>
+                  </select>
+                </div>
+              </div>
+              <div className={row}>
+                <div><p className={fieldLabel}>{t("visualCommentTextFr")}</p><input className={inp} value={comment.text_fr} onChange={e => { const c = [...((cfg.comments ?? []) as Comment[])]; c[i] = { ...comment, text_fr: e.target.value }; setComments(c); }} /></div>
+                <div><p className={fieldLabel}>{t("visualCommentTextAr")}</p><input className={`${inp} text-right`} dir="rtl" value={comment.text_ar} onChange={e => { const c = [...((cfg.comments ?? []) as Comment[])]; c[i] = { ...comment, text_ar: e.target.value }; setComments(c); }} /></div>
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={() => setComments([...((cfg.comments ?? []) as Comment[]), { username: "", text_fr: "", text_ar: "", type: "normal" }])} className="text-xs font-bold text-[#1E3A8A] hover:underline">{t("visualAddComment")}</button>
+        </div>
+      )}
+
+      {visualType === "phone_permissions" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualAppName")}</p><input className={inp} value={String(cfg.app_name ?? "")} onChange={e => set({ app_name: e.target.value })} /></div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualPermissionFr")}</p><input className={inp} value={String(cfg.permission_fr ?? "")} onChange={e => set({ permission_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualPermissionAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.permission_ar ?? "")} onChange={e => set({ permission_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualAllowFr")}</p><input className={inp} value={String(cfg.allow_fr ?? "")} onChange={e => set({ allow_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualAllowAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.allow_ar ?? "")} onChange={e => set({ allow_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualDenyFr")}</p><input className={inp} value={String(cfg.deny_fr ?? "")} onChange={e => set({ deny_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualDenyAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.deny_ar ?? "")} onChange={e => set({ deny_ar: e.target.value })} /></div>
+          </div>
+        </div>
+      )}
+
+      {visualType === "cookie_consent" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualSiteName")}</p><input className={inp} value={String(cfg.site_name ?? "")} onChange={e => set({ site_name: e.target.value })} /></div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualBodyFr")}</p><textarea className={`${inp} resize-none h-14`} value={String(cfg.body_fr ?? "")} onChange={e => set({ body_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualBodyAr")}</p><textarea className={`${inp} resize-none h-14 text-right`} dir="rtl" value={String(cfg.body_ar ?? "")} onChange={e => set({ body_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualAcceptFr")}</p><input className={inp} value={String(cfg.accept_fr ?? "")} onChange={e => set({ accept_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualAcceptAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.accept_ar ?? "")} onChange={e => set({ accept_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualRejectFr")}</p><input className={inp} value={String(cfg.reject_fr ?? "")} onChange={e => set({ reject_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualRejectAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.reject_ar ?? "")} onChange={e => set({ reject_ar: e.target.value })} /></div>
+          </div>
+        </div>
+      )}
+
+      {visualType === "browser_popup" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualUrl")}</p><input className={inp} value={String(cfg.url ?? "")} onChange={e => set({ url: e.target.value })} /></div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualTitleFr")}</p><input className={inp} value={String(cfg.title_fr ?? "")} onChange={e => set({ title_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualTitleAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.title_ar ?? "")} onChange={e => set({ title_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualBodyFr")}</p><textarea className={`${inp} resize-none h-14`} value={String(cfg.body_fr ?? "")} onChange={e => set({ body_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualBodyAr")}</p><textarea className={`${inp} resize-none h-14 text-right`} dir="rtl" value={String(cfg.body_ar ?? "")} onChange={e => set({ body_ar: e.target.value })} /></div>
+          </div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualCtaFr")}</p><input className={inp} value={String(cfg.cta_fr ?? "")} onChange={e => set({ cta_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualCtaAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.cta_ar ?? "")} onChange={e => set({ cta_ar: e.target.value })} /></div>
+          </div>
+        </div>
+      )}
+
+      {visualType === "fake_download" && (
+        <div className="space-y-2 pt-1">
+          <div><p className={fieldLabel}>{t("visualAppName")}</p><input className={inp} value={String(cfg.app_name ?? "")} onChange={e => set({ app_name: e.target.value })} /></div>
+          <div className={row}>
+            <div><p className={fieldLabel}>{t("visualAppDescFr")}</p><input className={inp} value={String(cfg.app_desc_fr ?? "")} onChange={e => set({ app_desc_fr: e.target.value })} /></div>
+            <div><p className={fieldLabel}>{t("visualAppDescAr")}</p><input className={`${inp} text-right`} dir="rtl" value={String(cfg.app_desc_ar ?? "")} onChange={e => set({ app_desc_ar: e.target.value })} /></div>
+          </div>
+          <p className={`${fieldLabel} pt-1`}>{t("visualButtons")}</p>
+          {((cfg.buttons ?? []) as DownloadButton[]).map((btn, i) => (
+            <div key={i} className="border border-slate-100 rounded p-2 space-y-1.5 bg-slate-50/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400">#{i + 1}</span>
+                <button type="button" onClick={() => setButtons(((cfg.buttons ?? []) as DownloadButton[]).filter((_, j) => j !== i))} className="text-rose-400 hover:text-rose-600"><X className="h-3 w-3" /></button>
+              </div>
+              <div className={row}>
+                <div><p className={fieldLabel}>{t("visualBtnLabelFr")}</p><input className={inp} value={btn.label_fr} onChange={e => { const b = [...((cfg.buttons ?? []) as DownloadButton[])]; b[i] = { ...btn, label_fr: e.target.value }; setButtons(b); }} /></div>
+                <div><p className={fieldLabel}>{t("visualBtnLabelAr")}</p><input className={`${inp} text-right`} dir="rtl" value={btn.label_ar} onChange={e => { const b = [...((cfg.buttons ?? []) as DownloadButton[])]; b[i] = { ...btn, label_ar: e.target.value }; setButtons(b); }} /></div>
+              </div>
+              <div>
+                <p className={fieldLabel}>{t("visualBtnStyle")}</p>
+                <select className={`${inp} w-auto`} value={btn.style} onChange={e => { const b = [...((cfg.buttons ?? []) as DownloadButton[])]; b[i] = { ...btn, style: e.target.value as DownloadButton["style"] }; setButtons(b); }}>
+                  <option value="primary">{t("visualBtnPrimary")}</option>
+                  <option value="secondary">{t("visualBtnSecondary")}</option>
+                  <option value="danger">{t("visualBtnDanger")}</option>
+                </select>
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={() => setButtons([...((cfg.buttons ?? []) as DownloadButton[]), { label_fr: "", label_ar: "", style: "primary" }])} className="text-xs font-bold text-[#1E3A8A] hover:underline">{t("visualAddButton")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Questions editor ─────────────────────────────────────────────────────────
 
@@ -131,6 +477,13 @@ function QuestionsEditor({
               label={t("mediaUrl")}
             />
           )}
+          <div className="border-t border-slate-100 pt-3">
+            <VisualTemplateEditor
+              visualType={q.visual_type}
+              visualConfig={q.visual_config as Record<string, unknown> | null}
+              onChange={(type, config) => update(qi, { visual_type: type, visual_config: config })}
+            />
+          </div>
           <div className="space-y-2">
             <p className="text-xs font-medium text-slate-500">
               {t("adminChoicesLabel")}
@@ -208,6 +561,12 @@ function QuestionCard({
             <span className="inline-flex items-center gap-1 text-[10px] font-medium text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
               <ImageIcon className="h-2.5 w-2.5" />
               {/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(q.media_url) ? t("adminVideo") : t("adminImage")}
+            </span>
+          )}
+          {q.visual_type && !q.media_url && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+              <Layout className="h-2.5 w-2.5" />
+              {t((TEMPLATE_LABEL_KEYS[q.visual_type]) as any)}
             </span>
           )}
         </div>
