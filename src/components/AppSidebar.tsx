@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, BarChart3, LogOut, Shield, Settings, User, GraduationCap, Users, BookOpen, BookMarked } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, Shield, Settings, User, GraduationCap, Users, BookOpen, BookMarked, BookText } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +33,7 @@ export function AppSidebar() {
     { url: "/quizzes",   label: t("tracks"),        icon: BookOpen },
     { url: "/students",  label: t("studentsLabel"), icon: Users },
     { url: "/tutorials", label: t("tutorialsLabel"),icon: BookMarked },
+    { url: "/docs",      label: t("docsLabel"),      icon: BookText },
     { url: "/settings",  label: t("settings"),      icon: Settings },
   ];
 

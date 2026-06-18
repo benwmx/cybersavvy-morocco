@@ -196,6 +196,93 @@ export interface Database {
           name_ar?: string
         }
       }
+      doc_sections: {
+        Row: {
+          id: string
+          key: string
+          label_fr: string
+          label_ar: string
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          label_fr: string
+          label_ar: string
+          sort_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          label_fr?: string
+          label_ar?: string
+          sort_order?: number
+          created_at?: string
+        }
+      }
+      doc_articles: {
+        Row: {
+          id: string
+          section_key: string
+          section_label: Json
+          title: Json
+          content: Json
+          sort_order: number
+          is_published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          section_key: string
+          section_label: Json
+          title: Json
+          content: Json
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          section_key?: string
+          section_label?: Json
+          title?: Json
+          content?: Json
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      recommendations: {
+        Row: {
+          id: string
+          teacher_id: string
+          class_id: string | null
+          class_name: string | null
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          teacher_id: string
+          class_id?: string | null
+          class_name?: string | null
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          teacher_id?: string
+          class_id?: string | null
+          class_name?: string | null
+          content?: string
+          created_at?: string
+        }
+      }
       results: {
         Row: {
           id: string

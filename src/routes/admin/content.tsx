@@ -118,9 +118,9 @@ function QuestionsEditor({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <input value={q.prompt.fr} onChange={e => update(qi, { prompt: { ...q.prompt, fr: e.target.value } })}
-              placeholder="Question (FR)" className={inp} />
+              placeholder={`${t("question")} (FR)`} className={inp} />
             <input value={q.prompt.ar} onChange={e => update(qi, { prompt: { ...q.prompt, ar: e.target.value } })}
-              placeholder="سؤال (AR)" dir="rtl" className={`${inp} text-right`} />
+              placeholder={`${t("question")} (AR)`} dir="rtl" className={`${inp} text-right`} />
           </div>
           {userId && (
             <ImageUpload
@@ -140,9 +140,9 @@ function QuestionsEditor({
                 <input type="radio" name={`correct-${q.id}`} checked={q.correctIndex === ci}
                   onChange={() => update(qi, { correctIndex: ci })} className="h-4 w-4 accent-emerald-500 shrink-0" />
                 <input value={q.choices.fr[ci]} onChange={e => updateChoice(qi, ci, "fr", e.target.value)}
-                  placeholder={`Option ${ci + 1} (FR)`} className={inp} />
+                  placeholder={`${t("adminOption")} ${ci + 1} (FR)`} className={inp} />
                 <input value={q.choices.ar[ci]} onChange={e => updateChoice(qi, ci, "ar", e.target.value)}
-                  placeholder={`خيار ${ci + 1} (AR)`} dir="rtl" className={`${inp} text-right`} />
+                  placeholder={`${t("adminOption")} ${ci + 1} (AR)`} dir="rtl" className={`${inp} text-right`} />
                 {q.choices.fr.length > 2 && (
                   <button type="button" onClick={() => removeChoice(qi, ci)}
                     className="shrink-0 text-rose-400 hover:text-rose-600 font-bold text-lg leading-none">×</button>
@@ -159,9 +159,9 @@ function QuestionsEditor({
             </p>
             <div className="grid grid-cols-2 gap-2">
               <input value={q.explanation.fr} onChange={e => update(qi, { explanation: { ...q.explanation, fr: e.target.value } })}
-                placeholder="Explication (FR)" className={inp} />
+                placeholder={`${t("adminExplanation")} (FR)`} className={inp} />
               <input value={q.explanation.ar} onChange={e => update(qi, { explanation: { ...q.explanation, ar: e.target.value } })}
-                placeholder="شرح (AR)" dir="rtl" className={`${inp} text-right`} />
+                placeholder={`${t("adminExplanation")} (AR)`} dir="rtl" className={`${inp} text-right`} />
             </div>
           </div>
         </div>
@@ -207,7 +207,7 @@ function QuestionCard({
           {q.media_url && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
               <ImageIcon className="h-2.5 w-2.5" />
-              {/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(q.media_url) ? "vidéo" : "image"}
+              {/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(q.media_url) ? t("adminVideo") : t("adminImage")}
             </span>
           )}
         </div>
@@ -330,14 +330,14 @@ function CategoryDialog({
             <Label className="text-xs text-slate-500">
               {t("adminNameFr")}
             </Label>
-            <Input value={fr} onChange={e => setFr(e.target.value)} placeholder="ex: Hameçonnage"
+            <Input value={fr} onChange={e => setFr(e.target.value)} placeholder={t("adminCategoryFrPlaceholder")}
               className="rounded" autoFocus />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-slate-500">
               {t("adminNameAr")}
             </Label>
-            <Input value={ar} onChange={e => setAr(e.target.value)} placeholder="مثال: التصيد الاحتيالي"
+            <Input value={ar} onChange={e => setAr(e.target.value)} placeholder={t("adminCategoryArPlaceholder")}
               className="rounded text-right" dir="rtl" />
           </div>
           <div className="space-y-1.5">

@@ -1,5 +1,6 @@
 import { supabase } from "./client";
 import { Database } from "../database.types";
+import { getDB } from "@/lib/offline/db";
 
 export type PublicTables = Database["public"]["Tables"];
 export type ClassRow = PublicTables["classes"]["Row"];
@@ -9,6 +10,9 @@ export type ResultRow = PublicTables["results"]["Row"];
 export type CategoryRow = PublicTables["categories"]["Row"];
 export type TutorialRow = PublicTables["tutorials"]["Row"];
 export type TranslationRow = PublicTables["translations"]["Row"];
+export type RecommendationRow = PublicTables["recommendations"]["Row"];
+export type DocArticleRow = PublicTables["doc_articles"]["Row"];
+export type DocSectionRow = PublicTables["doc_sections"]["Row"];
 
 export const supabaseClient = supabase;
 
@@ -612,5 +616,183 @@ export const api = {
 
     if (error) throw error;
     return data || [];
+  },
+
+  async listDocArticles(): Promise<DocArticleRow[]> {
+    if (navigator.onLine) {
+      const { data, error } = await supabase
+        .from("doc_articles")
+        .select("*")
+        .eq("is_published", true)
+        .order("section_key")
+        .order("sort_order");
+      if (error) throw error;
+      const rows = (data ?? []) as DocArticleRow[];
+      const db = getDB();
+      if (db && rows.length) db.doc_articles.bulkPut(rows).catch(() => {});
+      return rows;
+    }
+    const db = getDB();
+    if (db) {
+      const cached = await db.doc_articles.filter(a => a.is_published === true).toArray();
+      return cached.sort((a, b) => {
+        const sk = a.section_key.localeCompare(b.section_key);
+        return sk !== 0 ? sk : a.sort_order - b.sort_order;
+      });
+    }
+    return [];
+  },
+
+  async adminListDocArticles(): Promise<DocArticleRow[]> {
+    const { data, error } = await supabase
+      .from("doc_articles")
+      .select("*")
+      .order("section_key")
+      .order("sort_order");
+    if (error) throw error;
+    return data ?? [];
+  },
+
+  async adminSaveDocArticle(article: Omit<DocArticleRow, "id" | "created_at" | "updated_at"> & { id?: string }): Promise<DocArticleRow> {
+    const { id, ...fields } = article;
+    let row: DocArticleRow;
+    if (id) {
+      const { data, error } = await supabase
+        .from("doc_articles")
+        .update({ ...fields, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      row = data as DocArticleRow;
+    } else {
+      const { data, error } = await supabase
+        .from("doc_articles")
+        .insert(fields)
+        .select()
+        .single();
+      if (error) throw error;
+      row = data as DocArticleRow;
+    }
+    const db = getDB();
+    if (db) await db.doc_articles.put(row);
+    return row;
+  },
+
+  async adminDeleteDocArticle(id: string): Promise<void> {
+    const { error } = await supabase.from("doc_articles").delete().eq("id", id);
+    if (error) throw error;
+    const db = getDB();
+    if (db) await db.doc_articles.delete(id);
+  },
+
+  // ── Doc sections ────────────────────────────────────────────────────────────
+
+  async listDocSections(): Promise<DocSectionRow[]> {
+    if (navigator.onLine) {
+      const { data, error } = await supabase
+        .from("doc_sections").select("*").order("sort_order");
+      if (error) throw error;
+      const rows = (data ?? []) as DocSectionRow[];
+      const db = getDB();
+      if (db && rows.length) db.doc_sections.bulkPut(rows).catch(() => {});
+      return rows;
+    }
+    const db = getDB();
+    if (db) return db.doc_sections.orderBy("sort_order").toArray();
+    return [];
+  },
+
+  async adminListDocSections(): Promise<DocSectionRow[]> {
+    const { data, error } = await supabase
+      .from("doc_sections").select("*").order("sort_order");
+    if (error) throw error;
+    return (data ?? []) as DocSectionRow[];
+  },
+
+  async adminSaveSection(section: Omit<DocSectionRow, "id" | "created_at"> & { id?: string }): Promise<DocSectionRow> {
+    const { id, ...fields } = section;
+    let row: DocSectionRow;
+    if (id) {
+      const { data, error } = await supabase
+        .from("doc_sections").update(fields).eq("id", id).select().single();
+      if (error) throw error;
+      row = data as DocSectionRow;
+    } else {
+      const { data, error } = await supabase
+        .from("doc_sections").insert(fields).select().single();
+      if (error) throw error;
+      row = data as DocSectionRow;
+    }
+    const db = getDB();
+    if (db) await db.doc_sections.put(row);
+    return row;
+  },
+
+  async adminDeleteSection(id: string): Promise<void> {
+    const { error } = await supabase.from("doc_sections").delete().eq("id", id);
+    if (error) throw error;
+    const db = getDB();
+    if (db) await db.doc_sections.delete(id);
+  },
+
+  async adminUpdateSectionOrders(updates: { id: string; sort_order: number }[]): Promise<void> {
+    await Promise.all(
+      updates.map(({ id, sort_order }) =>
+        supabase.from("doc_sections").update({ sort_order }).eq("id", id)
+      )
+    );
+    const db = getDB();
+    if (db) {
+      await Promise.all(
+        updates.map(({ id, sort_order }) =>
+          db.doc_sections.where("id").equals(id).modify({ sort_order })
+        )
+      );
+    }
+  },
+
+  async adminUpdateSortOrders(updates: { id: string; sort_order: number }[]): Promise<void> {
+    await Promise.all(
+      updates.map(({ id, sort_order }) =>
+        supabase.from("doc_articles").update({ sort_order }).eq("id", id)
+      )
+    );
+    const db = getDB();
+    if (db) {
+      await Promise.all(
+        updates.map(({ id, sort_order }) =>
+          db.doc_articles.where("id").equals(id).modify({ sort_order })
+        )
+      );
+    }
+  },
+
+  async saveRecommendation(
+    classId: string | null,
+    className: string | null,
+    content: string,
+  ): Promise<void> {
+    const session = await api.getSession();
+    if (!session) throw new Error("Not authenticated");
+    const { error } = await supabase
+      .from("recommendations")
+      .insert({ teacher_id: session.id, class_id: classId, class_name: className, content });
+    if (error) throw error;
+  },
+
+  async getRecommendations(classId: string | null): Promise<RecommendationRow[]> {
+    let query = supabase
+      .from("recommendations")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (classId) {
+      query = query.eq("class_id", classId);
+    } else {
+      query = query.is("class_id", null);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    return data ?? [];
   },
 };
