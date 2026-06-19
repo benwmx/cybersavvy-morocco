@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import {
   Mail, Lock, MessageCircle, KeyRound, ShieldCheck,
   Image, UserPlus, Users, MessageSquare, Bell,
-  Cookie, AlertTriangle, Download, Layout, X,
+  Cookie, AlertTriangle, Download, Layout, X, Expand,
 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { LucideIcon } from "lucide-react";
 import {
   VISUAL_CATEGORIES, DEFAULT_CONFIGS,
@@ -65,6 +67,7 @@ interface Props {
 
 export function VisualTemplateEditor({ visualType, visualConfig, onChange }: Props) {
   const { t } = useLang();
+  const [previewOpen, setPreviewOpen] = useState(false);
   const cfg = (visualConfig ?? {}) as Record<string, unknown>;
 
   const set         = (patch: Record<string, unknown>) => onChange(visualType!, { ...cfg, ...patch });
@@ -98,42 +101,33 @@ export function VisualTemplateEditor({ visualType, visualConfig, onChange }: Pro
         )}
       </div>
 
-      {/* ── Card grid picker ── */}
-      <div className="space-y-2.5">
-        {Object.entries(VISUAL_CATEGORIES).map(([cat, types]) => (
-          <div key={cat}>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              {t((CATEGORY_LABEL_KEYS[cat] ?? cat) as any)}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {types.map(vt => {
-                const Icon    = TEMPLATE_ICONS[vt];
-                const active  = visualType === vt;
-                return (
-                  <button
-                    key={vt}
-                    type="button"
-                    onClick={() => {
-                      if (active) { onChange(null, null); return; }
-                      onChange(vt, DEFAULT_CONFIGS[vt] as unknown as Record<string, unknown>);
-                    }}
-                    title={t((TEMPLATE_LABEL_KEYS[vt]) as any)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-lg border w-[4.5rem] transition-all ${
-                      active
-                        ? "border-[#1E3A8A] bg-blue-50 text-[#1E3A8A] shadow-sm"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="text-[9px] font-medium text-center leading-tight line-clamp-2">
-                      {t((TEMPLATE_LABEL_KEYS[vt]) as any)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      {/* ── Card row picker ── */}
+      <div className="flex flex-wrap gap-1.5">
+        {Object.entries(VISUAL_CATEGORIES).flatMap(([cat, types]) =>
+          types.map(vt => {
+            const Icon   = TEMPLATE_ICONS[vt];
+            const active = visualType === vt;
+            return (
+              <button
+                key={vt}
+                type="button"
+                onClick={() => {
+                  if (active) { onChange(null, null); return; }
+                  onChange(vt, DEFAULT_CONFIGS[vt] as unknown as Record<string, unknown>);
+                }}
+                title={`${t((TEMPLATE_LABEL_KEYS[vt]) as any)} — ${t((CATEGORY_LABEL_KEYS[cat] ?? cat) as any)}`}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                  active
+                    ? "border-[#1E3A8A] bg-blue-50 text-[#1E3A8A] shadow-sm"
+                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{t((TEMPLATE_LABEL_KEYS[vt]) as any)}</span>
+              </button>
+            );
+          })
+        )}
       </div>
 
       {/* ── Config + preview ── */}
@@ -408,18 +402,32 @@ export function VisualTemplateEditor({ visualType, visualConfig, onChange }: Pro
           {/* Live preview (2/5 width) */}
           <div className="col-span-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">{t("visualPreviewLabel")}</p>
-            <div className="relative rounded-lg border border-slate-200 bg-slate-50 overflow-hidden" style={{ height: "200px" }}>
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(true)}
+              className="group relative w-full rounded-lg border border-slate-200 bg-slate-50 overflow-hidden cursor-zoom-in"
+              style={{ height: "200px" }}
+            >
               <div
                 className="absolute top-0 left-0 origin-top-left pointer-events-none"
                 style={{ transform: "scale(0.42)", width: "238%", height: "238%" }}
               >
-                <ScenarioVisuals
-                  visualType={visualType}
-                  visualConfig={cfg}
-                />
+                <ScenarioVisuals visualType={visualType} visualConfig={cfg} />
               </div>
-            </div>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-lg p-1.5 shadow-sm">
+                  <Expand className="h-4 w-4 text-slate-600" />
+                </div>
+              </div>
+            </button>
           </div>
+
+          {/* Full-size preview dialog */}
+          <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+            <DialogContent className="max-w-sm p-4 rounded-xl">
+              <ScenarioVisuals visualType={visualType} visualConfig={cfg} />
+            </DialogContent>
+          </Dialog>
 
         </div>
       )}
