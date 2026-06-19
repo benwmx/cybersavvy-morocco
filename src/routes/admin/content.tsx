@@ -66,6 +66,8 @@ const BLANK_QUESTION = (): Question => ({
   correctIndex: 0,
   explanation: { fr: "", ar: "" },
   media_url: null,
+  visual_type: null,
+  visual_config: null,
 });
 
 const TEMPLATE_LABEL_KEYS: Record<VisualType, string> = {
