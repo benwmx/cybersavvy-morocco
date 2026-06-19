@@ -424,7 +424,7 @@ export function VisualTemplateEditor({ visualType, visualConfig, onChange }: Pro
 
           {/* Full-size preview dialog */}
           <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-            <DialogContent className="max-w-sm p-4 rounded-xl">
+            <DialogContent className="max-w-md p-0 overflow-hidden rounded-xl">
               <ScenarioVisuals visualType={visualType} visualConfig={cfg} />
             </DialogContent>
           </Dialog>
