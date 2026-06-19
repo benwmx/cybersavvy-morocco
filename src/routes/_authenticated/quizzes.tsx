@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { api, ClassRow, ScenarioRow, CategoryRow, supabaseClient } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
-import { Plus, Pencil, ChevronDown, ChevronUp, Trash2, GripVertical, Image as ImageIcon, Video, Layout } from "lucide-react";
+import { Plus, Pencil, ChevronDown, ChevronUp, Trash2, GripVertical, Layout } from "lucide-react";
 import { VisualTemplateEditor } from "@/components/VisualTemplateEditor";
 import type { VisualType } from "@/lib/visuals";
+import { ImageUpload } from "@/components/ImageUpload";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/quizzes")({
@@ -27,6 +28,9 @@ function QuizzesPage() {
   const [creatingInCategory, setCreatingInCategory] = useState<string | null>(null);
   const [editingScenario, setEditingScenario] = useState<ScenarioRow | null>(null);
   const [newCategoryId, setNewCategoryId] = useState<string | null>(null);
+
+  const { data: session } = useQuery({ queryKey: ["session"], queryFn: () => api.getSession() });
+  const userId = session?.id ?? "";
 
   const { data: classes = [] } = useQuery({ queryKey: ["classes"], queryFn: () => api.listMyClasses() });
   const { data: scenarios = [] } = useQuery({ queryKey: ["scenarios"], queryFn: () => api.listScenarios() });
@@ -140,6 +144,7 @@ function QuizzesPage() {
       {creatingInCategory && (
         <ScenarioCreator
           defaultCategoryId={creatingInCategory}
+          userId={userId}
           onCancel={closePanel}
           onSuccess={() => { closePanel(); qc.invalidateQueries({ queryKey: ["scenarios"] }); }}
         />
@@ -148,6 +153,7 @@ function QuizzesPage() {
         <ScenarioEditor
           scenario={editingScenario}
           categories={categories}
+          userId={userId}
           onCancel={closePanel}
           onSuccess={() => { closePanel(); qc.invalidateQueries({ queryKey: ["scenarios"] }); }}
         />
@@ -374,7 +380,10 @@ function CategoryCard({
                           </span>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs text-slate-600 leading-snug">{translate(scenario.description)}</p>
+                          <p className="text-xs font-medium text-slate-700 leading-snug truncate">{translate(scenario.title)}</p>
+                          {translate(scenario.description) && (
+                            <p className="text-[10px] text-slate-400 leading-snug mt-0.5 truncate">{translate(scenario.description)}</p>
+                          )}
                         </div>
                       </div>
                       {isOwn && (
@@ -419,12 +428,13 @@ function CategoryCard({
 function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSuccess: () => void }) {
   const { t } = useLang();
   const [name, setName] = useState({ fr: "", ar: "" });
+  const [color, setColor] = useState("#3B82F6");
 
   const save = useMutation({
     mutationFn: async () => {
       const session = await api.getSession();
       if (!session) throw new Error("Not authenticated");
-      return api.createCategory({ teacher_id: session.id, name });
+      return api.createCategory({ teacher_id: session.id, name, color_code: color });
     },
     onSuccess: () => { toast.success(t("categoryCreated")); onSuccess(); },
     onError: (err: any) => toast.error(err.message),
@@ -432,7 +442,7 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
 
   return (
     <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
-      <div className="h-0.5 bg-[#1E3A8A]" />
+      <div className="h-0.5" style={{ backgroundColor: color }} />
       <CardHeader className="p-5 pb-3">
         <CardTitle className="text-base font-semibold text-slate-800">
           {t("newCategoryBtn")}
@@ -441,7 +451,7 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
           {t("newCategoryDesc")}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-5 pt-0 space-y-5">
+      <CardContent className="p-5 pt-0 space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label className="text-xs text-slate-500">{t("adminNameFr")}</Label>
@@ -452,6 +462,15 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
             <Label className="text-xs text-slate-500">{t("adminNameAr")}</Label>
             <Input value={name.ar} onChange={e => setName({ ...name, ar: e.target.value })}
               placeholder="مثال: أمان الهاتف" className="h-8 rounded bg-slate-50 text-sm text-right font-medium" dir="rtl" />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-slate-500">{t("adminColor")}</Label>
+          <div className="flex items-center gap-3">
+            <input type="color" value={color} onChange={e => setColor(e.target.value)}
+              className="h-8 w-12 rounded border border-slate-200 cursor-pointer shrink-0" />
+            <Input value={color} onChange={e => setColor(e.target.value)} placeholder="#3B82F6"
+              className="h-8 rounded bg-slate-50 font-mono text-sm flex-1" maxLength={7} />
           </div>
         </div>
         <div className="flex justify-end gap-2">
@@ -471,22 +490,23 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
 function CategoryEditor({ category, onCancel, onSuccess }: { category: CategoryRow; onCancel: () => void; onSuccess: () => void }) {
   const { t } = useLang();
   const [name, setName] = useState(category.name as { fr: string; ar: string });
+  const [color, setColor] = useState(category.color_code || "#3B82F6");
 
   const save = useMutation({
-    mutationFn: () => api.updateCategory(category.id, { name }),
+    mutationFn: () => api.updateCategory(category.id, { name, color_code: color }),
     onSuccess: () => { toast.success(t("categoryUpdated")); onSuccess(); },
     onError: (err: any) => toast.error(err.message),
   });
 
   return (
     <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
-      <div className="h-0.5 bg-[#1E3A8A]/60" />
+      <div className="h-0.5" style={{ backgroundColor: color }} />
       <CardHeader className="p-5 pb-3">
         <CardTitle className="text-base font-semibold text-slate-800">
           {t("editCategoryTitle")}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-5 pt-0 space-y-5">
+      <CardContent className="p-5 pt-0 space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label className="text-xs text-slate-500">{t("adminNameFr")}</Label>
@@ -495,6 +515,15 @@ function CategoryEditor({ category, onCancel, onSuccess }: { category: CategoryR
           <div className="space-y-1.5">
             <Label className="text-xs text-slate-500">{t("adminNameAr")}</Label>
             <Input value={name.ar} onChange={e => setName({ ...name, ar: e.target.value })} className="h-8 rounded bg-slate-50 text-sm text-right font-medium" dir="rtl" />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-slate-500">{t("adminColor")}</Label>
+          <div className="flex items-center gap-3">
+            <input type="color" value={color} onChange={e => setColor(e.target.value)}
+              className="h-8 w-12 rounded border border-slate-200 cursor-pointer shrink-0" />
+            <Input value={color} onChange={e => setColor(e.target.value)} placeholder="#3B82F6"
+              className="h-8 rounded bg-slate-50 font-mono text-sm flex-1" maxLength={7} />
           </div>
         </div>
         <div className="flex justify-end gap-2">
@@ -511,11 +540,12 @@ function CategoryEditor({ category, onCancel, onSuccess }: { category: CategoryR
   );
 }
 
-function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCategoryId?: string; onCancel: () => void; onSuccess: () => void }) {
+function ScenarioCreator({ defaultCategoryId, userId, onCancel, onSuccess }: { defaultCategoryId?: string; userId: string; onCancel: () => void; onSuccess: () => void }) {
   const { t, lang } = useLang();
   const { translate } = useI18n();
   const [title, setTitle] = useState({ fr: "", ar: "" });
   const [desc, setDesc] = useState({ fr: "", ar: "" });
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string>(defaultCategoryId ?? "");
   const [questions, setQuestions] = useState<any[]>([]);
 
@@ -531,7 +561,7 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
       choices: { fr: ["", "", ""], ar: ["", "", ""] },
       correctIndex: 0,
       explanation: { fr: "", ar: "" },
-      media_url: "",
+      media_url: null,
       visual_type: null,
       visual_config: null,
     }]);
@@ -550,7 +580,7 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
       const session = await api.getSession();
       if (!session) throw new Error("Not authenticated");
       if (!categoryId) throw new Error("No category selected");
-      return api.createScenario({ teacher_id: session.id, category_id: categoryId, title, description: desc, questions });
+      return api.createScenario({ teacher_id: session.id, category_id: categoryId, title, description: desc, questions, image_url: imageUrl });
     },
     onSuccess: () => { toast.success(t("syncDone")); onSuccess(); },
   });
@@ -599,6 +629,16 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
           </div>
         </div>
 
+        {userId && (
+          <ImageUpload
+            value={imageUrl}
+            onChange={setImageUrl}
+            userId={userId}
+            folder="scenarios"
+            label={t("scenarioCoverImage")}
+          />
+        )}
+
         <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-700">{t("question")}s</h3>
@@ -609,7 +649,7 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
           </div>
           <div className="space-y-4">
             {questions.map((q, idx) => (
-              <QuestionEditor key={q.id} q={q} idx={idx}
+              <QuestionEditor key={q.id} q={q} idx={idx} userId={userId}
                 onUpdate={data => updateQuestion(idx, data)}
                 onRemove={() => removeQuestion(idx)}
                 onReorder={(from, to) => {
@@ -637,9 +677,10 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
   );
 }
 
-function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
+function ScenarioEditor({ scenario, categories, userId, onCancel, onSuccess }: {
   scenario: ScenarioRow;
   categories: CategoryRow[];
+  userId: string;
   onCancel: () => void;
   onSuccess: () => void;
 }) {
@@ -647,6 +688,7 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
   const { translate } = useI18n();
   const [title, setTitle] = useState(scenario.title as { fr: string; ar: string });
   const [desc, setDesc] = useState(scenario.description as { fr: string; ar: string });
+  const [imageUrl, setImageUrl] = useState<string | null>(scenario.image_url ?? null);
   const [categoryId, setCategoryId] = useState<string>(scenario.category_id);
   const [questions, setQuestions] = useState<any[]>(scenario.questions as any[]);
 
@@ -657,7 +699,7 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
   };
 
   const save = useMutation({
-    mutationFn: () => api.updateScenario(scenario.id, { title, description: desc, category_id: categoryId, questions }),
+    mutationFn: () => api.updateScenario(scenario.id, { title, description: desc, category_id: categoryId, questions, image_url: imageUrl }),
     onSuccess: () => { toast.success(t("syncDone")); onSuccess(); },
     onError: (err: any) => toast.error(err.message),
   });
@@ -706,11 +748,21 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
           </div>
         </div>
 
+        {userId && (
+          <ImageUpload
+            value={imageUrl}
+            onChange={setImageUrl}
+            userId={userId}
+            folder="scenarios"
+            label={t("scenarioCoverImage")}
+          />
+        )}
+
         <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-700">{t("question")}s</h3>
             <Button size="sm" variant="outline"
-              onClick={() => setQuestions([...questions, { id: crypto.randomUUID(), prompt: { fr: "", ar: "" }, choices: { fr: ["", "", ""], ar: ["", "", ""] }, correctIndex: 0, explanation: { fr: "", ar: "" }, media_url: "", visual_type: null, visual_config: null }])}
+              onClick={() => setQuestions([...questions, { id: crypto.randomUUID(), prompt: { fr: "", ar: "" }, choices: { fr: ["", "", ""], ar: ["", "", ""] }, correctIndex: 0, explanation: { fr: "", ar: "" }, media_url: null, visual_type: null, visual_config: null }])}
               className="rounded border-[#1E3A8A] text-[#1E3A8A] text-xs font-medium hover:bg-blue-50 h-7 px-2.5">
               <Plus className="h-3 w-3 me-1.5" />
               {t("addQuestion")}
@@ -718,7 +770,7 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
           </div>
           <div className="space-y-4">
             {questions.map((q, idx) => (
-              <QuestionEditor key={q.id} q={q} idx={idx}
+              <QuestionEditor key={q.id} q={q} idx={idx} userId={userId}
                 onUpdate={data => updateQuestion(idx, data)}
                 onRemove={() => setQuestions(questions.filter((_, i) => i !== idx))}
                 onReorder={(from, to) => {
@@ -746,17 +798,33 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
   );
 }
 
-function QuestionEditor({ q, idx, onUpdate, onRemove, onReorder }: {
+function QuestionEditor({ q, idx, userId, onUpdate, onRemove, onReorder }: {
   q: any;
   idx: number;
+  userId: string;
   onUpdate: (data: any) => void;
   onRemove: () => void;
   onReorder: (from: number, to: number) => void;
 }) {
   const { t } = useLang();
+
+  const addChoice = () => {
+    if (q.choices.fr.length >= 5) return;
+    onUpdate({ choices: { fr: [...q.choices.fr, ""], ar: [...q.choices.ar, ""] } });
+  };
+
+  const removeChoice = (ci: number) => {
+    if (q.choices.fr.length <= 2) return;
+    const fr = q.choices.fr.filter((_: string, i: number) => i !== ci);
+    const ar = q.choices.ar.filter((_: string, i: number) => i !== ci);
+    onUpdate({ choices: { fr, ar }, correctIndex: Math.max(0, Math.min(q.correctIndex, fr.length - 1)) });
+  };
+
   return (
     <Card className="bg-slate-50/50 border border-slate-100 shadow-none rounded">
       <CardContent className="p-4 space-y-4">
+
+        {/* Drag handle + remove */}
         <div className="flex items-center justify-between"
           draggable
           onDragStart={e => e.dataTransfer.setData("text/plain", idx.toString())}
@@ -774,6 +842,7 @@ function QuestionEditor({ q, idx, onUpdate, onRemove, onReorder }: {
           </Button>
         </div>
 
+        {/* Question prompt */}
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label className="text-[10px] text-slate-400">{t("question")} (FR)</Label>
@@ -785,17 +854,18 @@ function QuestionEditor({ q, idx, onUpdate, onRemove, onReorder }: {
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-[10px] text-slate-400">{t("mediaUrl")}</Label>
-          <div className="flex gap-2">
-            <Input placeholder="https://..." value={q.media_url ?? ""} onChange={e => onUpdate({ media_url: e.target.value })} className="bg-white rounded h-8 text-sm" />
-            <div className="flex gap-1 shrink-0">
-              <Button size="icon" variant="outline" className="h-8 w-8 rounded"><ImageIcon className="h-3.5 w-3.5" /></Button>
-              <Button size="icon" variant="outline" className="h-8 w-8 rounded"><Video className="h-3.5 w-3.5" /></Button>
-            </div>
-          </div>
-        </div>
+        {/* Media upload */}
+        {userId && (
+          <ImageUpload
+            value={q.media_url ?? null}
+            onChange={url => onUpdate({ media_url: url })}
+            userId={userId}
+            folder="questions"
+            label={t("mediaUrl")}
+          />
+        )}
 
+        {/* Visual template */}
         <div className="pt-2 border-t border-slate-100">
           <VisualTemplateEditor
             visualType={q.visual_type as VisualType | null}
@@ -804,32 +874,50 @@ function QuestionEditor({ q, idx, onUpdate, onRemove, onReorder }: {
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-[10px] text-slate-400">Choix (FR)</Label>
-            {q.choices.fr.map((c: string, ci: number) => (
-              <div key={ci} className="flex gap-2 items-center">
-                <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })} className="h-4 w-4 accent-[#1E3A8A]" />
-                <Input value={c} onChange={e => {
-                  const next = [...q.choices.fr]; next[ci] = e.target.value;
-                  onUpdate({ choices: { ...q.choices, fr: next } });
-                }} className="bg-white rounded h-8 text-sm" />
-              </div>
-            ))}
+        {/* Choices */}
+        <div className="space-y-2 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between">
+            <Label className="text-[10px] text-slate-400">{t("adminChoicesLabel")}</Label>
+            {q.choices.fr.length < 5 && (
+              <button type="button" onClick={addChoice}
+                className="text-[10px] font-bold text-[#1E3A8A] hover:underline flex items-center gap-0.5">
+                <Plus className="h-2.5 w-2.5" />{t("adminAddChoice")}
+              </button>
+            )}
           </div>
-          <div className="space-y-2">
-            <Label className="text-[10px] text-slate-400">الاختيارات (AR)</Label>
-            {q.choices.ar.map((c: string, ci: number) => (
-              <div key={ci} className="flex gap-2 items-center">
-                <Input value={c} onChange={e => {
-                  const next = [...q.choices.ar]; next[ci] = e.target.value;
-                  onUpdate({ choices: { ...q.choices, ar: next } });
-                }} className="bg-white rounded h-8 text-sm text-right" dir="rtl" />
-                <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })} className="h-4 w-4 accent-[#1E3A8A]" />
-              </div>
-            ))}
+          {q.choices.fr.map((c: string, ci: number) => (
+            <div key={ci} className="flex gap-2 items-center">
+              <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })}
+                className="h-4 w-4 accent-[#1E3A8A] shrink-0" />
+              <Input value={c} onChange={e => {
+                const next = [...q.choices.fr]; next[ci] = e.target.value;
+                onUpdate({ choices: { ...q.choices, fr: next } });
+              }} className="bg-white rounded h-8 text-sm flex-1" placeholder={`FR ${ci + 1}`} />
+              <Input value={q.choices.ar[ci] ?? ""} onChange={e => {
+                const next = [...q.choices.ar]; next[ci] = e.target.value;
+                onUpdate({ choices: { ...q.choices, ar: next } });
+              }} className="bg-white rounded h-8 text-sm flex-1 text-right" dir="rtl" placeholder={`AR ${ci + 1}`} />
+              {q.choices.fr.length > 2 && (
+                <Button size="icon" variant="ghost" onClick={() => removeChoice(ci)}
+                  className="h-7 w-7 rounded shrink-0 text-slate-300 hover:text-rose-500 hover:bg-rose-50">
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Explanation */}
+        <div className="space-y-1.5 pt-2 border-t border-slate-100">
+          <Label className="text-[10px] text-slate-400">{t("adminExplanation")}</Label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Input value={q.explanation?.fr ?? ""} onChange={e => onUpdate({ explanation: { ...(q.explanation ?? {}), fr: e.target.value } })}
+              placeholder="Explication (FR)" className="bg-white rounded h-8 text-sm" />
+            <Input value={q.explanation?.ar ?? ""} onChange={e => onUpdate({ explanation: { ...(q.explanation ?? {}), ar: e.target.value } })}
+              placeholder="الشرح (AR)" className="bg-white rounded h-8 text-sm text-right" dir="rtl" />
           </div>
         </div>
+
       </CardContent>
     </Card>
   );
