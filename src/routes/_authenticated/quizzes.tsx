@@ -10,6 +10,8 @@ import { api, ClassRow, ScenarioRow, CategoryRow, supabaseClient } from "@/lib/s
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { Plus, Pencil, ChevronDown, ChevronUp, Trash2, GripVertical, Image as ImageIcon, Video, Layout } from "lucide-react";
+import { VisualTemplateEditor } from "@/components/VisualTemplateEditor";
+import type { VisualType } from "@/lib/visuals";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/quizzes")({
@@ -530,6 +532,8 @@ function ScenarioCreator({ defaultCategoryId, onCancel, onSuccess }: { defaultCa
       correctIndex: 0,
       explanation: { fr: "", ar: "" },
       media_url: "",
+      visual_type: null,
+      visual_config: null,
     }]);
   };
 
@@ -706,7 +710,7 @@ function ScenarioEditor({ scenario, categories, onCancel, onSuccess }: {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-700">{t("question")}s</h3>
             <Button size="sm" variant="outline"
-              onClick={() => setQuestions([...questions, { id: crypto.randomUUID(), prompt: { fr: "", ar: "" }, choices: { fr: ["", "", ""], ar: ["", "", ""] }, correctIndex: 0, explanation: { fr: "", ar: "" }, media_url: "" }])}
+              onClick={() => setQuestions([...questions, { id: crypto.randomUUID(), prompt: { fr: "", ar: "" }, choices: { fr: ["", "", ""], ar: ["", "", ""] }, correctIndex: 0, explanation: { fr: "", ar: "" }, media_url: "", visual_type: null, visual_config: null }])}
               className="rounded border-[#1E3A8A] text-[#1E3A8A] text-xs font-medium hover:bg-blue-50 h-7 px-2.5">
               <Plus className="h-3 w-3 me-1.5" />
               {t("addQuestion")}
@@ -790,6 +794,14 @@ function QuestionEditor({ q, idx, onUpdate, onRemove, onReorder }: {
               <Button size="icon" variant="outline" className="h-8 w-8 rounded"><Video className="h-3.5 w-3.5" /></Button>
             </div>
           </div>
+        </div>
+
+        <div className="pt-2 border-t border-slate-100">
+          <VisualTemplateEditor
+            visualType={q.visual_type as VisualType | null}
+            visualConfig={q.visual_config as Record<string, unknown> | null}
+            onChange={(type, config) => onUpdate({ visual_type: type, visual_config: config })}
+          />
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">

@@ -461,6 +461,7 @@ export const translations = {
     // Admin visual template picker
     visualTemplateLabel: "Modèle visuel",
     visualNone: "Aucun modèle",
+    visualPreviewLabel: "Aperçu",
     visualTemplateHint: "Affiché si aucun fichier n'est uploadé",
     visualEmailClient: "Boîte mail (phishing)",
     visualBrowserLogin: "Page de connexion falsifiée",
@@ -1014,6 +1015,7 @@ export const translations = {
     // Admin visual template picker
     visualTemplateLabel: "قالب مرئي",
     visualNone: "بدون قالب",
+    visualPreviewLabel: "معاينة",
     visualTemplateHint: "يُعرض إذا لم يُرفع ملف",
     visualEmailClient: "صندوق البريد (تصيد)",
     visualBrowserLogin: "صفحة تسجيل دخول مزيفة",
