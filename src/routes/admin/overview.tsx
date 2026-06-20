@@ -4,7 +4,7 @@ import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen, TrendingUp,
-  Layers, Type, Settings, Home, LogIn, ChevronRight,
+  Layers, Type, Settings, Home, LogIn, ChevronRight, BookText,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/overview")({
@@ -105,6 +105,7 @@ function OverviewPage() {
     { to: "/admin/classes",      icon: GraduationCap,label: t("classesLabel"),           desc: t("adminClassesDesc"),      barColor: "bg-emerald-500", iconBg: "bg-emerald-50", iconText: "text-emerald-600" },
     { to: "/admin/translations", icon: Type,         label: t("adminTranslationsTitle"), desc: t("adminTranslationsDesc"), barColor: "bg-amber-500",   iconBg: "bg-amber-50",   iconText: "text-amber-600"   },
     { to: "/admin/settings",     icon: Settings,     label: t("settings"),               desc: t("adminSettingsDesc"),     barColor: "bg-slate-500",   iconBg: "bg-slate-100",  iconText: "text-slate-600"   },
+    { to: "/admin/docs",         icon: BookText,     label: t("adminDocs"),              desc: t("adminDocsDesc"),         barColor: "bg-teal-500",    iconBg: "bg-teal-50",    iconText: "text-teal-600"    },
   ];
 
   const platformLinks = [

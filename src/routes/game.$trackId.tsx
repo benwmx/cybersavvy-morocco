@@ -29,13 +29,8 @@ function ScenarioRunner() {
   const staticTrack = useMemo(() => getTrack(trackId), [trackId]);
 
   useEffect(() => {
-    if (staticTrack) {
-      setLoading(false);
-      return;
-    }
-
     (async () => {
-      // Prefer local Dexie, fall back to Supabase when online
+      // DB wins; static data is the offline fallback
       const db = getDB();
       if (db) {
         const local = await db.scenarios.get(trackId);
@@ -47,11 +42,15 @@ function ScenarioRunner() {
       }
       if (navigator.onLine) {
         const remote = await api.getScenario(trackId).catch(() => null);
-        if (remote) setDynamicTrack(remote);
+        if (remote) {
+          setDynamicTrack(remote);
+          setLoading(false);
+          return;
+        }
       }
       setLoading(false);
     })();
-  }, [trackId, staticTrack]);
+  }, [trackId]);
 
   const { student } = useStudent();
   const [isGuest, setIsGuest] = useState(false);
@@ -84,7 +83,7 @@ function ScenarioRunner() {
     </div>
   );
 
-  const track = staticTrack || dynamicTrack;
+  const track = dynamicTrack || staticTrack;
 
   if (!track) {
     return (
@@ -94,8 +93,8 @@ function ScenarioRunner() {
     );
   }
 
-  const questions = track.questions;
-  const q = questions[idx];
+  const questions = (track.questions as any[]) ?? [];
+  const q = questions[idx] as any;
   const total = questions.length;
 
   const handlePick = (i: number) => {
@@ -145,9 +144,9 @@ function ScenarioRunner() {
             </div>
             <CardHeader className="p-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#1E3A8A] text-xs font-bold border border-blue-100 mx-auto mb-4">
-                <span>{'category' in track ? track.category : 'Simulation'}</span>
+                <span>{'category' in (track as any) ? (track as any).category : 'Simulation'}</span>
               </div>
-              <CardTitle className="text-3xl font-extrabold text-slate-900 tracking-tight">{track.title[lang]}</CardTitle>
+              <CardTitle className="text-3xl font-extrabold text-slate-900 tracking-tight">{(track as any).title?.[lang]}</CardTitle>
             </CardHeader>
             <CardContent className="p-8 pt-0">
               <div className="space-y-1 mb-8">
@@ -235,7 +234,11 @@ function ScenarioRunner() {
                 </div>
               ) : (
                 <div className="rounded-3xl overflow-hidden border border-slate-100 bg-slate-50/50">
-                  <ScenarioVisuals trackId={track.id} questionId={q.id || idx.toString()} imageUrl={'image_url' in track ? (track as ScenarioRow).image_url : null} />
+                  <ScenarioVisuals
+                    visualType={(q as any).visual_type ?? null}
+                    visualConfig={(q as any).visual_config ?? null}
+                    imageUrl={'image_url' in track ? (track as ScenarioRow).image_url : null}
+                  />
                 </div>
               )}
               

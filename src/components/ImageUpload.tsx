@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Upload, X, Loader2, Image } from "lucide-react";
 import { api } from "@/lib/supabase/api";
 import { toast } from "sonner";
+import { useLang } from "@/lib/i18n/LanguageContext";
 
 const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
 
@@ -14,6 +15,7 @@ interface ImageUploadProps {
 }
 
 export function ImageUpload({ value, onChange, userId, folder = "scenarios", label }: ImageUploadProps) {
+  const { t } = useLang();
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +66,7 @@ export function ImageUpload({ value, onChange, userId, folder = "scenarios", lab
             className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded px-2 py-1 text-[10px] font-medium flex items-center gap-1 transition-colors"
           >
             <Upload className="h-3 w-3" />
-            Remplacer
+            {t("replace")}
           </button>
         </div>
       ) : (
@@ -79,7 +81,7 @@ export function ImageUpload({ value, onChange, userId, folder = "scenarios", lab
           ) : (
             <>
               <Image className="h-5 w-5" />
-              <span className="text-xs font-medium">Cliquer pour uploader</span>
+              <span className="text-xs font-medium">{t("clickToUpload")}</span>
               <span className="text-[10px] text-slate-300">JPEG · PNG · WebP · GIF · MP4 · WebM</span>
             </>
           )}
