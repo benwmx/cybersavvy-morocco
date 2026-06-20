@@ -594,6 +594,23 @@ export const api = {
     if (error) throw error;
   },
 
+  async getIconSettings(): Promise<string[]> {
+    const { data } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "scenario_icons")
+      .single();
+    if (!data) return [];
+    return (data.value as string[]) ?? [];
+  },
+
+  async updateIconSettings(icons: string[]): Promise<void> {
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert({ key: "scenario_icons", value: icons as unknown as Json, updated_at: new Date().toISOString() });
+    if (error) throw error;
+  },
+
   async listResultsForTeacher(): Promise<ResultRow[]> {
     const session = await api.getSession();
     if (!session) return [];

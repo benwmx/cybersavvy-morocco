@@ -1,9 +1,7 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Navbar } from "@/components/Navbar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { GameWorld } from "@/components/GameWorld";
+import { CyberMascot } from "@/components/CyberMascot";
 import { ScenarioVisuals } from "@/components/ScenarioVisuals";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useStudent } from "@/context/StudentContext";
@@ -11,7 +9,7 @@ import { getTrack } from "@/content/scenarios";
 import { api, ScenarioRow } from "@/lib/supabase/api";
 import { getDB } from "@/lib/offline/db";
 import { saveResult } from "@/lib/offline/queue";
-import { Check, X, Lightbulb, Trophy, ArrowRight, RefreshCw, PlayCircle } from "lucide-react";
+import { Check, X, Lightbulb, RotateCcw, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/game/$trackId")({
@@ -22,15 +20,13 @@ function ScenarioRunner() {
   const { trackId } = useParams({ from: "/game/$trackId" });
   const { t, lang } = useLang();
   const navigate = useNavigate();
-  
+
   const [dynamicTrack, setDynamicTrack] = useState<ScenarioRow | null>(null);
   const [loading, setLoading] = useState(true);
-
   const staticTrack = useMemo(() => getTrack(trackId), [trackId]);
 
   useEffect(() => {
     (async () => {
-      // DB wins; static data is the offline fallback
       const db = getDB();
       if (db) {
         const local = await db.scenarios.get(trackId);
@@ -54,14 +50,10 @@ function ScenarioRunner() {
 
   const { student } = useStudent();
   const [isGuest, setIsGuest] = useState(false);
-
   useEffect(() => {
     if (!student) {
-      if (localStorage.getItem("cs.guest")) {
-        setIsGuest(true);
-      } else {
-        navigate({ to: "/login" });
-      }
+      if (localStorage.getItem("cs.guest")) setIsGuest(true);
+      else navigate({ to: "/login" });
     }
   }, [student, navigate]);
 
@@ -72,36 +64,46 @@ function ScenarioRunner() {
   const [done, setDone] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "online" | "queued" | "guest">("idle");
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50/60 to-white">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-12 w-12 rounded-2xl bg-blue-100 flex items-center justify-center animate-pulse">
-          <PlayCircle className="h-6 w-6 text-[#1E3A8A]" />
-        </div>
-        <p className="font-extrabold text-[#1E3A8A] tracking-widest uppercase text-xs">{t("syncing")}</p>
-      </div>
-    </div>
-  );
+  if (loading) return <QuizLoading />;
 
   const track = dynamicTrack || staticTrack;
-
-  if (!track) {
+  if (!track)
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>{t("trackNotFound")}</p>
+      <div
+        className="game-world"
+        style={{
+          minHeight: "100dvh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--gw-bg)",
+        }}
+      >
+        <p style={{ color: "var(--gw-blue)", fontWeight: 700 }}>{t("trackNotFound")}</p>
       </div>
     );
-  }
 
-  const questions = (track.questions as any[]) ?? [];
-  const q = questions[idx] as any;
+  type Question = Record<string, unknown>;
+  const questions = ((track.questions as Question[]) ?? []) as Question[];
+  const q = questions[idx] as Question & {
+    prompt: Record<string, string>;
+    choices: Record<string, string[]>;
+    correctIndex: number;
+    explanation: Record<string, string>;
+    media_url?: string;
+    visual_type?: string;
+    visual_config?: unknown;
+    id?: string;
+  };
   const total = questions.length;
+  const isCorrect = selected === q?.correctIndex;
+  const trackTitle = (track as ScenarioRow & { title: Record<string, string> }).title?.[lang] ?? "";
 
   const handlePick = (i: number) => {
     if (selected !== null) return;
     setSelected(i);
     if (i === q.correctIndex) setScore((s) => s + 1);
-    else setMistakes((m) => [...m, q.id || idx.toString()]);
+    else setMistakes((m) => [...m, q.id || String(idx)]);
   };
 
   const handleNext = async () => {
@@ -111,9 +113,9 @@ function ScenarioRunner() {
     } else {
       setDone(true);
       if (isGuest) {
-        const history = JSON.parse(localStorage.getItem("cs.guest_history") || "[]");
-        history.push({ trackId: track.id, score, total, date: new Date().toISOString() });
-        localStorage.setItem("cs.guest_history", JSON.stringify(history));
+        const h = JSON.parse(localStorage.getItem("cs.guest_history") || "[]");
+        h.push({ trackId: track.id, score, total, date: new Date().toISOString() });
+        localStorage.setItem("cs.guest_history", JSON.stringify(h));
         setSaveState("guest");
       } else if (student) {
         const res = await saveResult({
@@ -130,190 +132,652 @@ function ScenarioRunner() {
     }
   };
 
-  if (done) {
+  if (done)
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50/60 via-white to-white">
-        <Navbar />
-        <main className="container mx-auto px-4 py-12 lg:py-20">
-          <Card className="max-w-xl mx-auto text-center border-none shadow-2xl shadow-slate-200 bg-white rounded-3xl overflow-hidden animate-in zoom-in duration-700">
-            <div className="bg-gradient-to-br from-amber-400 to-amber-600 py-16 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,white_0%,transparent_70%)]" />
-              <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-3xl bg-white/20 backdrop-blur-xl shadow-inner animate-in fade-in zoom-in delay-300 duration-1000">
-                <Trophy className="h-14 w-14 text-white drop-shadow-lg" />
-              </div>
-            </div>
-            <CardHeader className="p-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#1E3A8A] text-xs font-bold border border-blue-100 mx-auto mb-4">
-                <span>{'category' in (track as any) ? (track as any).category : 'Simulation'}</span>
-              </div>
-              <CardTitle className="text-3xl font-extrabold text-slate-900 tracking-tight">{(track as any).title?.[lang]}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-8 pt-0">
-              <div className="space-y-1 mb-8">
-                <p className="text-sm font-bold uppercase tracking-widest text-slate-400">{t("yourScore")}</p>
-                <div className="flex items-center justify-center gap-3">
-                   <p className="text-7xl font-black text-[#1E3A8A]">{score}</p>
-                   <p className="text-3xl font-bold text-slate-300 mt-4">/ {total}</p>
-                </div>
-              </div>
-              
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-10 flex items-center justify-center gap-3">
-                <div className={`h-2 w-2 rounded-full ${saveState === 'idle' ? 'bg-slate-300' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`} />
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  {saveState === "queued" ? t("syncQueued") : saveState === "guest" ? t("guestHistory") : t("syncDone")}
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild size="lg" className="h-14 px-8 rounded-2xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 font-bold shadow-xl shadow-blue-900/10 active:scale-95 transition-all">
-                  <Link to={isGuest ? "/guest" : "/game"}>
-                    <ArrowRight className="ms-0 me-2 h-4 w-4 rotate-180 rtl:rotate-0" />
-                    {t("backToTracks")}
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="h-14 px-8 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-bold active:scale-95 transition-all"
-                  onClick={() => {
-                    setIdx(0);
-                    setSelected(null);
-                    setMistakes([]);
-                    setScore(0);
-                    setDone(false);
-                    setSaveState("idle");
-                  }}
-                >
-                  <RefreshCw className="ms-0 me-2 h-4 w-4" />
-                  {t("retry")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
+      <ResultsScreen
+        score={score}
+        total={total}
+        saveState={saveState}
+        isGuest={isGuest}
+        trackTitle={trackTitle}
+        onRetry={() => {
+          setIdx(0);
+          setSelected(null);
+          setMistakes([]);
+          setScore(0);
+          setDone(false);
+          setSaveState("idle");
+        }}
+        t={t}
+        lang={lang}
+      />
     );
-  }
-
-  const isCorrect = selected === q.correctIndex;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50/60 via-white to-white">
-      <Navbar />
-      <main className="container mx-auto px-4 py-8 lg:py-12">
-        <div className="max-w-3xl mx-auto space-y-8">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-[0.2em] text-[#1E3A8A]">
-              <span className="bg-blue-100/80 px-3 py-1.5 rounded-full border border-blue-200">{track.title[lang]}</span>
-              <span className="text-slate-400">
-                {t("question")} {idx + 1} / {total}
-              </span>
+    <GameWorld
+      mascotPose={selected === null ? "neutral" : isCorrect ? "celebrate" : "think"}
+      backTo={isGuest ? "/guest" : "/game"}
+      title={trackTitle}
+      progress={{ current: idx + 1, total }}
+    >
+      <div style={{ maxWidth: "640px", width: "100%" }}>
+        {/* Question card */}
+        <div
+          style={{
+            background: "var(--gw-card)",
+            border: "2px solid var(--gw-card-border)",
+            borderRadius: "28px",
+            padding: "clamp(20px, 4vw, 36px)",
+            animation: "gw-pop-in 0.35s cubic-bezier(0.16,1,0.3,1) both",
+          }}
+        >
+          {/* Question text */}
+          <p
+            style={{
+              fontWeight: 800,
+              fontSize: "clamp(1rem, 2.8vw, 1.25rem)",
+              color: "var(--gw-ink)",
+              lineHeight: 1.4,
+              marginBottom: "24px",
+              textWrap: "balance",
+            }}
+          >
+            {q.prompt[lang]}
+          </p>
+
+          {/* Media / visual */}
+          {(q.media_url || q.visual_type) && (
+            <div
+              style={{
+                borderRadius: "16px",
+                overflow: "hidden",
+                marginBottom: "20px",
+                background: "oklch(0.22 0.07 258 / 0.05)",
+              }}
+            >
+              {q.media_url ? (
+                q.media_url.match(/\.(mp4|webm|ogg)$/) ? (
+                  <video
+                    src={q.media_url}
+                    controls
+                    style={{ width: "100%", maxHeight: "220px", objectFit: "contain" }}
+                  />
+                ) : (
+                  <img
+                    src={q.media_url}
+                    alt=""
+                    style={{ width: "100%", maxHeight: "220px", objectFit: "contain" }}
+                  />
+                )
+              ) : (
+                <ScenarioVisuals
+                  visualType={q.visual_type ?? null}
+                  visualConfig={q.visual_config ?? null}
+                  imageUrl={"image_url" in track ? (track as ScenarioRow).image_url : null}
+                />
+              )}
             </div>
-            <div className="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
-              <div 
-                className="h-full bg-[#1E3A8A] transition-all duration-700 ease-out shadow-[0_0_12px_rgba(30,58,138,0.3)] rounded-full"
-                style={{ width: `${((idx + (selected !== null ? 1 : 0)) / total) * 100}%` }}
+          )}
+
+          {/* Answer choices */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {q.choices[lang].map((choice: string, i: number) => (
+              <AnswerPill
+                key={i}
+                label={choice}
+                state={
+                  selected === null
+                    ? "idle"
+                    : i === q.correctIndex
+                      ? "correct"
+                      : i === selected
+                        ? "wrong"
+                        : "dim"
+                }
+                onClick={() => handlePick(i)}
+                disabled={selected !== null}
               />
-            </div>
+            ))}
           </div>
 
-          <Card className="border-none shadow-2xl shadow-slate-200 bg-white rounded-[2.5rem] overflow-hidden">
-            <CardHeader className="p-8 md:p-12 pb-6 text-center">
-              <CardTitle className="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 tracking-tight">
-                {q.prompt[lang]}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8 md:p-12 pt-0 space-y-8">
-              {q.media_url ? (
-                <div className="relative aspect-video rounded-3xl overflow-hidden bg-slate-100 border border-slate-100 shadow-inner group">
-                  {q.media_url.match(/\.(mp4|webm|ogg)$/) || q.media_url.includes('youtube.com') || q.media_url.includes('vimeo.com') ? (
-                    <video src={q.media_url} controls className="w-full h-full object-contain" />
+          {/* Feedback panel */}
+          {selected !== null && (
+            <div
+              style={{
+                animation: "gw-slide-up 0.35s cubic-bezier(0.16,1,0.3,1) both",
+                marginTop: "20px",
+              }}
+            >
+              <div
+                style={{
+                  borderRadius: "16px",
+                  padding: "16px 20px",
+                  background: isCorrect
+                    ? "oklch(0.55 0.18 150 / 0.12)"
+                    : "oklch(0.62 0.16 30 / 0.1)",
+                  marginBottom: "16px",
+                  display: "flex",
+                  gap: "12px",
+                  alignItems: "flex-start",
+                }}
+              >
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    flexShrink: 0,
+                    background: isCorrect ? "oklch(0.55 0.18 150)" : "oklch(0.65 0.18 30)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {isCorrect ? (
+                    <Check style={{ width: 14, height: 14, color: "white" }} />
                   ) : (
-                    <img src={q.media_url} alt="Assessment visual" className="w-full h-full object-contain" />
+                    <X style={{ width: 14, height: 14, color: "white" }} />
                   )}
                 </div>
-              ) : (
-                <div className="rounded-3xl overflow-hidden border border-slate-100 bg-slate-50/50">
-                  <ScenarioVisuals
-                    visualType={(q as any).visual_type ?? null}
-                    visualConfig={(q as any).visual_config ?? null}
-                    imageUrl={'image_url' in track ? (track as ScenarioRow).image_url : null}
-                  />
-                </div>
-              )}
-              
-              <div className="grid gap-4">
-                {q.choices[lang].map((choice: string, i: number) => {
-                  const isPicked = selected === i;
-                  const isAnswer = i === q.correctIndex;
-                  let style = "border-slate-100 bg-slate-50/50 text-slate-700 hover:border-[#1E3A8A] hover:bg-blue-50 hover:text-[#1E3A8A] shadow-sm";
-                  if (selected !== null) {
-                    if (isAnswer) style = "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-[0_0_15px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500";
-                    else if (isPicked) style = "border-rose-200 bg-rose-50 text-rose-800 opacity-90";
-                    else style = "border-slate-100 bg-slate-50 text-slate-400 opacity-40 grayscale";
-                  }
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      disabled={selected !== null}
-                      onClick={() => handlePick(i)}
-                      className={`text-start rounded-2xl border-2 px-6 py-5 transition-all duration-300 flex items-center justify-between gap-4 font-bold text-lg group ${style}`}
+                <div>
+                  <p
+                    style={{
+                      fontWeight: 800,
+                      fontSize: "0.9rem",
+                      marginBottom: "4px",
+                      color: isCorrect ? "oklch(0.35 0.14 150)" : "oklch(0.45 0.14 30)",
+                    }}
+                  >
+                    {isCorrect ? t("gameBravo") : t("gameOups")}
+                  </p>
+                  {!isCorrect && (
+                    <p
+                      style={{
+                        fontSize: "0.8rem",
+                        fontWeight: 600,
+                        color: "oklch(0.35 0.12 258)",
+                        marginBottom: "6px",
+                      }}
                     >
-                      <span>{choice}</span>
-                      {selected !== null && isAnswer && (
-                        <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 animate-in zoom-in duration-300">
-                          <Check className="h-5 w-5" />
-                        </div>
-                      )}
-                      {selected !== null && isPicked && !isAnswer && (
-                        <div className="h-8 w-8 rounded-full bg-rose-500 text-white flex items-center justify-center shrink-0 animate-in zoom-in duration-300">
-                          <X className="h-5 w-5" />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+                      {t("gameCorrectIs")} <strong>{q.choices[lang][q.correctIndex]}</strong>
+                    </p>
+                  )}
+                  <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }}>
+                    <Lightbulb
+                      style={{
+                        width: 13,
+                        height: 13,
+                        flexShrink: 0,
+                        marginTop: "2px",
+                        color: "var(--gw-blue)",
+                      }}
+                    />
+                    <p
+                      style={{
+                        fontSize: "0.82rem",
+                        color: "oklch(0.28 0.08 258)",
+                        lineHeight: 1.5,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {q.explanation[lang]}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {selected !== null && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div
-                    className={`rounded-2xl p-6 border-2 flex items-start gap-4 ${
-                      isCorrect
-                        ? "border-emerald-200 bg-emerald-50/50"
-                        : "border-amber-200 bg-amber-50/50"
-                    }`}
-                  >
-                    <div className={`mt-1 h-6 w-6 rounded-full flex items-center justify-center shrink-0 ${isCorrect ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
-                      {isCorrect ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
-                    </div>
-                    <div className="space-y-1">
-                      <p className={`font-black uppercase tracking-widest text-sm ${isCorrect ? 'text-emerald-700' : 'text-amber-700'}`}>
-                        {isCorrect ? t("correct") : t("incorrect")}
-                      </p>
-                      <div className="flex items-start gap-2 pt-2">
-                        <Lightbulb className="h-4 w-4 text-[#1E3A8A] shrink-0 mt-0.5" />
-                        <p className="text-slate-600 text-base leading-relaxed font-medium">
-                          {q.explanation[lang]}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    className="w-full h-16 rounded-2xl bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-lg font-black shadow-2xl shadow-blue-900/10 active:scale-[0.98] transition-all group" 
-                    onClick={handleNext}
-                  >
-                    {idx + 1 < total ? t("next") : t("finish")}
-                    <ArrowRight className="ms-2 h-5 w-5 transition-transform group-hover:translate-x-2 rtl:rotate-180 rtl:group-hover:-translate-x-2" />
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              {/* Next button */}
+              <button
+                onClick={handleNext}
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  background: "var(--gw-blue)",
+                  color: "white",
+                  borderRadius: "16px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: 800,
+                  fontSize: "1rem",
+                  letterSpacing: "-0.01em",
+                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                  boxShadow: "0 6px 20px oklch(0.52 0.19 255 / 0.35)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "scale(1.02)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+                }}
+                onMouseDown={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "scale(0.97)";
+                }}
+                onMouseUp={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "scale(1.02)";
+                }}
+              >
+                {idx + 1 < total ? t("next") : t("finish")}
+              </button>
+            </div>
+          )}
         </div>
-      </main>
+      </div>
+    </GameWorld>
+  );
+}
+
+function AnswerPill({
+  label,
+  state,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  state: "idle" | "correct" | "wrong" | "dim";
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  const styles: React.CSSProperties = {
+    width: "100%",
+    padding: "14px 20px",
+    borderRadius: "14px",
+    border: "2px solid",
+    cursor: disabled ? "default" : "pointer",
+    fontWeight: 700,
+    fontSize: "0.95rem",
+    textAlign: "start",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    transition: "all 0.2s ease",
+    ...(state === "idle" && {
+      background: hovered ? "oklch(0.52 0.19 255 / 0.08)" : "white",
+      borderColor: hovered ? "var(--gw-blue)" : "var(--gw-card-border)",
+      color: "var(--gw-ink)",
+      transform: hovered ? "translateX(4px)" : "translateX(0)",
+    }),
+    ...(state === "correct" && {
+      background: "oklch(0.55 0.18 150 / 0.12)",
+      borderColor: "oklch(0.55 0.18 150)",
+      color: "oklch(0.3 0.14 150)",
+      animation: "gw-pop-in 0.3s cubic-bezier(0.16,1,0.3,1) both",
+    }),
+    ...(state === "wrong" && {
+      background: "oklch(0.62 0.16 30 / 0.1)",
+      borderColor: "oklch(0.62 0.16 30)",
+      color: "oklch(0.38 0.14 30)",
+      animation: "gw-shake 0.4s ease both",
+    }),
+    ...(state === "dim" && {
+      background: "oklch(0.96 0.005 258)",
+      borderColor: "oklch(0.90 0.01 258)",
+      color: "oklch(0.60 0.04 258)",
+      opacity: 0.5,
+    }),
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => !disabled && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onMouseDown={() => !disabled && setHovered(false)}
+      style={styles}
+    >
+      <span>{label}</span>
+      {state === "correct" && (
+        <span
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: "50%",
+            background: "oklch(0.55 0.18 150)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Check style={{ width: 13, height: 13, color: "white" }} />
+        </span>
+      )}
+      {state === "wrong" && (
+        <span
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: "50%",
+            background: "oklch(0.62 0.16 30)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <X style={{ width: 13, height: 13, color: "white" }} />
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ResultsScreen({
+  score,
+  total,
+  saveState,
+  isGuest,
+  trackTitle,
+  onRetry,
+  t,
+  lang,
+}: {
+  score: number;
+  total: number;
+  saveState: string;
+  isGuest: boolean;
+  trackTitle: string;
+  onRetry: () => void;
+  t: (k: string) => string;
+  lang: string;
+}) {
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const isPerfect = score === total;
+
+  return (
+    <div
+      className="game-world"
+      style={{
+        minHeight: "100dvh",
+        background: "var(--gw-bg)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Blobs */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <div
+          style={{
+            position: "absolute",
+            top: "-80px",
+            left: "-80px",
+            width: "340px",
+            height: "340px",
+            borderRadius: "50%",
+            background: "var(--gw-mint)",
+            opacity: 0.4,
+          }}
+        />
+        <svg
+          width="180"
+          height="160"
+          style={{ position: "absolute", bottom: "-40px", right: "15%", opacity: 0.45 }}
+          aria-hidden="true"
+        >
+          <polygon points="90,0 180,160 0,160" fill="var(--gw-peach)" />
+        </svg>
+      </div>
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "32px",
+          maxWidth: "480px",
+          width: "100%",
+        }}
+      >
+        {/* Mascot */}
+        <div
+          style={{
+            width: "clamp(100px, 25vw, 160px)",
+            animation: isPerfect
+              ? "gw-celebrate 0.6s ease-in-out infinite"
+              : "gw-float 3s ease-in-out infinite",
+          }}
+        >
+          <CyberMascot
+            pose={isPerfect ? "celebrate" : score / total >= 0.5 ? "neutral" : "think"}
+          />
+        </div>
+
+        {/* Score card */}
+        <div
+          style={{
+            background: "var(--gw-card)",
+            border: "2px solid var(--gw-card-border)",
+            borderRadius: "28px",
+            padding: "36px 40px",
+            textAlign: "center",
+            width: "100%",
+            animation: "gw-pop-in 0.5s cubic-bezier(0.16,1,0.3,1) both",
+          }}
+        >
+          <p
+            style={{
+              color: "oklch(0.22 0.07 258 / 0.5)",
+              fontWeight: 700,
+              fontSize: "0.75rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: "8px",
+            }}
+          >
+            {trackTitle}
+          </p>
+          <p
+            style={{
+              color: "oklch(0.22 0.07 258 / 0.5)",
+              fontWeight: 700,
+              fontSize: "0.8rem",
+              marginBottom: "12px",
+            }}
+          >
+            {t("yourScore")}
+          </p>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "center",
+              gap: "6px",
+              marginBottom: "8px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "clamp(3rem, 12vw, 5rem)",
+                fontWeight: 900,
+                color: "var(--gw-blue)",
+                lineHeight: 1,
+                letterSpacing: "-0.04em",
+              }}
+            >
+              {score}
+            </span>
+            <span
+              style={{
+                fontSize: "clamp(1.5rem, 5vw, 2.2rem)",
+                fontWeight: 700,
+                color: "oklch(0.22 0.07 258 / 0.3)",
+              }}
+            >
+              / {total}
+            </span>
+          </div>
+          {/* Percentage ring indicator */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              marginBottom: "24px",
+            }}
+          >
+            <div
+              style={{
+                height: "6px",
+                flex: 1,
+                borderRadius: "999px",
+                background: "oklch(0.22 0.07 258 / 0.1)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  background:
+                    pct >= 70
+                      ? "oklch(0.55 0.18 150)"
+                      : pct >= 40
+                        ? "var(--gw-amber)"
+                        : "oklch(0.62 0.16 30)",
+                  width: "100%",
+                  borderRadius: "999px",
+                  transformOrigin: "left center",
+                  transform: `scaleX(${pct / 100})`,
+                  transition: "transform 1s cubic-bezier(0.16,1,0.3,1)",
+                }}
+              />
+            </div>
+            <span
+              style={{
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                color:
+                  pct >= 70
+                    ? "oklch(0.35 0.14 150)"
+                    : pct >= 40
+                      ? "oklch(0.55 0.14 75)"
+                      : "oklch(0.45 0.14 30)",
+                flexShrink: 0,
+              }}
+            >
+              {pct}%
+            </span>
+          </div>
+
+          {/* Sync status */}
+          <div
+            style={{
+              background: "oklch(0.22 0.07 258 / 0.06)",
+              borderRadius: "10px",
+              padding: "8px 14px",
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+            }}
+          >
+            <div
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: saveState === "idle" ? "oklch(0.75 0.01 258)" : "oklch(0.55 0.18 150)",
+                boxShadow: saveState !== "idle" ? "0 0 8px oklch(0.55 0.18 150 / 0.5)" : "none",
+              }}
+            />
+            <span
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                color: "oklch(0.22 0.07 258 / 0.5)",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {saveState === "queued"
+                ? t("syncQueued")
+                : saveState === "guest"
+                  ? t("guestHistory")
+                  : t("syncDone")}
+            </span>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <Link
+              to={isGuest ? "/guest" : "/game"}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                padding: "14px",
+                borderRadius: "14px",
+                background: "var(--gw-amber)",
+                color: "var(--gw-ink)",
+                fontWeight: 800,
+                fontSize: "0.95rem",
+                boxShadow: "0 6px 20px oklch(0.60 0.145 68 / 0.35)",
+                textDecoration: "none",
+              }}
+            >
+              <ArrowLeft style={{ width: 16, height: 16 }} />
+              {t("backToTracks")}
+            </Link>
+            <button
+              onClick={onRetry}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                padding: "14px",
+                borderRadius: "14px",
+                background: "white",
+                color: "var(--gw-blue)",
+                border: "2px solid var(--gw-card-border)",
+                fontWeight: 700,
+                fontSize: "0.95rem",
+                cursor: "pointer",
+              }}
+            >
+              <RotateCcw style={{ width: 15, height: 15 }} />
+              {t("retry")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuizLoading() {
+  return (
+    <div
+      className="game-world"
+      style={{
+        minHeight: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "var(--gw-bg)",
+      }}
+    >
+      <Loader2
+        style={{
+          width: 36,
+          height: 36,
+          color: "var(--gw-blue)",
+          animation: "spin 1s linear infinite",
+        }}
+      />
     </div>
   );
 }

@@ -133,6 +133,59 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+/* ── Game World ─────────────────────────────────────────── */
+.game-world {
+  --gw-bg:           oklch(0.93 0.018 82);
+  --gw-blue:         oklch(0.52 0.19 255);
+  --gw-blue-dark:    oklch(0.28 0.12 258);
+  --gw-blue-light:   oklch(0.88 0.07 250);
+  --gw-amber:        oklch(0.78 0.155 75);
+  --gw-amber-dark:   oklch(0.60 0.145 68);
+  --gw-card:         oklch(0.91 0.045 240);
+  --gw-card-border:  oklch(0.80 0.07 240);
+  --gw-mint:         oklch(0.82 0.075 172);
+  --gw-peach:        oklch(0.87 0.06 42);
+  --gw-ink:          oklch(0.22 0.07 258);
+  --ease-out-expo:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart:  cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes gw-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+@keyframes gw-pulse-ring {
+  0%   { transform: scale(1);    opacity: 0.6; }
+  100% { transform: scale(1.5);  opacity: 0; }
+}
+@keyframes gw-pop-in {
+  0%   { transform: scale(0.6); opacity: 0; }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+@keyframes gw-slide-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes gw-shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-6px); }
+  40%     { transform: translateX(6px); }
+  60%     { transform: translateX(-4px); }
+  80%     { transform: translateX(4px); }
+}
+@keyframes gw-celebrate {
+  0%,100% { transform: rotate(0deg) scale(1); }
+  25%     { transform: rotate(-8deg) scale(1.08); }
+  75%     { transform: rotate(8deg) scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-float, .gw-mascot, .gw-pop-in, .gw-slide-up { animation: none !important; }
+}
+
+/* ─────────────────────────────────────────────────────── */
+
 @layer base {
   * {
     border-color: var(--color-border);
