@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { api, ClassRow, ScenarioRow, CategoryRow, supabaseClient } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
-import { Plus, Pencil, ChevronDown, ChevronUp, Trash2, GripVertical, Layout } from "lucide-react";
+import { Plus, Pencil, ChevronDown, ChevronUp, Trash2, GripVertical, Layout, Check } from "lucide-react";
+import { ICON_REGISTRY, getIconComponent } from "@/lib/icons";
 import { VisualTemplateEditor } from "@/components/VisualTemplateEditor";
 import type { VisualType } from "@/lib/visuals";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -546,8 +547,14 @@ function ScenarioCreator({ defaultCategoryId, userId, onCancel, onSuccess }: { d
   const [title, setTitle] = useState({ fr: "", ar: "" });
   const [desc, setDesc] = useState({ fr: "", ar: "" });
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [iconName, setIconName] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string>(defaultCategoryId ?? "");
   const [questions, setQuestions] = useState<any[]>([]);
+
+  const { data: enabledIcons = [] } = useQuery({
+    queryKey: ["icon-settings"],
+    queryFn: () => api.getIconSettings(),
+  });
 
   const { data: availableCategories = [] } = useQuery({
     queryKey: ["categories"],
@@ -580,7 +587,7 @@ function ScenarioCreator({ defaultCategoryId, userId, onCancel, onSuccess }: { d
       const session = await api.getSession();
       if (!session) throw new Error("Not authenticated");
       if (!categoryId) throw new Error("No category selected");
-      return api.createScenario({ teacher_id: session.id, category_id: categoryId, title, description: desc, questions, image_url: imageUrl });
+      return api.createScenario({ teacher_id: session.id, category_id: categoryId, title, description: desc, questions, image_url: imageUrl, icon: iconName });
     },
     onSuccess: () => { toast.success(t("syncDone")); onSuccess(); },
   });
@@ -628,6 +635,14 @@ function ScenarioCreator({ defaultCategoryId, userId, onCancel, onSuccess }: { d
             <Input value={desc.ar} onChange={e => setDesc({ ...desc, ar: e.target.value })} className="h-8 rounded bg-slate-50 text-sm text-right" dir="rtl" />
           </div>
         </div>
+
+        <IconPicker
+          value={iconName}
+          onChange={setIconName}
+          enabledIcons={enabledIcons}
+          t={t}
+          lang={lang}
+        />
 
         {userId && (
           <ImageUpload
@@ -689,8 +704,14 @@ function ScenarioEditor({ scenario, categories, userId, onCancel, onSuccess }: {
   const [title, setTitle] = useState(scenario.title as { fr: string; ar: string });
   const [desc, setDesc] = useState(scenario.description as { fr: string; ar: string });
   const [imageUrl, setImageUrl] = useState<string | null>(scenario.image_url ?? null);
+  const [iconName, setIconName] = useState<string | null>(scenario.icon ?? null);
   const [categoryId, setCategoryId] = useState<string>(scenario.category_id);
   const [questions, setQuestions] = useState<any[]>(scenario.questions as any[]);
+
+  const { data: enabledIcons = [] } = useQuery({
+    queryKey: ["icon-settings"],
+    queryFn: () => api.getIconSettings(),
+  });
 
   const updateQuestion = (idx: number, data: any) => {
     const next = [...questions];
@@ -699,7 +720,7 @@ function ScenarioEditor({ scenario, categories, userId, onCancel, onSuccess }: {
   };
 
   const save = useMutation({
-    mutationFn: () => api.updateScenario(scenario.id, { title, description: desc, category_id: categoryId, questions, image_url: imageUrl }),
+    mutationFn: () => api.updateScenario(scenario.id, { title, description: desc, category_id: categoryId, questions, image_url: imageUrl, icon: iconName }),
     onSuccess: () => { toast.success(t("syncDone")); onSuccess(); },
     onError: (err: any) => toast.error(err.message),
   });
@@ -747,6 +768,14 @@ function ScenarioEditor({ scenario, categories, userId, onCancel, onSuccess }: {
             <Input value={desc.ar} onChange={e => setDesc({ ...desc, ar: e.target.value })} className="h-8 rounded bg-slate-50 text-sm text-right" dir="rtl" />
           </div>
         </div>
+
+        <IconPicker
+          value={iconName}
+          onChange={setIconName}
+          enabledIcons={enabledIcons}
+          t={t}
+          lang={lang}
+        />
 
         {userId && (
           <ImageUpload
