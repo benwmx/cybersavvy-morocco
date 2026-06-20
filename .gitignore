@@ -60,3 +60,4 @@ supabase/migrations/
 .gitmodules
 .ripgreprc
 .mcp.json
+explanations/
