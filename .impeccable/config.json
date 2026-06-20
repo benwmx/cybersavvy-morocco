@@ -1,0 +1,9 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [
+      "src/routes/_authenticated/quizzes.tsx"
+    ],
+    "ignoreValues": []
+  }
+}
