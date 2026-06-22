@@ -111,6 +111,7 @@ export type Database = {
           color: string | null
           image_url: string | null
           is_public: boolean
+          sort_order: number
           created_at: string
         }
         Insert: {
@@ -124,6 +125,7 @@ export type Database = {
           color?: string | null
           image_url?: string | null
           is_public?: boolean
+          sort_order?: number
           created_at?: string
         }
         Update: {
@@ -137,6 +139,7 @@ export type Database = {
           color?: string | null
           image_url?: string | null
           is_public?: boolean
+          sort_order?: number
           created_at?: string
         }
         Relationships: []
