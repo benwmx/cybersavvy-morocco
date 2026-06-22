@@ -16,7 +16,7 @@ import { Route as GameRouteImport } from './routes/game'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as GameTrackIdRouteImport } from './routes/game.$trackId'
+import { Route as GameCategoryIdRouteImport } from './routes/game.$categoryId'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminDocsRouteImport } from './routes/admin/docs'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
@@ -69,9 +69,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GameTrackIdRoute = GameTrackIdRouteImport.update({
-  id: '/$trackId',
-  path: '/$trackId',
+const GameCategoryIdRoute = GameCategoryIdRouteImport.update({
+  id: '/$categoryId',
+  path: '/$categoryId',
   getParentRoute: () => GameRoute,
 } as any)
 const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
@@ -183,7 +183,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/game/$trackId': typeof GameTrackIdRoute
+  '/game/$categoryId': typeof GameCategoryIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -208,7 +208,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/game/$trackId': typeof GameTrackIdRoute
+  '/game/$categoryId': typeof GameCategoryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -236,7 +236,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/game/$trackId': typeof GameTrackIdRoute
+  '/game/$categoryId': typeof GameCategoryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -263,7 +263,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/translations'
     | '/admin/users'
-    | '/game/$trackId'
+    | '/game/$categoryId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -288,7 +288,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/translations'
     | '/admin/users'
-    | '/game/$trackId'
+    | '/game/$categoryId'
   id:
     | '__root__'
     | '/'
@@ -315,7 +315,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/translations'
     | '/admin/users'
-    | '/game/$trackId'
+    | '/game/$categoryId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -393,11 +393,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/game/$trackId': {
-      id: '/game/$trackId'
-      path: '/$trackId'
-      fullPath: '/game/$trackId'
-      preLoaderRoute: typeof GameTrackIdRouteImport
+    '/game/$categoryId': {
+      id: '/game/$categoryId'
+      path: '/$categoryId'
+      fullPath: '/game/$categoryId'
+      preLoaderRoute: typeof GameCategoryIdRouteImport
       parentRoute: typeof GameRoute
     }
     '/admin/users': {
@@ -561,11 +561,11 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface GameRouteChildren {
-  GameTrackIdRoute: typeof GameTrackIdRoute
+  GameCategoryIdRoute: typeof GameCategoryIdRoute
 }
 
 const GameRouteChildren: GameRouteChildren = {
-  GameTrackIdRoute: GameTrackIdRoute,
+  GameCategoryIdRoute: GameCategoryIdRoute,
 }
 
 const GameRouteWithChildren = GameRoute._addFileChildren(GameRouteChildren)

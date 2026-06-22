@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { GameWorld } from "@/components/GameWorld";
-import { TrackCard } from "@/components/TrackCard";
+import { CategoryCard } from "@/components/CategoryCard";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { api, ScenarioRow, CategoryRow } from "@/lib/supabase/api";
-import { TRACKS } from "@/content/scenarios";
+import { CATEGORIES } from "@/content/scenarios";
 import { History, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/guest")({
@@ -18,7 +18,7 @@ interface CategoryItem {
   totalQuestions: number;
 }
 
-type HistoryEntry = { trackId: string; titleFr?: string; titleAr?: string; score: number; total: number; date: string };
+type HistoryEntry = { categoryId: string; titleFr?: string; titleAr?: string; score: number; total: number; date: string };
 
 function GuestLobby() {
   const { t, lang } = useLang();
@@ -112,9 +112,9 @@ function GuestLobby() {
               }}
             >
               {categoryItems.map(({ category, scenarios, totalQuestions }, idx) => (
-                <TrackCard
+                <CategoryCard
                   key={category.id}
-                  trackId={category.id}
+                  categoryId={category.id}
                   title={translate(category.name)}
                   description={`${scenarios.length} ${t("trackCount")}`}
                   questionCount={totalQuestions}
@@ -134,10 +134,10 @@ function GuestLobby() {
                 gap: "14px",
               }}
             >
-              {TRACKS.map((tr, idx) => (
-                <TrackCard
+              {CATEGORIES.map((tr, idx) => (
+                <CategoryCard
                   key={tr.id}
-                  trackId={tr.id}
+                  categoryId={tr.id}
                   title={tr.title[lang as "fr" | "ar"]}
                   description={tr.description[lang as "fr" | "ar"]}
                   questionCount={tr.questions.length}
@@ -171,7 +171,7 @@ function GuestLobby() {
                   .slice(-5)
                   .reverse()
                   .map((h, i) => {
-                    const tr = TRACKS.find((tk) => tk.id === h.trackId);
+                    const tr = CATEGORIES.find((tk) => tk.id === h.categoryId);
                     const pct = h.total > 0 ? Math.round((h.score / h.total) * 100) : 0;
                     const displayTitle =
                       (lang === "ar" ? h.titleAr : h.titleFr) ||
