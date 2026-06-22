@@ -71,14 +71,14 @@ function CategoryRunner() {
   const [phase, setPhase] = useState<Phase>("quiz");
   const [allResults, setAllResults] = useState<ScenarioResult[]>([]);
   const [saveState, setSaveState] = useState<"idle" | "online" | "queued" | "guest">("idle");
-  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ kind: "img"; url: string } | { kind: "visual" } | null>(null);
 
   useEffect(() => {
-    if (!lightboxUrl) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setLightboxUrl(null); };
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setLightbox(null); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [lightboxUrl]);
+  }, [lightbox]);
 
   if (loading) return <QuizLoading />;
 
@@ -367,8 +367,8 @@ function CategoryRunner() {
               {/* Left: image column — blurred bg fills letterbox, foreground image fully visible */}
               <div
                 className="quiz-sbs-img"
-                style={{ flex: "0 0 58%", position: "relative", minHeight: "clamp(380px, 52vh, 560px)", overflow: "hidden", background: "oklch(0.12 0.04 258)", cursor: q.media_url ? "zoom-in" : "default" }}
-                onClick={() => q.media_url && setLightboxUrl(q.media_url)}
+                style={{ flex: "0 0 58%", position: "relative", minHeight: "clamp(380px, 52vh, 560px)", overflow: "hidden", background: "oklch(0.12 0.04 258)", cursor: "zoom-in" }}
+                onClick={() => q.media_url ? setLightbox({ kind: "img", url: q.media_url }) : setLightbox({ kind: "visual" })}
               >
                 {q.media_url ? (
                   <>
@@ -394,13 +394,18 @@ function CategoryRunner() {
                     </div>
                   </>
                 ) : (
-                  <div style={{ position: "absolute", inset: 0 }}>
-                    <ScenarioVisuals
-                      visualType={(q.visual_type ?? null) as import("@/lib/visuals").VisualType | null}
-                      visualConfig={(q.visual_config ?? null) as Record<string, unknown> | null}
-                      imageUrl={"image_url" in currentScenario ? (currentScenario as ScenarioRow).image_url : null}
-                    />
-                  </div>
+                  <>
+                    <div style={{ position: "absolute", inset: 0 }}>
+                      <ScenarioVisuals
+                        visualType={(q.visual_type ?? null) as import("@/lib/visuals").VisualType | null}
+                        visualConfig={(q.visual_config ?? null) as Record<string, unknown> | null}
+                        imageUrl={"image_url" in currentScenario ? (currentScenario as ScenarioRow).image_url : null}
+                      />
+                    </div>
+                    <div style={{ position: "absolute", top: 12, right: 12, background: "oklch(0 0 0 / 0.35)", borderRadius: "8px", padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+                      <ZoomIn style={{ width: 16, height: 16, color: "white" }} />
+                    </div>
+                  </>
                 )}
               </div>
               {/* Right: prompt + choices */}
@@ -465,10 +470,10 @@ function CategoryRunner() {
       `}</style>
 
       {/* Lightbox */}
-      {lightboxUrl && (
+      {lightbox && (
         <div
           className="lb-overlay"
-          onClick={() => setLightboxUrl(null)}
+          onClick={() => setLightbox(null)}
           style={{
             position: "fixed", inset: 0, zIndex: 100,
             background: "oklch(0 0 0 / 0.88)",
@@ -477,21 +482,41 @@ function CategoryRunner() {
             animation: "lb-in 0.2s ease both",
           }}
         >
-          <img
-            className="lb-img"
-            src={lightboxUrl}
-            alt=""
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: "100%", maxHeight: "100%",
-              objectFit: "contain",
-              borderRadius: "12px",
-              boxShadow: "0 32px 80px oklch(0 0 0 / 0.6)",
-              animation: "lb-img-in 0.25s cubic-bezier(0.16,1,0.3,1) both",
-            }}
-          />
+          {lightbox.kind === "img" ? (
+            <img
+              className="lb-img"
+              src={lightbox.url}
+              alt=""
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                maxWidth: "100%", maxHeight: "100%",
+                objectFit: "contain",
+                borderRadius: "12px",
+                boxShadow: "0 32px 80px oklch(0 0 0 / 0.6)",
+                animation: "lb-img-in 0.25s cubic-bezier(0.16,1,0.3,1) both",
+              }}
+            />
+          ) : (
+            <div
+              className="lb-img"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "min(900px, 92vw)", height: "min(680px, 82vh)",
+                borderRadius: "20px", overflow: "hidden",
+                boxShadow: "0 32px 80px oklch(0 0 0 / 0.6)",
+                animation: "lb-img-in 0.25s cubic-bezier(0.16,1,0.3,1) both",
+                background: "oklch(0.12 0.04 258)",
+              }}
+            >
+              <ScenarioVisuals
+                visualType={(q.visual_type ?? null) as import("@/lib/visuals").VisualType | null}
+                visualConfig={(q.visual_config ?? null) as Record<string, unknown> | null}
+                imageUrl={"image_url" in currentScenario ? (currentScenario as ScenarioRow).image_url : null}
+              />
+            </div>
+          )}
           <button
-            onClick={() => setLightboxUrl(null)}
+            onClick={() => setLightbox(null)}
             style={{
               position: "fixed", top: 20, right: 20,
               width: 44, height: 44, borderRadius: "50%",
