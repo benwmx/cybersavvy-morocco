@@ -100,7 +100,7 @@ function StatusBadge({ status, t }: { status: StudentStatus; t: (k: string) => s
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "students" | "trends";
+type Tab = "overview" | "students" | "trends" | "ai";
 
 function AnalyticsPage() {
   const { t, lang } = useLang();
@@ -349,6 +349,7 @@ function AnalyticsPage() {
     { id: "overview",  label: t("overview") },
     { id: "students",  label: t("studentsLabel") },
     { id: "trends",    label: t("tabTrends") },
+    { id: "ai",        label: t("tabAI") },
   ];
 
   return (
@@ -611,76 +612,134 @@ function AnalyticsPage() {
         )
       )}
 
-      {/* ── AI Recommendations (always visible) ── */}
-      <Card className="border border-violet-200 shadow-none bg-violet-50/20 rounded-sm overflow-hidden">
-        <div className="p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-7 w-7 rounded-sm bg-violet-50 text-violet-600 flex items-center justify-center">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <h3 className="text-xs font-medium text-slate-600">{t("aiRecommendations")}</h3>
-          </div>
-          <p className="text-xs text-slate-400 mb-4 ms-9">{t("aiRecommendationsDesc")}</p>
+      {/* ── TAB: AI Recommendations ── */}
+      {activeTab === "ai" && (
+        <div className="space-y-4">
 
-          {!aiConfig ? (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded border border-violet-100 bg-violet-50/50">
-              <div>
-                <p className="text-sm font-medium text-slate-700">{t("noApiKeyTitle")}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{t("noApiKeyDesc")}</p>
-              </div>
-              <Link to="/settings">
-                <Button variant="outline" size="sm" className="h-7 px-3 text-xs rounded border-violet-200 text-violet-700 hover:bg-violet-50 shrink-0">
-                  <Settings className="h-3 w-3 me-1.5" />
-                  {t("goToSettings")}
-                </Button>
-              </Link>
-            </div>
-          ) : !stats ? (
-            <p className="text-xs text-slate-400 p-3 rounded border border-dashed border-slate-200">{t("noDataForAI")}</p>
-          ) : (
-            <div className="space-y-4">
-              {!aiMutation.data && !aiMutation.isPending && (
-                <Button onClick={() => aiMutation.mutate()} className="h-8 px-4 rounded bg-violet-600 hover:bg-violet-700 text-sm font-medium">
-                  <Sparkles className="h-3.5 w-3.5 me-1.5" />
-                  {t("generateRecommendations")}
-                </Button>
-              )}
-              {aiMutation.isPending && (
-                <div className="flex items-center gap-2 text-sm text-violet-600">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("generating")}
+          {/* No API key */}
+          {!aiConfig && (
+            <Card className="border border-slate-200 shadow-none bg-white rounded-sm p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-700">{t("noApiKeyTitle")}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{t("noApiKeyDesc")}</p>
                 </div>
-              )}
-              {aiMutation.isError && (
-                <p className="text-xs text-rose-500 p-3 rounded border border-rose-100 bg-rose-50">
-                  {(aiMutation.error as Error)?.message}
-                </p>
-              )}
-              {aiMutation.data && (
-                <div className="space-y-4">
-                  <div className="p-4 rounded border border-violet-100 bg-violet-50/30">
-                    <GeminiMarkdown text={aiMutation.data} />
+                <Link to="/settings">
+                  <Button variant="outline" size="sm" className="h-7 px-3 text-xs rounded border-violet-200 text-violet-700 hover:bg-violet-50 shrink-0">
+                    <Settings className="h-3 w-3 me-1.5" />
+                    {t("goToSettings")}
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          )}
+
+          {/* No data yet */}
+          {aiConfig && !stats && (
+            <Card className="border border-slate-200 shadow-none bg-white rounded-sm p-5">
+              <p className="text-xs text-slate-400">{t("noDataForAI")}</p>
+            </Card>
+          )}
+
+          {aiConfig && stats && (
+            <>
+              {/* Data preview */}
+              <Card className="border border-slate-200 shadow-none bg-white rounded-sm p-5">
+                <CardIcon icon={<Sparkles className="h-4 w-4" />} color="violet" label={t("aiDataPreview")} />
+                <div className="mt-4 grid sm:grid-cols-2 gap-x-8 gap-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-50 pb-2">
+                    <span className="text-xs text-slate-500">{t("aiScopeLabel")}</span>
+                    <span className="text-xs font-semibold text-slate-700">
+                      {selectedClassName ?? t("allClasses")}
+                    </span>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs text-slate-400 italic">{t("aiDisclaimer")}</p>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {saveMutation.isSuccess ? (
-                        <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
-                          <BookmarkCheck className="h-3.5 w-3.5" />{t("saved")}
-                        </span>
-                      ) : (
-                        <Button variant="outline" size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="h-7 px-3 text-xs rounded border-violet-200 text-violet-700 hover:bg-violet-50">
-                          {saveMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bookmark className="h-3.5 w-3.5 me-1" />}
-                          {t("saveRecommendation")}
+                  <div className="flex items-center justify-between border-b border-slate-50 pb-2">
+                    <span className="text-xs text-slate-500">{t("studentsLabel")}</span>
+                    <span className="text-xs font-semibold text-slate-700">{stats.uniqueStudents}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-slate-50 pb-2">
+                    <span className="text-xs text-slate-500">{t("attempts")}</span>
+                    <span className="text-xs font-semibold text-slate-700">{stats.totalAttempts}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-slate-50 pb-2">
+                    <span className="text-xs text-slate-500">{t("avgGeneral")}</span>
+                    <span className="text-xs font-semibold text-violet-700">{Math.round(stats.average)}%</span>
+                  </div>
+                  {stats.categoryStats.map((cat, i) => (
+                    <div key={i} className="flex items-center justify-between border-b border-slate-50 pb-2">
+                      <span className="text-xs text-slate-500 truncate max-w-[60%]">{cat.name}</span>
+                      <span className={`text-xs font-semibold ${
+                        (cat.score / cat.max) * 100 >= 70 ? "text-emerald-600"
+                        : (cat.score / cat.max) * 100 >= 45 ? "text-amber-600"
+                        : "text-rose-600"
+                      }`}>
+                        {Math.round((cat.score / cat.max) * 100)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Generate / output */}
+              <Card className="border border-violet-200 shadow-none bg-violet-50/20 rounded-sm p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-sm bg-violet-50 text-violet-600 flex items-center justify-center">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-700">{t("aiRecommendations")}</p>
+                    <p className="text-xs text-slate-400">{t("aiRecommendationsDesc")}</p>
+                  </div>
+                </div>
+
+                {!aiMutation.data && !aiMutation.isPending && (
+                  <Button onClick={() => aiMutation.mutate()} className="h-8 px-4 rounded bg-violet-600 hover:bg-violet-700 text-sm font-medium">
+                    <Sparkles className="h-3.5 w-3.5 me-1.5" />
+                    {t("generateRecommendations")}
+                  </Button>
+                )}
+
+                {aiMutation.isPending && (
+                  <div className="flex items-center gap-2 text-sm text-violet-600">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("generating")}
+                  </div>
+                )}
+
+                {aiMutation.isError && (
+                  <p className="text-xs text-rose-500 p-3 rounded border border-rose-100 bg-rose-50">
+                    {(aiMutation.error as Error)?.message}
+                  </p>
+                )}
+
+                {aiMutation.data && (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded border border-violet-100 bg-white">
+                      <GeminiMarkdown text={aiMutation.data} />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-slate-400 italic">{t("aiDisclaimer")}</p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {saveMutation.isSuccess ? (
+                          <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                            <BookmarkCheck className="h-3.5 w-3.5" />{t("saved")}
+                          </span>
+                        ) : (
+                          <Button variant="outline" size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="h-7 px-3 text-xs rounded border-violet-200 text-violet-700 hover:bg-violet-50">
+                            {saveMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bookmark className="h-3.5 w-3.5 me-1" />}
+                            {t("saveRecommendation")}
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={() => aiMutation.mutate()} disabled={aiMutation.isPending} className="h-7 px-3 text-xs text-violet-600 hover:bg-violet-50 rounded">
+                          {t("regenerate")}
                         </Button>
-                      )}
-                      <Button variant="ghost" size="sm" onClick={() => aiMutation.mutate()} disabled={aiMutation.isPending} className="h-7 px-3 text-xs text-violet-600 hover:bg-violet-50 rounded">
-                        {t("regenerate")}
-                      </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </Card>
+
+              {/* Saved history */}
               {!aiMutation.data && savedRecs && savedRecs.length > 0 && (
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-slate-500">{t("recHistory")}</p>
@@ -691,6 +750,7 @@ function AnalyticsPage() {
                         lang === "ar" ? "ar-MA" : "fr-FR",
                         { day: "numeric", month: "long", year: "numeric" },
                       );
+                      const scopeLabel = rec.class_name ?? t("allClasses");
                       return (
                         <div key={rec.id} className="rounded border border-slate-100 overflow-hidden">
                           <button
@@ -698,8 +758,11 @@ function AnalyticsPage() {
                             onClick={() => setExpandedRecId(isOpen ? "__none__" : rec.id)}
                             className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors text-start"
                           >
-                            <span className="text-xs text-slate-500">{t("lastSaved")} {dateLabel}</span>
-                            <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span className="text-xs font-medium text-slate-700 shrink-0">{scopeLabel}</span>
+                              <span className="text-xs text-slate-400 truncate">{dateLabel}</span>
+                            </div>
+                            <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform shrink-0 ms-2 ${isOpen ? "rotate-180" : ""}`} />
                           </button>
                           {isOpen && <div className="p-4 bg-white"><GeminiMarkdown text={rec.content} /></div>}
                         </div>
@@ -708,10 +771,11 @@ function AnalyticsPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
-      </Card>
+      )}
+
     </div>
   );
 }

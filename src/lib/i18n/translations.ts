@@ -249,6 +249,10 @@ export const translations = {
     allStudentsActive: "Tous les élèves ont déjà participé.",
     studentName: "Élève",
     statusLabel: "Statut",
+    tabAI: "Recommandations IA",
+    aiDataPreview: "Données qui seront analysées",
+    aiScopeLabel: "Portée",
+    aiClassLabel: "Classe",
     // Quizzes page
     quizzesTitle: "Catégories & Parcours",
     quizzesSubtitle: "Gérez les contenus et assignez-les par cohorte.",
@@ -958,6 +962,10 @@ export const translations = {
     allStudentsActive: "جميع التلاميذ قد شاركوا بالفعل.",
     studentName: "التلميذ",
     statusLabel: "الحالة",
+    tabAI: "التوصيات الذكية",
+    aiDataPreview: "البيانات التي ستُحلَّل",
+    aiScopeLabel: "النطاق",
+    aiClassLabel: "القسم",
     // Quizzes page
     quizzesTitle: "المحاور والمسارات",
     quizzesSubtitle: "أدر المحتوى وخصصه لكل فوج.",
