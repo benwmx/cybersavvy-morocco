@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Pencil, Trash2, Plus, Layers, BookOpen, ChevronRight, HelpCircle, ImageIcon, Layout } from "lucide-react";
 import type { Json } from "@/lib/database.types";
 import { ImageUpload } from "@/components/ImageUpload";
+import { IconPicker } from "@/components/IconPicker";
 import { VisualTemplateEditor } from "@/components/VisualTemplateEditor";
 import type { VisualType } from "@/lib/visuals";
 
@@ -334,7 +335,7 @@ function QuestionEditDialog({
 
 // ─── Category dialog ──────────────────────────────────────────────────────────
 
-interface CategoryFormData { fr: string; ar: string; color_code: string; }
+interface CategoryFormData { fr: string; ar: string; color_code: string; icon: string | null; }
 
 function CategoryDialog({
   open, initial, onClose, onSave, saving,
@@ -346,6 +347,7 @@ function CategoryDialog({
   const [fr, setFr] = useState(initial.fr);
   const [ar, setAr] = useState(initial.ar);
   const [color, setColor] = useState(initial.color_code || "#3B82F6");
+  const [icon, setIcon] = useState<string | null>(initial.icon);
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent className="max-w-md rounded-sm">
@@ -380,10 +382,11 @@ function CategoryDialog({
                 className="rounded font-mono flex-1" maxLength={7} />
             </div>
           </div>
+          <IconPicker value={icon} onChange={setIcon} />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} className="rounded text-sm font-medium">{t("adminCancel")}</Button>
-          <Button onClick={() => onSave({ fr, ar, color_code: color })}
+          <Button onClick={() => onSave({ fr, ar, color_code: color, icon })}
             disabled={!fr.trim() || !ar.trim() || saving}
             className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm font-medium">
             {t("save")}
@@ -528,8 +531,8 @@ function ContentPage() {
   // ── mutations ────────────────────────────────────────────────────────────────
 
   const catMutation = useMutation({
-    mutationFn: ({ id, name, colorCode }: { id?: string; name: Json; colorCode: string }) =>
-      api.adminSaveCategory(id ?? null, name, colorCode),
+    mutationFn: ({ id, name, colorCode, icon }: { id?: string; name: Json; colorCode: string; icon?: string | null }) =>
+      api.adminSaveCategory(id ?? null, name, colorCode, icon),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-global-categories"] });
       setCatDialog({ open: false });
@@ -850,14 +853,15 @@ function ContentPage() {
         open={catDialog.open}
         initial={
           catDialog.row
-            ? { ...parseBilingual(catDialog.row.name), color_code: catDialog.row.color_code || "#3B82F6" }
-            : { fr: "", ar: "", color_code: "#3B82F6" }
+            ? { ...parseBilingual(catDialog.row.name), color_code: catDialog.row.color_code || "#3B82F6", icon: catDialog.row.icon ?? null }
+            : { fr: "", ar: "", color_code: "#3B82F6", icon: null }
         }
         onClose={() => setCatDialog({ open: false })}
         onSave={data => catMutation.mutate({
           id: catDialog.row?.id,
           name: { fr: data.fr, ar: data.ar } as unknown as Json,
           colorCode: data.color_code,
+          icon: data.icon,
         })}
         saving={catMutation.isPending}
       />

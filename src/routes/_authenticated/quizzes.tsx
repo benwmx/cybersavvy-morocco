@@ -10,10 +10,10 @@ import { api, ClassRow, ScenarioRow, CategoryRow, supabaseClient } from "@/lib/s
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { Plus, Pencil, ChevronDown, ChevronUp, ChevronRight, Trash2, GripVertical, Layout, Check, Image as ImageIcon } from "lucide-react";
-import { ICON_REGISTRY, getIconComponent } from "@/lib/icons";
 import { VisualTemplateEditor } from "@/components/VisualTemplateEditor";
 import type { VisualType } from "@/lib/visuals";
 import { ImageUpload } from "@/components/ImageUpload";
+import { IconPicker } from "@/components/IconPicker";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/quizzes")({
@@ -469,11 +469,6 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
   const [color, setColor] = useState("#3B82F6");
   const [iconName, setIconName] = useState<string | null>(null);
 
-  const { data: enabledIcons = [] } = useQuery({
-    queryKey: ["icon-settings"],
-    queryFn: () => api.getIconSettings(),
-  });
-
   const save = useMutation({
     mutationFn: async () => {
       const session = await api.getSession();
@@ -517,7 +512,7 @@ function CategoryCreator({ onCancel, onSuccess }: { onCancel: () => void; onSucc
               className="h-8 rounded bg-slate-50 font-mono text-sm flex-1" maxLength={7} />
           </div>
         </div>
-        <IconPicker value={iconName} onChange={setIconName} enabledIcons={enabledIcons} t={t} lang={lang} />
+        <IconPicker value={iconName} onChange={setIconName} />
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel} className="rounded text-sm font-medium px-4 h-8 text-slate-500">
             {t("adminCancel")}
@@ -537,11 +532,6 @@ function CategoryEditor({ category, onCancel, onSuccess }: { category: CategoryR
   const [name, setName] = useState(category.name as { fr: string; ar: string });
   const [color, setColor] = useState(category.color_code || "#3B82F6");
   const [iconName, setIconName] = useState<string | null>(category.icon ?? null);
-
-  const { data: enabledIcons = [] } = useQuery({
-    queryKey: ["icon-settings"],
-    queryFn: () => api.getIconSettings(),
-  });
 
   const save = useMutation({
     mutationFn: () => api.updateCategory(category.id, { name, color_code: color, icon: iconName }),
@@ -577,7 +567,7 @@ function CategoryEditor({ category, onCancel, onSuccess }: { category: CategoryR
               className="h-8 rounded bg-slate-50 font-mono text-sm flex-1" maxLength={7} />
           </div>
         </div>
-        <IconPicker value={iconName} onChange={setIconName} enabledIcons={enabledIcons} t={t} lang={lang} />
+        <IconPicker value={iconName} onChange={setIconName} />
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel} className="rounded text-sm font-medium px-4 h-8 text-slate-500">
             {t("adminCancel")}
@@ -1044,59 +1034,5 @@ function QuestionEditor({ q, idx, userId, defaultOpen, forceClose, onUpdate, onR
         </CardContent>
       )}
     </Card>
-  );
-}
-
-function IconPicker({
-  value,
-  onChange,
-  enabledIcons,
-  t,
-  lang,
-}: {
-  value: string | null;
-  onChange: (v: string | null) => void;
-  enabledIcons: string[];
-  t: (k: string) => string;
-  lang: string;
-}) {
-  const icons = enabledIcons.length > 0
-    ? ICON_REGISTRY.filter((i) => enabledIcons.includes(i.name))
-    : ICON_REGISTRY;
-
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs text-slate-500">{t("categoryIcon")}</Label>
-      <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded border border-slate-200">
-        {icons.map((iconDef) => {
-          const Icon = iconDef.component;
-          const isSelected = value === iconDef.name;
-          return (
-            <button
-              key={iconDef.name}
-              type="button"
-              onClick={() => onChange(isSelected ? null : iconDef.name)}
-              title={lang === "fr" ? iconDef.labelFr : iconDef.labelAr}
-              className={`h-8 w-8 rounded flex items-center justify-center transition-colors ${
-                isSelected
-                  ? "bg-[#1E3A8A] text-white"
-                  : "bg-white hover:bg-blue-50 text-slate-500 hover:text-[#1E3A8A] border border-slate-200"
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-            </button>
-          );
-        })}
-      </div>
-      {value && (
-        <button
-          type="button"
-          onClick={() => onChange(null)}
-          className="text-[10px] text-rose-400 hover:text-rose-600 font-medium"
-        >
-          {t("adminCancel")}
-        </button>
-      )}
-    </div>
   );
 }
