@@ -383,9 +383,19 @@ export const api = {
       query = query.is("teacher_id", null);
     }
 
-    const { data, error } = await query.order("created_at", { ascending: false });
+    const { data, error } = await query
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
     if (error) throw error;
     return data || [];
+  },
+
+  async updateScenarioOrder(ids: string[]): Promise<void> {
+    await Promise.all(
+      ids.map((id, sort_order) =>
+        supabase.from("scenarios").update({ sort_order }).eq("id", id)
+      )
+    );
   },
 
   async listVisibleScenarios(classId: string): Promise<ScenarioRow[]> {

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { api, ClassRow, ScenarioRow, CategoryRow, supabaseClient } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
-import { Plus, Pencil, ChevronDown, ChevronUp, Trash2, GripVertical, Layout, Check } from "lucide-react";
+import { Plus, Pencil, ChevronDown, ChevronUp, ChevronRight, Trash2, GripVertical, Layout, Check, Image as ImageIcon } from "lucide-react";
 import { ICON_REGISTRY, getIconComponent } from "@/lib/icons";
 import { VisualTemplateEditor } from "@/components/VisualTemplateEditor";
 import type { VisualType } from "@/lib/visuals";
@@ -215,7 +215,12 @@ function CategoryCard({
   const { lang, t } = useLang();
   const { translate } = useI18n();
   const [expanded, setExpanded] = useState(false);
+  const [orderedScenarios, setOrderedScenarios] = useState<ScenarioRow[]>(scenarios);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const qc = useQueryClient();
+
+  useEffect(() => { setOrderedScenarios(scenarios); }, [scenarios]);
 
   useEffect(() => {
     if (!isNew || !cardRef.current) return;
@@ -223,6 +228,23 @@ function CategoryCard({
     const timer = setTimeout(onNewSeen, 2500);
     return () => clearTimeout(timer);
   }, [isNew, onNewSeen]);
+
+  const reorderMutation = useMutation({
+    mutationFn: (ids: string[]) => api.updateScenarioOrder(ids),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["scenarios"] }),
+  });
+
+  const handleScenarioDrop = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const next = [...orderedScenarios];
+    const fromIdx = next.findIndex(s => s.id === fromId);
+    const toIdx = next.findIndex(s => s.id === toId);
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
+    setOrderedScenarios(next);
+    setDragOverId(null);
+    reorderMutation.mutate(next.map(s => s.id));
+  };
 
   const isGlobal = category.teacher_id === null;
   const isFork = category.teacher_id !== null && category.source_category_id !== null;
@@ -361,19 +383,34 @@ function CategoryCard({
             )}
           </div>
 
-          {scenarios.length === 0 ? (
+          {orderedScenarios.length === 0 ? (
             <p className="text-slate-400 text-xs text-center py-4">
               {t("noTracksInCategory")}
             </p>
           ) : (
             <div className="space-y-1.5">
-              {scenarios.map(scenario => {
+              {orderedScenarios.map(scenario => {
                 const isOwn = scenario.teacher_id !== null;
                 const questions = Array.isArray(scenario.questions) ? (scenario.questions as any[]) : [];
+                const isDragOver = dragOverId === scenario.id;
                 return (
-                  <div key={scenario.id} className="bg-slate-50 rounded border border-slate-100">
+                  <div
+                    key={scenario.id}
+                    draggable={isOwn}
+                    onDragStart={e => e.dataTransfer.setData("scenarioId", scenario.id)}
+                    onDragOver={e => { e.preventDefault(); setDragOverId(scenario.id); }}
+                    onDragLeave={() => setDragOverId(null)}
+                    onDrop={e => {
+                      const fromId = e.dataTransfer.getData("scenarioId");
+                      if (fromId) handleScenarioDrop(fromId, scenario.id);
+                    }}
+                    className={`bg-slate-50 rounded border transition-colors ${isDragOver ? "border-[#1E3A8A] bg-blue-50/40" : "border-slate-100"}`}
+                  >
                     <div className="flex items-center justify-between gap-3 p-3">
                       <div className="flex items-center gap-3 min-w-0">
+                        {isOwn && (
+                          <GripVertical className="h-3.5 w-3.5 text-slate-300 cursor-grab shrink-0" />
+                        )}
                         <div className="shrink-0 h-8 w-8 rounded bg-white border border-slate-200 flex flex-col items-center justify-center shadow-none">
                           <span className="text-sm font-semibold text-[#1E3A8A] leading-none">{questions.length}</span>
                           <span className="text-[8px] text-slate-400 leading-none mt-0.5">
@@ -563,6 +600,8 @@ function ScenarioCreator({ defaultCategoryId, userId, onCancel, onSuccess }: { d
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string>(defaultCategoryId ?? "");
   const [questions, setQuestions] = useState<any[]>([]);
+  const [lastAddedId, setLastAddedId] = useState<string | null>(null);
+  const [allExpanded, setAllExpanded] = useState<boolean | null>(null);
 
   const { data: availableCategories = [] } = useQuery({
     queryKey: ["categories"],
@@ -570,8 +609,11 @@ function ScenarioCreator({ defaultCategoryId, userId, onCancel, onSuccess }: { d
   });
 
   const addQuestion = () => {
+    const newId = crypto.randomUUID();
+    setLastAddedId(newId);
+    setAllExpanded(null);
     setQuestions([...questions, {
-      id: crypto.randomUUID(),
+      id: newId,
       prompt: { fr: "", ar: "" },
       choices: { fr: ["", "", ""], ar: ["", "", ""] },
       correctIndex: 0,
@@ -654,17 +696,33 @@ function ScenarioCreator({ defaultCategoryId, userId, onCancel, onSuccess }: { d
           />
         )}
 
-        <div className="space-y-4 pt-4 border-t border-slate-100">
+        <div className="space-y-3 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-700">{t("question")}s</h3>
-            <Button size="sm" variant="outline" onClick={addQuestion} className="rounded border-[#1E3A8A] text-[#1E3A8A] text-xs font-medium hover:bg-blue-50 h-7 px-2.5">
-              <Plus className="h-3 w-3 me-1.5" />
-              {t("addQuestion")}
-            </Button>
+            <h3 className="text-sm font-semibold text-slate-700">{t("question")}s ({questions.length})</h3>
+            <div className="flex items-center gap-1.5">
+              {questions.length > 1 && (
+                <>
+                  <Button size="sm" variant="ghost" onClick={() => { setAllExpanded(false); setLastAddedId(null); }}
+                    className="h-7 px-2 rounded text-xs text-slate-400 hover:text-slate-600">
+                    {t("collapseAll")}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setAllExpanded(true); setLastAddedId(null); }}
+                    className="h-7 px-2 rounded text-xs text-slate-400 hover:text-slate-600">
+                    {t("expandAll")}
+                  </Button>
+                </>
+              )}
+              <Button size="sm" variant="outline" onClick={addQuestion} className="rounded border-[#1E3A8A] text-[#1E3A8A] text-xs font-medium hover:bg-blue-50 h-7 px-2.5">
+                <Plus className="h-3 w-3 me-1.5" />
+                {t("addQuestion")}
+              </Button>
+            </div>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-1.5">
             {questions.map((q, idx) => (
               <QuestionEditor key={q.id} q={q} idx={idx} userId={userId}
+                defaultOpen={q.id === lastAddedId || allExpanded === true}
+                forceClose={allExpanded === false}
                 onUpdate={data => updateQuestion(idx, data)}
                 onRemove={() => removeQuestion(idx)}
                 onReorder={(from, to) => {
@@ -706,6 +764,8 @@ function ScenarioEditor({ scenario, categories, userId, onCancel, onSuccess }: {
   const [imageUrl, setImageUrl] = useState<string | null>(scenario.image_url ?? null);
   const [categoryId, setCategoryId] = useState<string>(scenario.category_id);
   const [questions, setQuestions] = useState<any[]>(scenario.questions as any[]);
+  const [lastAddedId, setLastAddedId] = useState<string | null>(null);
+  const [allExpanded, setAllExpanded] = useState<boolean | null>(null);
 
   const updateQuestion = (idx: number, data: any) => {
     const next = [...questions];
@@ -773,19 +833,40 @@ function ScenarioEditor({ scenario, categories, userId, onCancel, onSuccess }: {
           />
         )}
 
-        <div className="space-y-4 pt-4 border-t border-slate-100">
+        <div className="space-y-3 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-700">{t("question")}s</h3>
-            <Button size="sm" variant="outline"
-              onClick={() => setQuestions([...questions, { id: crypto.randomUUID(), prompt: { fr: "", ar: "" }, choices: { fr: ["", "", ""], ar: ["", "", ""] }, correctIndex: 0, explanation: { fr: "", ar: "" }, media_url: null, visual_type: null, visual_config: null }])}
-              className="rounded border-[#1E3A8A] text-[#1E3A8A] text-xs font-medium hover:bg-blue-50 h-7 px-2.5">
-              <Plus className="h-3 w-3 me-1.5" />
-              {t("addQuestion")}
-            </Button>
+            <h3 className="text-sm font-semibold text-slate-700">{t("question")}s ({questions.length})</h3>
+            <div className="flex items-center gap-1.5">
+              {questions.length > 1 && (
+                <>
+                  <Button size="sm" variant="ghost" onClick={() => { setAllExpanded(false); setLastAddedId(null); }}
+                    className="h-7 px-2 rounded text-xs text-slate-400 hover:text-slate-600">
+                    {t("collapseAll")}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setAllExpanded(true); setLastAddedId(null); }}
+                    className="h-7 px-2 rounded text-xs text-slate-400 hover:text-slate-600">
+                    {t("expandAll")}
+                  </Button>
+                </>
+              )}
+              <Button size="sm" variant="outline"
+                onClick={() => {
+                  const newId = crypto.randomUUID();
+                  setLastAddedId(newId);
+                  setAllExpanded(null);
+                  setQuestions([...questions, { id: newId, prompt: { fr: "", ar: "" }, choices: { fr: ["", "", ""], ar: ["", "", ""] }, correctIndex: 0, explanation: { fr: "", ar: "" }, media_url: null, visual_type: null, visual_config: null }]);
+                }}
+                className="rounded border-[#1E3A8A] text-[#1E3A8A] text-xs font-medium hover:bg-blue-50 h-7 px-2.5">
+                <Plus className="h-3 w-3 me-1.5" />
+                {t("addQuestion")}
+              </Button>
+            </div>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-1.5">
             {questions.map((q, idx) => (
               <QuestionEditor key={q.id} q={q} idx={idx} userId={userId}
+                defaultOpen={q.id === lastAddedId || allExpanded === true}
+                forceClose={allExpanded === false}
                 onUpdate={data => updateQuestion(idx, data)}
                 onRemove={() => setQuestions(questions.filter((_, i) => i !== idx))}
                 onReorder={(from, to) => {
@@ -813,15 +894,21 @@ function ScenarioEditor({ scenario, categories, userId, onCancel, onSuccess }: {
   );
 }
 
-function QuestionEditor({ q, idx, userId, onUpdate, onRemove, onReorder }: {
+function QuestionEditor({ q, idx, userId, defaultOpen, forceClose, onUpdate, onRemove, onReorder }: {
   q: any;
   idx: number;
   userId: string;
+  defaultOpen?: boolean;
+  forceClose?: boolean;
   onUpdate: (data: any) => void;
   onRemove: () => void;
   onReorder: (from: number, to: number) => void;
 }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const [open, setOpen] = useState(defaultOpen ?? false);
+
+  useEffect(() => { if (defaultOpen) setOpen(true); }, [defaultOpen]);
+  useEffect(() => { if (forceClose) setOpen(false); }, [forceClose]);
 
   const addChoice = () => {
     if (q.choices.fr.length >= 5) return;
@@ -835,105 +922,127 @@ function QuestionEditor({ q, idx, userId, onUpdate, onRemove, onReorder }: {
     onUpdate({ choices: { fr, ar }, correctIndex: Math.max(0, Math.min(q.correctIndex, fr.length - 1)) });
   };
 
+  const promptPreview = (lang === "fr" ? q.prompt?.fr : q.prompt?.ar) || q.prompt?.fr || q.prompt?.ar || "";
+  const hasMedia = !!q.media_url;
+  const hasVisual = !!q.visual_type;
+
   return (
-    <Card className="bg-slate-50/50 border border-slate-100 shadow-none rounded">
-      <CardContent className="p-4 space-y-4">
-
-        {/* Drag handle + remove */}
-        <div className="flex items-center justify-between"
-          draggable
-          onDragStart={e => e.dataTransfer.setData("text/plain", idx.toString())}
-          onDragOver={e => e.preventDefault()}
-          onDrop={e => {
-            const from = parseInt(e.dataTransfer.getData("text/plain"));
-            if (from !== idx) onReorder(from, idx);
-          }}
-        >
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border border-slate-200 text-xs font-medium text-[#1E3A8A] cursor-move">
-            <GripVertical className="h-3.5 w-3.5" />Q{idx + 1}
-          </span>
-          <Button size="icon" variant="ghost" className="h-7 w-7 rounded text-rose-500 hover:bg-rose-50" onClick={onRemove}>
-            <Trash2 className="h-3.5 w-3.5" />
+    <Card
+      className="bg-slate-50/50 border border-slate-100 shadow-none rounded overflow-hidden"
+      draggable
+      onDragStart={e => e.dataTransfer.setData("text/plain", idx.toString())}
+      onDragOver={e => e.preventDefault()}
+      onDrop={e => {
+        const from = parseInt(e.dataTransfer.getData("text/plain"));
+        if (!isNaN(from) && from !== idx) onReorder(from, idx);
+      }}
+    >
+      {/* Collapsed header — always visible */}
+      <div
+        className="flex items-center gap-2 px-3 py-2.5 cursor-pointer select-none group"
+        onClick={() => setOpen(v => !v)}
+      >
+        <GripVertical className="h-3.5 w-3.5 text-slate-300 cursor-grab shrink-0" onClick={e => e.stopPropagation()} />
+        <span className="inline-flex items-center gap-1 h-5 px-1.5 rounded bg-white border border-slate-200 text-[10px] font-semibold text-[#1E3A8A] shrink-0">
+          Q{idx + 1}
+        </span>
+        <span className="flex-1 text-xs text-slate-600 truncate min-w-0">
+          {promptPreview || <span className="text-slate-300 italic">{t("question")}…</span>}
+        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[10px] text-slate-400 tabular-nums">{q.choices.fr.length} {t("adminChoicesLabel")}</span>
+          {hasMedia && <ImageIcon className="h-3 w-3 text-slate-400" />}
+          {hasVisual && <Layout className="h-3 w-3 text-slate-400" />}
+          <Button size="icon" variant="ghost"
+            className="h-6 w-6 rounded text-slate-300 hover:text-rose-500 hover:bg-rose-50"
+            onClick={e => { e.stopPropagation(); onRemove(); }}
+          >
+            <Trash2 className="h-3 w-3" />
           </Button>
+          <ChevronRight className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-150 ${open ? "rotate-90" : ""}`} />
         </div>
+      </div>
 
-        {/* Question prompt */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label className="text-[10px] text-slate-400">{t("question")} (FR)</Label>
-            <Input value={q.prompt.fr} onChange={e => onUpdate({ prompt: { ...q.prompt, fr: e.target.value } })} className="bg-white rounded h-8 text-sm" />
+      {/* Expanded body */}
+      {open && (
+        <CardContent className="p-4 pt-2 space-y-4 border-t border-slate-100">
+          {/* Question prompt */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] text-slate-400">{t("question")} (FR)</Label>
+              <Input value={q.prompt.fr} onChange={e => onUpdate({ prompt: { ...q.prompt, fr: e.target.value } })} className="bg-white rounded h-8 text-sm" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] text-slate-400">{t("question")} (AR)</Label>
+              <Input value={q.prompt.ar} onChange={e => onUpdate({ prompt: { ...q.prompt, ar: e.target.value } })} className="bg-white rounded h-8 text-sm text-right font-medium" dir="rtl" />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] text-slate-400">{t("question")} (AR)</Label>
-            <Input value={q.prompt.ar} onChange={e => onUpdate({ prompt: { ...q.prompt, ar: e.target.value } })} className="bg-white rounded h-8 text-sm text-right font-medium" dir="rtl" />
+
+          {/* Media upload */}
+          {userId && (
+            <ImageUpload
+              value={q.media_url ?? null}
+              onChange={url => onUpdate({ media_url: url })}
+              userId={userId}
+              folder="questions"
+              label={t("mediaUrl")}
+            />
+          )}
+
+          {/* Visual template */}
+          <div className="pt-2 border-t border-slate-100">
+            <VisualTemplateEditor
+              visualType={q.visual_type as VisualType | null}
+              visualConfig={q.visual_config as Record<string, unknown> | null}
+              onChange={(type, config) => onUpdate({ visual_type: type, visual_config: config })}
+            />
           </div>
-        </div>
 
-        {/* Media upload */}
-        {userId && (
-          <ImageUpload
-            value={q.media_url ?? null}
-            onChange={url => onUpdate({ media_url: url })}
-            userId={userId}
-            folder="questions"
-            label={t("mediaUrl")}
-          />
-        )}
-
-        {/* Visual template */}
-        <div className="pt-2 border-t border-slate-100">
-          <VisualTemplateEditor
-            visualType={q.visual_type as VisualType | null}
-            visualConfig={q.visual_config as Record<string, unknown> | null}
-            onChange={(type, config) => onUpdate({ visual_type: type, visual_config: config })}
-          />
-        </div>
-
-        {/* Choices */}
-        <div className="space-y-2 pt-2 border-t border-slate-100">
-          <div className="flex items-center justify-between">
-            <Label className="text-[10px] text-slate-400">{t("adminChoicesLabel")}</Label>
-            {q.choices.fr.length < 5 && (
-              <button type="button" onClick={addChoice}
-                className="text-[10px] font-bold text-[#1E3A8A] hover:underline flex items-center gap-0.5">
-                <Plus className="h-2.5 w-2.5" />{t("adminAddChoice")}
-              </button>
-            )}
-          </div>
-          {q.choices.fr.map((c: string, ci: number) => (
-            <div key={ci} className="flex gap-2 items-center">
-              <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })}
-                className="h-4 w-4 accent-[#1E3A8A] shrink-0" />
-              <Input value={c} onChange={e => {
-                const next = [...q.choices.fr]; next[ci] = e.target.value;
-                onUpdate({ choices: { ...q.choices, fr: next } });
-              }} className="bg-white rounded h-8 text-sm flex-1" placeholder={`FR ${ci + 1}`} />
-              <Input value={q.choices.ar[ci] ?? ""} onChange={e => {
-                const next = [...q.choices.ar]; next[ci] = e.target.value;
-                onUpdate({ choices: { ...q.choices, ar: next } });
-              }} className="bg-white rounded h-8 text-sm flex-1 text-right" dir="rtl" placeholder={`AR ${ci + 1}`} />
-              {q.choices.fr.length > 2 && (
-                <Button size="icon" variant="ghost" onClick={() => removeChoice(ci)}
-                  className="h-7 w-7 rounded shrink-0 text-slate-300 hover:text-rose-500 hover:bg-rose-50">
-                  <Trash2 className="h-3 w-3" />
-                </Button>
+          {/* Choices */}
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-slate-400">{t("adminChoicesLabel")}</Label>
+              {q.choices.fr.length < 5 && (
+                <button type="button" onClick={addChoice}
+                  className="text-[10px] font-bold text-[#1E3A8A] hover:underline flex items-center gap-0.5">
+                  <Plus className="h-2.5 w-2.5" />{t("adminAddChoice")}
+                </button>
               )}
             </div>
-          ))}
-        </div>
-
-        {/* Explanation */}
-        <div className="space-y-1.5 pt-2 border-t border-slate-100">
-          <Label className="text-[10px] text-slate-400">{t("adminExplanation")}</Label>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Input value={q.explanation?.fr ?? ""} onChange={e => onUpdate({ explanation: { ...(q.explanation ?? {}), fr: e.target.value } })}
-              placeholder="Explication (FR)" className="bg-white rounded h-8 text-sm" />
-            <Input value={q.explanation?.ar ?? ""} onChange={e => onUpdate({ explanation: { ...(q.explanation ?? {}), ar: e.target.value } })}
-              placeholder="الشرح (AR)" className="bg-white rounded h-8 text-sm text-right" dir="rtl" />
+            {q.choices.fr.map((c: string, ci: number) => (
+              <div key={ci} className="flex gap-2 items-center">
+                <input type="radio" checked={q.correctIndex === ci} onChange={() => onUpdate({ correctIndex: ci })}
+                  className="h-4 w-4 accent-[#1E3A8A] shrink-0" />
+                <Input value={c} onChange={e => {
+                  const next = [...q.choices.fr]; next[ci] = e.target.value;
+                  onUpdate({ choices: { ...q.choices, fr: next } });
+                }} className="bg-white rounded h-8 text-sm flex-1" placeholder={`FR ${ci + 1}`} />
+                <Input value={q.choices.ar[ci] ?? ""} onChange={e => {
+                  const next = [...q.choices.ar]; next[ci] = e.target.value;
+                  onUpdate({ choices: { ...q.choices, ar: next } });
+                }} className="bg-white rounded h-8 text-sm flex-1 text-right" dir="rtl" placeholder={`AR ${ci + 1}`} />
+                {q.choices.fr.length > 2 && (
+                  <Button size="icon" variant="ghost" onClick={() => removeChoice(ci)}
+                    className="h-7 w-7 rounded shrink-0 text-slate-300 hover:text-rose-500 hover:bg-rose-50">
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
 
-      </CardContent>
+          {/* Explanation */}
+          <div className="space-y-1.5 pt-2 border-t border-slate-100">
+            <Label className="text-[10px] text-slate-400">{t("adminExplanation")}</Label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Input value={q.explanation?.fr ?? ""} onChange={e => onUpdate({ explanation: { ...(q.explanation ?? {}), fr: e.target.value } })}
+                placeholder="Explication (FR)" className="bg-white rounded h-8 text-sm" />
+              <Input value={q.explanation?.ar ?? ""} onChange={e => onUpdate({ explanation: { ...(q.explanation ?? {}), ar: e.target.value } })}
+                placeholder="الشرح (AR)" className="bg-white rounded h-8 text-sm text-right" dir="rtl" />
+            </div>
+          </div>
+        </CardContent>
+      )}
     </Card>
   );
 }
