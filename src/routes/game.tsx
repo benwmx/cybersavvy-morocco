@@ -5,7 +5,7 @@ import { TrackCard } from "@/components/TrackCard";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useStudent } from "@/context/StudentContext";
 import { useI18n } from "@/hooks/use-i18n";
-import { api, ScenarioRow } from "@/lib/supabase/api";
+import { api, ScenarioRow, CategoryRow } from "@/lib/supabase/api";
 import { getDB } from "@/lib/offline/db";
 import { Loader2 } from "lucide-react";
 
@@ -20,12 +20,19 @@ function GameLayout() {
   return <GameLobby />;
 }
 
+interface CategoryItem {
+  category: CategoryRow;
+  scenarios: ScenarioRow[];
+  totalQuestions: number;
+  isDone: boolean;
+}
+
 function GameLobby() {
   const { t, lang } = useLang();
   const { student } = useStudent();
   const { translate } = useI18n();
   const navigate = useNavigate();
-  const [scenarios, setScenarios] = useState<ScenarioRow[]>([]);
+  const [items, setItems] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,6 +43,8 @@ function GameLobby() {
     }
     (async () => {
       try {
+        let visibleScenarios: ScenarioRow[] = [];
+
         const db = getDB();
         if (db) {
           const rows = await db.class_scenario_status
@@ -45,17 +54,56 @@ function GameLobby() {
             .toArray();
           if (rows.length > 0) {
             const ids = rows.map((r) => r.scenario_id);
-            const local = await db.scenarios.where("id").anyOf(ids).toArray();
-            setScenarios(local as ScenarioRow[]);
-            setLoading(false);
-            return;
+            visibleScenarios = (await db.scenarios.where("id").anyOf(ids).toArray()) as ScenarioRow[];
           }
         }
-        if (navigator.onLine) {
-          setScenarios(await api.listVisibleScenarios(student.class_id));
+
+        if (visibleScenarios.length === 0 && navigator.onLine) {
+          visibleScenarios = await api.listVisibleScenarios(student.class_id);
         }
+
+        // Group by category
+        const byCat: Record<string, ScenarioRow[]> = {};
+        for (const s of visibleScenarios) {
+          if (!byCat[s.category_id]) byCat[s.category_id] = [];
+          byCat[s.category_id].push(s);
+        }
+        const catIds = Object.keys(byCat);
+        if (catIds.length === 0) { setLoading(false); return; }
+
+        // Load categories
+        let cats: CategoryRow[] = [];
+        if (db) {
+          cats = (await db.categories.where("id").anyOf(catIds).toArray()) as CategoryRow[];
+        }
+        if (cats.length === 0 && navigator.onLine) {
+          const all = await api.listCategories();
+          cats = all.filter((c) => byCat[c.id]);
+        }
+
+        // Load results to mark completion
+        const completedIds = new Set<string>();
+        if (navigator.onLine) {
+          const results = await api.listResultsForStudent(student.id);
+          for (const r of results) completedIds.add(r.scenario_id);
+        }
+
+        setItems(
+          cats.map((cat) => {
+            const scenarios = byCat[cat.id] ?? [];
+            return {
+              category: cat,
+              scenarios,
+              totalQuestions: scenarios.reduce(
+                (sum, s) => sum + ((s.questions as unknown[])?.length ?? 0),
+                0,
+              ),
+              isDone: scenarios.length > 0 && scenarios.every((s) => completedIds.has(s.id)),
+            };
+          }),
+        );
       } catch {
-        /* handled below */
+        /* handled by empty state below */
       } finally {
         setLoading(false);
       }
@@ -73,7 +121,6 @@ function GameLobby() {
   return (
     <GameWorld mascotPose="neutral" backTo="/login">
       <div style={{ maxWidth: "720px" }}>
-        {/* Greeting */}
         <p
           style={{
             color: "var(--gw-blue)",
@@ -97,8 +144,7 @@ function GameLobby() {
           {t("chooseTrack")}
         </p>
 
-        {/* Scenario cards */}
-        {scenarios.length === 0 ? (
+        {items.length === 0 ? (
           <div
             style={{
               background: "var(--gw-card)",
@@ -108,9 +154,7 @@ function GameLobby() {
               textAlign: "center",
             }}
           >
-            <p
-              style={{ color: "oklch(0.22 0.07 258 / 0.5)", fontWeight: 600, fontSize: "0.95rem" }}
-            >
+            <p style={{ color: "oklch(0.22 0.07 258 / 0.5)", fontWeight: 600, fontSize: "0.95rem" }}>
               {t("noTracksAvailable")}
             </p>
           </div>
@@ -122,14 +166,16 @@ function GameLobby() {
               gap: "16px",
             }}
           >
-            {scenarios.map((sc, idx) => (
+            {items.map(({ category, scenarios, totalQuestions, isDone }, idx) => (
               <TrackCard
-                key={sc.id}
-                trackId={sc.id}
-                title={translate(sc.title)}
-                description={translate(sc.description)}
-                questionCount={(sc.questions as unknown[])?.length ?? 0}
-                iconName={sc.icon}
+                key={category.id}
+                trackId={category.id}
+                title={translate(category.name)}
+                description={`${scenarios.length} ${t("trackCount")}`}
+                questionCount={totalQuestions}
+                iconName={category.icon}
+                accentColor={category.color_code}
+                done={isDone}
                 index={idx}
                 t={t}
               />
@@ -140,7 +186,6 @@ function GameLobby() {
     </GameWorld>
   );
 }
-
 
 function LoadingScreen() {
   return (

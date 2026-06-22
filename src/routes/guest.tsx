@@ -3,28 +3,69 @@ import { useEffect, useState } from "react";
 import { GameWorld } from "@/components/GameWorld";
 import { TrackCard } from "@/components/TrackCard";
 import { useLang } from "@/lib/i18n/LanguageContext";
+import { useI18n } from "@/hooks/use-i18n";
+import { api, ScenarioRow, CategoryRow } from "@/lib/supabase/api";
 import { TRACKS } from "@/content/scenarios";
-import { History } from "lucide-react";
+import { History, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/guest")({
   component: GuestLobby,
 });
 
+interface CategoryItem {
+  category: CategoryRow;
+  scenarios: ScenarioRow[];
+  totalQuestions: number;
+}
+
+type HistoryEntry = { trackId: string; score: number; total: number; date: string };
+
 function GuestLobby() {
   const { t, lang } = useLang();
-  type HistoryEntry = { trackId: string; score: number; total: number; date: string };
+  const { translate } = useI18n();
+  const [loading, setLoading] = useState(true);
+  const [categoryItems, setCategoryItems] = useState<CategoryItem[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
     localStorage.setItem("cs.guest", "true");
     const raw = localStorage.getItem("cs.guest_history");
     if (raw) setHistory(JSON.parse(raw));
+
+    (async () => {
+      if (navigator.onLine) {
+        try {
+          const [scenarios, categories] = await Promise.all([
+            api.listScenarios(),
+            api.listCategories(),
+          ]);
+          const byCat: Record<string, ScenarioRow[]> = {};
+          for (const s of scenarios) {
+            if (!byCat[s.category_id]) byCat[s.category_id] = [];
+            byCat[s.category_id].push(s);
+          }
+          const items = categories
+            .filter((c) => (byCat[c.id]?.length ?? 0) > 0)
+            .map((c) => ({
+              category: c,
+              scenarios: byCat[c.id],
+              totalQuestions: byCat[c.id].reduce(
+                (sum, s) => sum + ((s.questions as unknown[])?.length ?? 0),
+                0,
+              ),
+            }));
+          setCategoryItems(items);
+        } catch {
+          /* fall through to static tracks */
+        }
+      }
+      setLoading(false);
+    })();
   }, []);
 
   return (
     <GameWorld mascotPose="neutral" backTo="/">
       <div style={{ maxWidth: "780px", width: "100%" }}>
-        {/* Header */}
         <div style={{ marginBottom: "28px" }}>
           <p
             style={{
@@ -57,34 +98,61 @@ function GuestLobby() {
             alignItems: "start",
           }}
         >
-          {/* Track grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-              gap: "14px",
-            }}
-          >
-            {TRACKS.map((tr, idx) => (
-              <TrackCard
-                key={tr.id}
-                trackId={tr.id}
-                title={tr.title[lang as "fr" | "ar"]}
-                description={tr.description[lang as "fr" | "ar"]}
-                questionCount={tr.questions.length}
-                iconName={tr.icon}
-                index={idx}
-                t={t}
-              />
-            ))}
-          </div>
+          {/* Category / track grid */}
+          {loading ? (
+            <div style={{ display: "flex", justifyContent: "center", paddingTop: "40px" }}>
+              <Loader2 style={{ width: 28, height: 28, color: "var(--gw-blue)", animation: "spin 1s linear infinite" }} />
+            </div>
+          ) : categoryItems.length > 0 ? (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gap: "14px",
+              }}
+            >
+              {categoryItems.map(({ category, scenarios, totalQuestions }, idx) => (
+                <TrackCard
+                  key={category.id}
+                  trackId={category.id}
+                  title={translate(category.name)}
+                  description={`${scenarios.length} ${t("trackCount")}`}
+                  questionCount={totalQuestions}
+                  iconName={category.icon}
+                  accentColor={category.color_code}
+                  index={idx}
+                  t={t}
+                />
+              ))}
+            </div>
+          ) : (
+            /* Offline fallback: static tracks */
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gap: "14px",
+              }}
+            >
+              {TRACKS.map((tr, idx) => (
+                <TrackCard
+                  key={tr.id}
+                  trackId={tr.id}
+                  title={tr.title[lang as "fr" | "ar"]}
+                  description={tr.description[lang as "fr" | "ar"]}
+                  questionCount={tr.questions.length}
+                  iconName={tr.icon}
+                  index={idx}
+                  t={t}
+                />
+              ))}
+            </div>
+          )}
 
           {/* History sidebar */}
           {history.length > 0 && (
             <div style={{ minWidth: "180px", maxWidth: "220px" }}>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}
-              >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                 <History style={{ width: 15, height: 15, color: "var(--gw-blue)" }} />
                 <p
                   style={{
@@ -103,7 +171,7 @@ function GuestLobby() {
                   .slice(-5)
                   .reverse()
                   .map((h, i) => {
-                    const tr = TRACKS.find((t) => t.id === h.trackId);
+                    const tr = TRACKS.find((tk) => tk.id === h.trackId);
                     const pct = h.total > 0 ? Math.round((h.score / h.total) * 100) : 0;
                     return (
                       <div
@@ -126,20 +194,8 @@ function GuestLobby() {
                         >
                           {tr ? tr.title[lang as "fr" | "ar"] : h.trackId}
                         </p>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <p
-                            style={{
-                              fontSize: "0.7rem",
-                              color: "oklch(0.22 0.07 258 / 0.45)",
-                              fontWeight: 600,
-                            }}
-                          >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <p style={{ fontSize: "0.7rem", color: "oklch(0.22 0.07 258 / 0.45)", fontWeight: 600 }}>
                             {new Date(h.date).toLocaleDateString(
                               lang === "fr" ? "fr-FR" : "ar-MA",
                               { day: "numeric", month: "short" },
@@ -171,4 +227,3 @@ function GuestLobby() {
     </GameWorld>
   );
 }
-
