@@ -341,7 +341,7 @@ function CategoryRunner() {
         segmentIdx: scenarioIdx,
       }}
     >
-      <div style={{ maxWidth: hasSideBySide ? "720px" : "640px", width: "100%" }}>
+      <div style={{ maxWidth: hasSideBySide ? "800px" : "640px", width: "100%" }}>
         {hasSideBySide ? (
           /* ── Side-by-side card (image left, Q+choices right) ── */
           <div
@@ -355,16 +355,16 @@ function CategoryRunner() {
           >
             {/* Top row */}
             <div className="quiz-sbs-row" style={{ display: "flex" }}>
-              {/* Left: image / visual — fills column height */}
+              {/* Left: image / visual — full image visible, no cropping */}
               <div
                 className="quiz-sbs-img"
-                style={{ flex: "0 0 42%", position: "relative", minHeight: "260px", background: "oklch(0.22 0.07 258 / 0.05)" }}
+                style={{ flex: "0 0 48%", position: "relative", minHeight: "300px", background: "oklch(0.15 0.05 258 / 0.06)" }}
               >
                 {q.media_url ? (
                   <img
                     src={q.media_url}
                     alt=""
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" }}
                   />
                 ) : (
                   <div style={{ position: "absolute", inset: 0 }}>
@@ -426,9 +426,9 @@ function CategoryRunner() {
         )}
       </div>
       <style>{`
-        @media (max-width: 600px) {
+        @media (max-width: 640px) {
           .quiz-sbs-row { flex-direction: column !important; }
-          .quiz-sbs-img { flex: none !important; height: 180px !important; min-height: 0 !important; }
+          .quiz-sbs-img { flex: none !important; height: 220px !important; min-height: 0 !important; position: relative !important; }
         }
       `}</style>
     </GameWorld>
