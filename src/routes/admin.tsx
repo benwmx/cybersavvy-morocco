@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { Shield, Languages, LogOut, Type, LayoutDashboard, Users, Layers, GraduationCap, Settings, BookText } from "lucide-react";
+import { Shield, Languages, LogOut, Type, LayoutDashboard, Users, Layers, GraduationCap, Settings, BookText, BookOpen } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
@@ -26,7 +26,8 @@ function AdminLayout() {
   const navItems = [
     { to: "/admin/overview",      icon: LayoutDashboard, label: t("overview") },
     { to: "/admin/users",         icon: Users,           label: t("adminNavUsers") },
-    { to: "/admin/content",       icon: Layers,          label: t("adminNavContent") },
+    { to: "/admin/content",       icon: Layers,          label: t("adminNavScenarios") },
+    { to: "/admin/tutorials",     icon: BookOpen,        label: t("adminNavTutorials") },
     { to: "/admin/classes",       icon: GraduationCap,   label: t("adminNavClasses") },
     { to: "/admin/translations",  icon: Type,            label: t("adminNavTranslations") },
     { to: "/admin/docs",          icon: BookText,        label: t("docsLabel") },

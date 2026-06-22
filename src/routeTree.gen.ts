@@ -17,6 +17,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GameTrackIdRouteImport } from './routes/game.$trackId'
+import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminDocsRouteImport } from './routes/admin/docs'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTranslationsRouteImport } from './routes/admin/translations'
@@ -72,6 +73,11 @@ const GameTrackIdRoute = GameTrackIdRouteImport.update({
   id: '/$trackId',
   path: '/$trackId',
   getParentRoute: () => GameRoute,
+} as any)
+const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
+  id: '/tutorials',
+  path: '/tutorials',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminDocsRoute = AdminDocsRouteImport.update({
   id: '/docs',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin/classes': typeof AdminClassesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/docs': typeof AdminDocsRoute
+  '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/admin/classes': typeof AdminClassesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/docs': typeof AdminDocsRoute
+  '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/admin/classes': typeof AdminClassesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/docs': typeof AdminDocsRoute
+  '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/overview': typeof AdminOverviewRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/translations': typeof AdminTranslationsRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
     | '/admin/classes'
     | '/admin/content'
     | '/admin/docs'
+    | '/admin/tutorials'
     | '/admin/overview'
     | '/admin/settings'
     | '/admin/translations'
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/admin/classes'
     | '/admin/content'
     | '/admin/docs'
+    | '/admin/tutorials'
     | '/admin/overview'
     | '/admin/settings'
     | '/admin/translations'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/admin/classes'
     | '/admin/content'
     | '/admin/docs'
+    | '/admin/tutorials'
     | '/admin/overview'
     | '/admin/settings'
     | '/admin/translations'
@@ -423,6 +435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminContentRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/tutorials': {
+      id: '/admin/tutorials'
+      path: '/tutorials'
+      fullPath: '/admin/tutorials'
+      preLoaderRoute: typeof AdminTutorialsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/classes': {
       id: '/admin/classes'
       path: '/classes'
@@ -521,6 +540,7 @@ interface AdminRouteChildren {
   AdminClassesRoute: typeof AdminClassesRoute
   AdminContentRoute: typeof AdminContentRoute
   AdminDocsRoute: typeof AdminDocsRoute
+  AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminOverviewRoute: typeof AdminOverviewRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminTranslationsRoute: typeof AdminTranslationsRoute
@@ -531,6 +551,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminClassesRoute: AdminClassesRoute,
   AdminContentRoute: AdminContentRoute,
   AdminDocsRoute: AdminDocsRoute,
+  AdminTutorialsRoute: AdminTutorialsRoute,
   AdminOverviewRoute: AdminOverviewRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminTranslationsRoute: AdminTranslationsRoute,

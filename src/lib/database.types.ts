@@ -354,6 +354,24 @@ export type Database = {
         }
         Relationships: []
       }
+      class_tutorial_status: {
+        Row: {
+          class_id: string
+          tutorial_id: string
+          is_visible: boolean
+        }
+        Insert: {
+          class_id: string
+          tutorial_id: string
+          is_visible?: boolean
+        }
+        Update: {
+          class_id?: string
+          tutorial_id?: string
+          is_visible?: boolean
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -392,6 +410,14 @@ export type Database = {
           is_public: boolean
           created_at: string
         }[]
+      }
+      admin_save_tutorial: {
+        Args: { p_id: string | null; p_category_id: string; p_title: Json; p_content: Json; p_image_url?: string | null }
+        Returns: string
+      }
+      admin_delete_tutorial: {
+        Args: { p_id: string }
+        Returns: void
       }
       admin_list_users: {
         Args: Record<string, never>
