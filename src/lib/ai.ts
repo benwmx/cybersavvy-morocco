@@ -32,7 +32,11 @@ const legacyKey = (userId: string) => `gemini_api_key_${userId}`;
 export function getAIConfig(userId: string): AIConfig | null {
   const raw = localStorage.getItem(configKey(userId));
   if (raw) {
-    try { return JSON.parse(raw) as AIConfig; } catch { /* fall through */ }
+    try {
+      const config = JSON.parse(raw) as AIConfig;
+      if (!PROVIDER_META[config.provider]) config.provider = "gemini";
+      return config;
+    } catch { /* fall through */ }
   }
   // Backward compat: migrate old Gemini-only key
   const old = localStorage.getItem(legacyKey(userId));
