@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       translations: {
@@ -25,6 +25,28 @@ export interface Database {
           fr?: string
           ar?: string
         }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          id: string
+          first_name: string | null
+          last_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          first_name?: string | null
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          first_name?: string | null
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       categories: {
         Row: {
@@ -51,6 +73,7 @@ export interface Database {
           icon?: string | null
           source_category_id?: string | null
         }
+        Relationships: []
       }
       classes: {
         Row: {
@@ -74,6 +97,7 @@ export interface Database {
           access_code?: string
           created_at?: string
         }
+        Relationships: []
       }
       scenarios: {
         Row: {
@@ -115,6 +139,7 @@ export interface Database {
           is_public?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       tutorials: {
         Row: {
@@ -144,6 +169,7 @@ export interface Database {
           image_url?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       class_categories: {
         Row: {
@@ -158,6 +184,7 @@ export interface Database {
           class_id?: string
           category_id?: string
         }
+        Relationships: []
       }
       class_scenario_status: {
         Row: {
@@ -175,6 +202,7 @@ export interface Database {
           scenario_id?: string
           is_visible?: boolean
         }
+        Relationships: []
       }
       students: {
         Row: {
@@ -198,6 +226,7 @@ export interface Database {
           name_fr?: string
           name_ar?: string
         }
+        Relationships: []
       }
       doc_sections: {
         Row: {
@@ -224,6 +253,7 @@ export interface Database {
           sort_order?: number
           created_at?: string
         }
+        Relationships: []
       }
       doc_articles: {
         Row: {
@@ -259,6 +289,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       recommendations: {
         Row: {
@@ -285,6 +316,7 @@ export interface Database {
           content?: string
           created_at?: string
         }
+        Relationships: []
       }
       results: {
         Row: {
@@ -317,6 +349,7 @@ export interface Database {
           mistakes?: string[] | null
           created_at?: string
         }
+        Relationships: []
       }
       app_settings: {
         Row: {
@@ -334,7 +367,11 @@ export interface Database {
           value?: Json
           updated_at?: string
         }
+        Relationships: []
       }
+    }
+    Views: {
+      [_ in never]: never
     }
     Functions: {
       get_class_visible_scenarios: {
@@ -363,6 +400,12 @@ export interface Database {
           student_count: number
         }[]
       }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }

@@ -1,5 +1,5 @@
 import { supabase } from "./client";
-import { Database } from "../database.types";
+import { Database, Json } from "../database.types";
 import { getDB } from "@/lib/offline/db";
 
 export type PublicTables = Database["public"]["Tables"];
