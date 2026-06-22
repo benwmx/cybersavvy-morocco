@@ -11,7 +11,12 @@ interface Props {
   mascotPose?: Pose;
   backTo?: string;
   title?: string;
-  progress?: { current: number; total: number };
+  progress?: {
+    current: number;
+    total: number;
+    segments?: { count: number }[];
+    segmentIdx?: number;
+  };
 }
 
 export function GameWorld({ children, mascotPose = "neutral", backTo, title, progress }: Props) {
@@ -155,7 +160,7 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, pro
           <div style={{ width: 44 }} />
         )}
 
-        {/* Center: title or progress */}
+        {/* Center: title + per-scenario question counter */}
         <div style={{ textAlign: "center", flex: 1, padding: "0 12px" }}>
           {title && (
             <p
@@ -171,18 +176,22 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, pro
               {title}
             </p>
           )}
-          {progress && (
-            <p
-              style={{
-                color: "var(--gw-blue)",
-                fontWeight: 700,
-                fontSize: "0.8rem",
-                marginTop: title ? "2px" : 0,
-              }}
-            >
-              {t("question")} {progress.current} / {progress.total}
-            </p>
-          )}
+          {progress && (() => {
+            let localQ = progress.current;
+            let localTotal = progress.total;
+            if (progress.segments && progress.segmentIdx !== undefined) {
+              const before = progress.segments
+                .slice(0, progress.segmentIdx)
+                .reduce((sum, s) => sum + s.count, 0);
+              localQ = progress.current - before;
+              localTotal = progress.segments[progress.segmentIdx]?.count ?? progress.total;
+            }
+            return (
+              <p style={{ color: "var(--gw-blue)", fontWeight: 700, fontSize: "0.8rem", marginTop: title ? "2px" : 0 }}>
+                {t("question")} {localQ} / {localTotal}
+              </p>
+            );
+          })()}
         </div>
 
         {/* Right: home + language */}
@@ -224,17 +233,11 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, pro
         </div>
       </div>
 
-      {/* ── Progress bar (quiz only) ── */}
+      {/* ── Progress indicators (quiz only) ── */}
       {progress && (
-        <div style={{ position: "relative", zIndex: 10, padding: "0 20px 8px", flexShrink: 0 }}>
-          <div
-            style={{
-              height: "6px",
-              borderRadius: "999px",
-              background: "oklch(0.22 0.07 258 / 0.12)",
-              overflow: "hidden",
-            }}
-          >
+        <div style={{ position: "relative", zIndex: 10, padding: "0 20px 10px", flexShrink: 0 }}>
+          {/* Global bar across all questions */}
+          <div style={{ height: "5px", borderRadius: "999px", background: "oklch(0.22 0.07 258 / 0.12)", overflow: "hidden" }}>
             <div
               style={{
                 height: "100%",
@@ -248,6 +251,33 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, pro
               }}
             />
           </div>
+
+          {/* Scenario dots — pill expands on current scenario */}
+          {progress.segments && progress.segments.length > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "5px", marginTop: "8px" }}>
+              {progress.segments.map((_, i) => {
+                const done = progress.segmentIdx !== undefined && i < progress.segmentIdx;
+                const curr = i === (progress.segmentIdx ?? 0);
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      height: "5px",
+                      width: curr ? "22px" : "5px",
+                      borderRadius: "999px",
+                      background: done
+                        ? "oklch(0.52 0.19 255 / 0.45)"
+                        : curr
+                        ? "var(--gw-blue)"
+                        : "oklch(0.22 0.07 258 / 0.15)",
+                      transition: "width 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease",
+                      boxShadow: curr ? "0 0 6px oklch(0.52 0.19 255 / 0.5)" : "none",
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
