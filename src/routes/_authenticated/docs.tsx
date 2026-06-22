@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, type DocArticleRow, type DocSectionRow } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
@@ -16,6 +16,25 @@ function DocsPage() {
   const { t, lang } = useLang();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [sidebarWidth, setSidebarWidth] = useState(224);
+  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
+
+  const onDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dragRef.current = { startX: e.clientX, startWidth: sidebarWidth };
+    const onMove = (ev: MouseEvent) => {
+      if (!dragRef.current) return;
+      const delta = (lang === "ar" ? -1 : 1) * (ev.clientX - dragRef.current.startX);
+      setSidebarWidth(Math.min(400, Math.max(160, dragRef.current.startWidth + delta)));
+    };
+    const onUp = () => {
+      dragRef.current = null;
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
 
   const { data: sections = [] } = useQuery({
     queryKey: ["doc_sections"],
@@ -104,9 +123,12 @@ function DocsPage() {
           <p className="text-sm">{query ? t("noResults") : t("noArticles")}</p>
         </div>
       ) : (
-        <div className="flex gap-6 items-start">
+        <div className="flex items-start">
           {/* Desktop nav */}
-          <aside className="hidden md:block w-56 shrink-0 sticky top-4">
+          <aside
+            className="hidden md:block shrink-0 sticky top-4"
+            style={{ width: sidebarWidth }}
+          >
             <nav className="space-y-5">
               {groupedSections.map(section => (
                 <div key={section.label}>
@@ -120,14 +142,14 @@ function DocsPage() {
                         <li key={a.id}>
                           <button
                             onClick={() => setSelectedId(a.id)}
-                            className={`w-full text-start flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors ${
+                            className={`w-full text-start flex items-start gap-2 px-2 py-1.5 rounded text-sm transition-colors ${
                               isActive
                                 ? "bg-blue-50 text-[#1E3A8A] font-medium"
                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                             }`}
                           >
-                            <FileText className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-[#1E3A8A]" : "text-slate-300"}`} />
-                            <span className="truncate leading-snug">{title(a)}</span>
+                            <FileText className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${isActive ? "text-[#1E3A8A]" : "text-slate-300"}`} />
+                            <span className="leading-snug line-clamp-2 break-words">{title(a)}</span>
                           </button>
                         </li>
                       );
@@ -137,6 +159,14 @@ function DocsPage() {
               ))}
             </nav>
           </aside>
+
+          {/* Drag handle */}
+          <div
+            onMouseDown={onDragStart}
+            className="hidden md:flex w-4 self-stretch cursor-col-resize items-center justify-center shrink-0 group mx-1"
+          >
+            <div className="w-px h-full bg-slate-200 group-hover:bg-[#1E3A8A]/30 transition-colors" />
+          </div>
 
           {/* Mobile picker */}
           <div className="md:hidden w-full mb-4">
