@@ -259,19 +259,19 @@ function CategoryRunner() {
       <>
         <div
           style={{
-            borderRadius: "16px",
-            padding: "16px 20px",
+            borderRadius: "18px",
+            padding: "20px 24px",
             background: isCorrect ? "oklch(0.55 0.18 150 / 0.12)" : "oklch(0.62 0.16 30 / 0.1)",
             marginBottom: "16px",
             display: "flex",
-            gap: "12px",
+            gap: "16px",
             alignItems: "flex-start",
           }}
         >
           <div
             style={{
-              width: "28px",
-              height: "28px",
+              width: "36px",
+              height: "36px",
               borderRadius: "50%",
               flexShrink: 0,
               background: isCorrect ? "oklch(0.55 0.18 150)" : "oklch(0.65 0.18 30)",
@@ -281,23 +281,23 @@ function CategoryRunner() {
             }}
           >
             {isCorrect ? (
-              <Check style={{ width: 14, height: 14, color: "white" }} />
+              <Check style={{ width: 18, height: 18, color: "white" }} />
             ) : (
-              <X style={{ width: 14, height: 14, color: "white" }} />
+              <X style={{ width: 18, height: 18, color: "white" }} />
             )}
           </div>
-          <div>
-            <p style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px", color: isCorrect ? "oklch(0.35 0.14 150)" : "oklch(0.45 0.14 30)" }}>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontWeight: 800, fontSize: "1.05rem", marginBottom: "6px", color: isCorrect ? "oklch(0.35 0.14 150)" : "oklch(0.45 0.14 30)" }}>
               {isCorrect ? t("gameBravo") : t("gameOups")}
             </p>
             {!isCorrect && (
-              <p style={{ fontSize: "0.8rem", fontWeight: 600, color: "oklch(0.35 0.12 258)", marginBottom: "6px" }}>
+              <p style={{ fontSize: "0.92rem", fontWeight: 600, color: "oklch(0.35 0.12 258)", marginBottom: "8px" }}>
                 {t("gameCorrectIs")} <strong>{q.choices[lang][q.correctIndex]}</strong>
               </p>
             )}
-            <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }}>
-              <Lightbulb style={{ width: 13, height: 13, flexShrink: 0, marginTop: "2px", color: "var(--gw-blue)" }} />
-              <p style={{ fontSize: "0.82rem", color: "oklch(0.28 0.08 258)", lineHeight: 1.5, fontWeight: 500 }}>
+            <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+              <Lightbulb style={{ width: 16, height: 16, flexShrink: 0, marginTop: "2px", color: "var(--gw-blue)" }} />
+              <p style={{ fontSize: "0.95rem", color: "oklch(0.28 0.08 258)", lineHeight: 1.55, fontWeight: 500 }}>
                 {q.explanation[lang]}
               </p>
             </div>
