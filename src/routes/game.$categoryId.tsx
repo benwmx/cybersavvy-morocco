@@ -31,14 +31,15 @@ function CategoryRunner() {
   const { translate } = useI18n();
   const navigate = useNavigate();
 
-  const { student } = useStudent();
+  const { student, initialized } = useStudent();
   const [isGuest, setIsGuest] = useState(false);
   useEffect(() => {
+    if (!initialized) return;
     if (!student) {
       if (localStorage.getItem("cs.guest")) setIsGuest(true);
       else navigate({ to: "/login" });
     }
-  }, [student, navigate]);
+  }, [student, initialized, navigate]);
 
   const [scenarios, setScenarios] = useState<ScenarioRow[]>([]);
   const [loading, setLoading] = useState(true);

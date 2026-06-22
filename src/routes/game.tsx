@@ -33,7 +33,7 @@ interface CategoryItem {
 
 function GameLobby() {
   const { t, lang } = useLang();
-  const { student } = useStudent();
+  const { student, initialized } = useStudent();
   const { translate } = useI18n();
   const navigate = useNavigate();
   const [items, setItems] = useState<CategoryItem[]>([]);
@@ -43,6 +43,7 @@ function GameLobby() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!initialized) return;
     if (!student) {
       if (localStorage.getItem("cs.guest")) navigate({ to: "/guest" });
       else navigate({ to: "/login" });
@@ -141,7 +142,7 @@ function GameLobby() {
         setLoading(false);
       }
     })();
-  }, [student, navigate]);
+  }, [student, initialized, navigate]);
 
   if (loading) return <LoadingScreen />;
   if (!student) return null;
