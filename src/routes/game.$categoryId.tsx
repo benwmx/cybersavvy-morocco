@@ -6,13 +6,13 @@ import { ScenarioVisuals } from "@/components/ScenarioVisuals";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { useStudent } from "@/context/StudentContext";
-import { getTrack } from "@/content/scenarios";
+import { getCategory } from "@/content/scenarios";
 import { api, ScenarioRow } from "@/lib/supabase/api";
 import { saveResult } from "@/lib/offline/queue";
 import { Check, X, Lightbulb, RotateCcw, ArrowLeft, Loader2, ZoomIn } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/game/$trackId")({
+export const Route = createFileRoute("/game/$categoryId")({
   component: CategoryRunner,
 });
 
@@ -26,7 +26,7 @@ interface ScenarioResult {
 type Phase = "quiz" | "transition" | "done";
 
 function CategoryRunner() {
-  const { trackId } = useParams({ from: "/game/$trackId" });
+  const { categoryId } = useParams({ from: "/game/$categoryId" });
   const { t, lang } = useLang();
   const { translate } = useI18n();
   const navigate = useNavigate();
@@ -47,20 +47,20 @@ function CategoryRunner() {
     (async () => {
       let loaded: ScenarioRow[] = [];
       if (student) {
-        loaded = await api.listVisibleScenariosForCategory(student.class_id, trackId).catch(() => []);
+        loaded = await api.listVisibleScenariosForCategory(student.class_id, categoryId).catch(() => []);
       } else {
         // guest: try public scenarios for this category first
-        loaded = await api.listPublicScenariosForCategory(trackId).catch(() => []);
+        loaded = await api.listPublicScenariosForCategory(categoryId).catch(() => []);
         // fallback to static track if no DB results (offline guest with old-style track ID)
         if (loaded.length === 0) {
-          const staticTrack = getTrack(trackId);
+          const staticTrack = getCategory(categoryId);
           if (staticTrack) loaded = [staticTrack as unknown as ScenarioRow];
         }
       }
       setScenarios(loaded);
       setLoading(false);
     })();
-  }, [student, isGuest, trackId]);
+  }, [student, isGuest, categoryId]);
 
   // ── Player state ──────────────────────────────────────────────────────────
   const [scenarioIdx, setScenarioIdx] = useState(0);
@@ -150,7 +150,7 @@ function CategoryRunner() {
         const h = JSON.parse(localStorage.getItem("cs.guest_history") || "[]");
         const titleObj = currentScenario.title as { fr?: string; ar?: string } | null;
         h.push({
-          trackId: currentScenario.id,
+          categoryId: currentScenario.id,
           titleFr: titleObj?.fr ?? "",
           titleAr: titleObj?.ar ?? "",
           score: currentScore,

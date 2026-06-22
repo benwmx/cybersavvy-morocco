@@ -4,7 +4,7 @@ import { Play, Shield, CheckCircle2, type LucideIcon } from "lucide-react";
 import { getIconComponent } from "@/lib/icons";
 
 interface Props {
-  trackId: string;
+  categoryId: string;
   title: string;
   description: string;
   questionCount: number;
@@ -16,8 +16,8 @@ interface Props {
   t: (k: string) => string;
 }
 
-export function TrackCard({
-  trackId,
+export function CategoryCard({
+  categoryId,
   title,
   description,
   questionCount,
@@ -33,8 +33,8 @@ export function TrackCard({
 
   return (
     <Link
-      to="/game/$trackId"
-      params={{ trackId }}
+      to="/game/$categoryId"
+      params={{ categoryId }}
       style={{
         display: "block",
         animation: `gw-slide-up 0.4s cubic-bezier(0.16,1,0.3,1) both`,

@@ -20,7 +20,7 @@ export interface Track {
   questions: Question[];
 }
 
-export const TRACKS: Track[] = [
+export const CATEGORIES: Track[] = [
   {
     id: "phishing",
     icon: "Fish",
@@ -398,10 +398,10 @@ export const TRACKS: Track[] = [
   },
 ];
 
-export function getTrack(id: string) {
-  return TRACKS.find((t) => t.id === id);
+export function getCategory(id: string) {
+  return CATEGORIES.find((t) => t.id === id);
 }
 
-export function getTracks() {
-  return TRACKS;
+export function getCategories() {
+  return CATEGORIES;
 }

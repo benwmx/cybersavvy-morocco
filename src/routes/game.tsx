@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { GameWorld } from "@/components/GameWorld";
-import { TrackCard } from "@/components/TrackCard";
+import { CategoryCard } from "@/components/CategoryCard";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useStudent } from "@/context/StudentContext";
 import { useI18n } from "@/hooks/use-i18n";
@@ -257,9 +257,9 @@ function GameLobby() {
               }}
             >
               {items.map(({ category, scenarios, totalQuestions, isDone, catScore }, idx) => (
-                <TrackCard
+                <CategoryCard
                   key={category.id}
-                  trackId={category.id}
+                  categoryId={category.id}
                   title={translate(category.name)}
                   description={`${scenarios.length} ${t("trackCount")}`}
                   questionCount={totalQuestions}
