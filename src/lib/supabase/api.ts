@@ -213,7 +213,23 @@ export const api = {
       .select("*")
       .eq("class_id", classId)
       .order("name_fr", { ascending: true });
-    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async listAllStudentsForTeacher(): Promise<StudentRow[]> {
+    const session = await api.getSession();
+    if (!session) return [];
+    const { data: classes, error: ce } = await supabase
+      .from("classes")
+      .select("id")
+      .eq("teacher_id", session.id);
+    if (ce || !classes?.length) return [];
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .in("class_id", classes.map(c => c.id))
+      .order("name_fr", { ascending: true });
     if (error) throw error;
     return data || [];
   },
