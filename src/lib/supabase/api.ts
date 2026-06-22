@@ -521,20 +521,18 @@ export const api = {
       }
     }
     if (navigator.onLine) {
-      const { data: statusRows } = await supabase
-        .from("class_scenario_status")
-        .select("scenario_id")
-        .eq("class_id", classId)
-        .eq("is_visible", true);
-      const ids = (statusRows || []).map((r: any) => r.scenario_id as string);
-      if (ids.length === 0) return [];
-      const { data, error } = await supabase
-        .from("scenarios")
-        .select("*")
-        .in("id", ids)
-        .eq("category_id", categoryId);
-      if (error) throw error;
-      return (data || []) as ScenarioRow[];
+      // class_scenario_status RLS only allows teacher reads; use the SECURITY DEFINER RPC instead
+      const sb = supabase as unknown as { rpc: (fn: string, args?: unknown) => Promise<{ data: unknown; error: unknown }> };
+      const { data } = await sb.rpc("get_class_visible_scenarios", { p_class_id: classId });
+      const all = (data as ScenarioRow[] | null) || [];
+      const filtered = all.filter((s) => s.category_id === categoryId);
+      if (db && filtered.length > 0) {
+        await db.scenarios.bulkPut(filtered);
+        await db.class_scenario_status.bulkPut(
+          filtered.map((s) => ({ class_id: classId, scenario_id: s.id, is_visible: true }))
+        );
+      }
+      return filtered;
     }
     return [];
   },

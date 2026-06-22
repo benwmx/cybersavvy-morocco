@@ -11,6 +11,7 @@ interface Props {
   mascotPose?: Pose;
   backTo?: string;
   title?: string;
+  contentAlign?: "start" | "center";
   progress?: {
     current: number;
     total: number;
@@ -19,7 +20,7 @@ interface Props {
   };
 }
 
-export function GameWorld({ children, mascotPose = "neutral", backTo, title, progress }: Props) {
+export function GameWorld({ children, mascotPose = "neutral", backTo, title, contentAlign = "start", progress }: Props) {
   const { t, dir } = useLang();
 
   return (
@@ -308,7 +309,7 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, pro
             minWidth: 0,
             display: "flex",
             flexDirection: "column",
-            alignSelf: "flex-start",
+            alignSelf: contentAlign === "center" ? "center" : "flex-start",
           }}
         >
           {children}

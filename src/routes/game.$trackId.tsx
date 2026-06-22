@@ -334,6 +334,7 @@ function CategoryRunner() {
       mascotPose={selected === null ? "neutral" : isCorrect ? "celebrate" : "think"}
       backTo={isGuest ? "/guest" : "/game"}
       title={categoryTitle}
+      contentAlign="center"
       progress={{
         current: questionsBeforeNow + questionIdx + 1,
         total: totalQuestions,
@@ -341,7 +342,7 @@ function CategoryRunner() {
         segmentIdx: scenarioIdx,
       }}
     >
-      <div style={{ maxWidth: hasSideBySide ? "920px" : "640px", width: "100%" }}>
+      <div style={{ maxWidth: hasSideBySide ? "min(1060px, 96vw)" : "640px", width: "100%" }}>
         {hasSideBySide ? (
           /* ── Side-by-side card (image left, Q+choices right) ── */
           <div
@@ -358,7 +359,7 @@ function CategoryRunner() {
               {/* Left: image column — blurred bg fills letterbox, foreground image fully visible */}
               <div
                 className="quiz-sbs-img"
-                style={{ flex: "0 0 52%", position: "relative", minHeight: "380px", overflow: "hidden", background: "oklch(0.12 0.04 258)" }}
+                style={{ flex: "0 0 58%", position: "relative", minHeight: "clamp(380px, 52vh, 560px)", overflow: "hidden", background: "oklch(0.12 0.04 258)" }}
               >
                 {q.media_url ? (
                   <>

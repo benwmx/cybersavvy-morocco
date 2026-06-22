@@ -6,6 +6,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { useStudent } from "@/context/StudentContext";
 import { useI18n } from "@/hooks/use-i18n";
 import { api, ScenarioRow, CategoryRow, TutorialRow } from "@/lib/supabase/api";
+import { syncClassScenarios } from "@/lib/offline/syncService";
 import { getDB } from "@/lib/offline/db";
 import { Loader2, BookOpen, X } from "lucide-react";
 import { DocMarkdown } from "@/components/DocMarkdown";
@@ -65,7 +66,18 @@ function GameLobby() {
         }
 
         if (visibleScenarios.length === 0 && navigator.onLine) {
-          visibleScenarios = await api.listVisibleScenarios(student.class_id);
+          await syncClassScenarios(student.class_id);
+          if (db) {
+            const rows2 = await db.class_scenario_status
+              .where("class_id")
+              .equals(student.class_id)
+              .filter((r) => r.is_visible)
+              .toArray();
+            if (rows2.length > 0) {
+              const ids2 = rows2.map((r) => r.scenario_id);
+              visibleScenarios = (await db.scenarios.where("id").anyOf(ids2).toArray()) as ScenarioRow[];
+            }
+          }
         }
 
         // Group by category
