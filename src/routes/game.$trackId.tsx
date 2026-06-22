@@ -140,8 +140,11 @@ function CategoryRunner() {
 
       if (isGuest) {
         const h = JSON.parse(localStorage.getItem("cs.guest_history") || "[]");
+        const titleObj = currentScenario.title as { fr?: string; ar?: string } | null;
         h.push({
           trackId: currentScenario.id,
+          titleFr: titleObj?.fr ?? "",
+          titleAr: titleObj?.ar ?? "",
           score: currentScore,
           total: questions.length,
           date: new Date().toISOString(),
@@ -216,6 +219,8 @@ function CategoryRunner() {
         lastMax={lastResult.max}
         onContinue={handleContinue}
         isGuest={isGuest}
+        scenarios={scenarios}
+        scenarioIdx={scenarioIdx}
         t={t}
         lang={lang}
         translate={translate}
@@ -224,195 +229,208 @@ function CategoryRunner() {
   }
 
   // ── Quiz ─────────────────────────────────────────────────────────────────
+  const isVideo = q.media_url ? /\.(mp4|webm|ogg)$/.test(q.media_url) : false;
+  const hasSideBySide = (!!q.media_url && !isVideo) || !!q.visual_type;
+
+  const renderChoices = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      {q.choices[lang].map((choice: string, i: number) => (
+        <AnswerPill
+          key={i}
+          label={choice}
+          state={
+            selected === null
+              ? "idle"
+              : i === q.correctIndex
+                ? "correct"
+                : i === selected
+                  ? "wrong"
+                  : "dim"
+          }
+          onClick={() => handlePick(i)}
+          disabled={selected !== null}
+        />
+      ))}
+    </div>
+  );
+
+  const renderExplanation = () =>
+    selected !== null ? (
+      <>
+        <div
+          style={{
+            borderRadius: "16px",
+            padding: "16px 20px",
+            background: isCorrect ? "oklch(0.55 0.18 150 / 0.12)" : "oklch(0.62 0.16 30 / 0.1)",
+            marginBottom: "16px",
+            display: "flex",
+            gap: "12px",
+            alignItems: "flex-start",
+          }}
+        >
+          <div
+            style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              flexShrink: 0,
+              background: isCorrect ? "oklch(0.55 0.18 150)" : "oklch(0.65 0.18 30)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {isCorrect ? (
+              <Check style={{ width: 14, height: 14, color: "white" }} />
+            ) : (
+              <X style={{ width: 14, height: 14, color: "white" }} />
+            )}
+          </div>
+          <div>
+            <p style={{ fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px", color: isCorrect ? "oklch(0.35 0.14 150)" : "oklch(0.45 0.14 30)" }}>
+              {isCorrect ? t("gameBravo") : t("gameOups")}
+            </p>
+            {!isCorrect && (
+              <p style={{ fontSize: "0.8rem", fontWeight: 600, color: "oklch(0.35 0.12 258)", marginBottom: "6px" }}>
+                {t("gameCorrectIs")} <strong>{q.choices[lang][q.correctIndex]}</strong>
+              </p>
+            )}
+            <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }}>
+              <Lightbulb style={{ width: 13, height: 13, flexShrink: 0, marginTop: "2px", color: "var(--gw-blue)" }} />
+              <p style={{ fontSize: "0.82rem", color: "oklch(0.28 0.08 258)", lineHeight: 1.5, fontWeight: 500 }}>
+                {q.explanation[lang]}
+              </p>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={handleNext}
+          style={{
+            width: "100%",
+            padding: "16px",
+            background: "var(--gw-blue)",
+            color: "white",
+            borderRadius: "16px",
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 800,
+            fontSize: "1rem",
+            letterSpacing: "-0.01em",
+            transition: "transform 0.15s ease, box-shadow 0.15s ease",
+            boxShadow: "0 6px 20px oklch(0.52 0.19 255 / 0.35)",
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.02)"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
+          onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(0.97)"; }}
+          onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.02)"; }}
+        >
+          {questionIdx + 1 < questions.length ? t("next") : t("finish")}
+        </button>
+      </>
+    ) : null;
+
   return (
     <GameWorld
       mascotPose={selected === null ? "neutral" : isCorrect ? "celebrate" : "think"}
       backTo={isGuest ? "/guest" : "/game"}
       title={categoryTitle}
-      progress={{ current: questionsBeforeNow + questionIdx + 1, total: totalQuestions }}
+      progress={{
+        current: questionsBeforeNow + questionIdx + 1,
+        total: totalQuestions,
+        segments: scenarios.map(s => ({ count: (s.questions as unknown[])?.length ?? 0 })),
+        segmentIdx: scenarioIdx,
+      }}
     >
-      <div style={{ maxWidth: "640px", width: "100%" }}>
-        <div
-          style={{
-            background: "var(--gw-card)",
-            border: "2px solid var(--gw-card-border)",
-            borderRadius: "28px",
-            padding: "clamp(20px, 4vw, 36px)",
-            animation: "gw-pop-in 0.35s cubic-bezier(0.16,1,0.3,1) both",
-          }}
-        >
-          <p
+      <div style={{ maxWidth: hasSideBySide ? "720px" : "640px", width: "100%" }}>
+        {hasSideBySide ? (
+          /* ── Side-by-side card (image left, Q+choices right) ── */
+          <div
             style={{
-              fontWeight: 800,
-              fontSize: "clamp(1rem, 2.8vw, 1.25rem)",
-              color: "var(--gw-ink)",
-              lineHeight: 1.4,
-              marginBottom: "24px",
-              textWrap: "balance",
+              background: "var(--gw-card)",
+              border: "2px solid var(--gw-card-border)",
+              borderRadius: "28px",
+              overflow: "hidden",
+              animation: "gw-pop-in 0.35s cubic-bezier(0.16,1,0.3,1) both",
             }}
           >
-            {q.prompt[lang]}
-          </p>
-
-          {(q.media_url || q.visual_type) && (
-            <div
-              style={{
-                borderRadius: "16px",
-                overflow: "hidden",
-                marginBottom: "20px",
-                background: "oklch(0.22 0.07 258 / 0.05)",
-              }}
-            >
-              {q.media_url ? (
-                q.media_url.match(/\.(mp4|webm|ogg)$/) ? (
-                  <video
-                    src={q.media_url}
-                    controls
-                    style={{ width: "100%", maxHeight: "220px", objectFit: "contain" }}
-                  />
-                ) : (
+            {/* Top row */}
+            <div className="quiz-sbs-row" style={{ display: "flex" }}>
+              {/* Left: image / visual — fills column height */}
+              <div
+                className="quiz-sbs-img"
+                style={{ flex: "0 0 42%", position: "relative", minHeight: "260px", background: "oklch(0.22 0.07 258 / 0.05)" }}
+              >
+                {q.media_url ? (
                   <img
                     src={q.media_url}
                     alt=""
-                    style={{ width: "100%", maxHeight: "220px", objectFit: "contain" }}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                   />
-                )
-              ) : (
-                <ScenarioVisuals
-                  visualType={q.visual_type ?? null}
-                  visualConfig={q.visual_config ?? null}
-                  imageUrl={"image_url" in currentScenario ? (currentScenario as ScenarioRow).image_url : null}
-                />
-              )}
+                ) : (
+                  <div style={{ position: "absolute", inset: 0 }}>
+                    <ScenarioVisuals
+                      visualType={(q.visual_type ?? null) as import("@/lib/visuals").VisualType | null}
+                      visualConfig={(q.visual_config ?? null) as Record<string, unknown> | null}
+                      imageUrl={"image_url" in currentScenario ? (currentScenario as ScenarioRow).image_url : null}
+                    />
+                  </div>
+                )}
+              </div>
+              {/* Right: prompt + choices */}
+              <div style={{ flex: 1, padding: "clamp(20px, 3vw, 32px)", display: "flex", flexDirection: "column", justifyContent: "center", gap: "20px", minWidth: 0 }}>
+                <p style={{ fontWeight: 800, fontSize: "clamp(0.95rem, 2.5vw, 1.15rem)", color: "var(--gw-ink)", lineHeight: 1.4, textWrap: "balance" }}>
+                  {q.prompt[lang]}
+                </p>
+                {renderChoices()}
+              </div>
             </div>
-          )}
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {q.choices[lang].map((choice: string, i: number) => (
-              <AnswerPill
-                key={i}
-                label={choice}
-                state={
-                  selected === null
-                    ? "idle"
-                    : i === q.correctIndex
-                      ? "correct"
-                      : i === selected
-                        ? "wrong"
-                        : "dim"
-                }
-                onClick={() => handlePick(i)}
-                disabled={selected !== null}
-              />
-            ))}
-          </div>
-
-          {selected !== null && (
-            <div
-              style={{
-                animation: "gw-slide-up 0.35s cubic-bezier(0.16,1,0.3,1) both",
-                marginTop: "20px",
-              }}
-            >
+            {/* Explanation — spans full width below both columns */}
+            {selected !== null && (
               <div
                 style={{
-                  borderRadius: "16px",
-                  padding: "16px 20px",
-                  background: isCorrect
-                    ? "oklch(0.55 0.18 150 / 0.12)"
-                    : "oklch(0.62 0.16 30 / 0.1)",
-                  marginBottom: "16px",
-                  display: "flex",
-                  gap: "12px",
-                  alignItems: "flex-start",
+                  padding: "20px clamp(20px, 3vw, 32px) clamp(20px, 3vw, 32px)",
+                  borderTop: "2px solid var(--gw-card-border)",
+                  animation: "gw-slide-up 0.35s cubic-bezier(0.16,1,0.3,1) both",
                 }}
               >
-                <div
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "50%",
-                    flexShrink: 0,
-                    background: isCorrect ? "oklch(0.55 0.18 150)" : "oklch(0.65 0.18 30)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {isCorrect ? (
-                    <Check style={{ width: 14, height: 14, color: "white" }} />
-                  ) : (
-                    <X style={{ width: 14, height: 14, color: "white" }} />
-                  )}
-                </div>
-                <div>
-                  <p
-                    style={{
-                      fontWeight: 800,
-                      fontSize: "0.9rem",
-                      marginBottom: "4px",
-                      color: isCorrect ? "oklch(0.35 0.14 150)" : "oklch(0.45 0.14 30)",
-                    }}
-                  >
-                    {isCorrect ? t("gameBravo") : t("gameOups")}
-                  </p>
-                  {!isCorrect && (
-                    <p
-                      style={{
-                        fontSize: "0.8rem",
-                        fontWeight: 600,
-                        color: "oklch(0.35 0.12 258)",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      {t("gameCorrectIs")} <strong>{q.choices[lang][q.correctIndex]}</strong>
-                    </p>
-                  )}
-                  <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }}>
-                    <Lightbulb
-                      style={{ width: 13, height: 13, flexShrink: 0, marginTop: "2px", color: "var(--gw-blue)" }}
-                    />
-                    <p
-                      style={{
-                        fontSize: "0.82rem",
-                        color: "oklch(0.28 0.08 258)",
-                        lineHeight: 1.5,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {q.explanation[lang]}
-                    </p>
-                  </div>
-                </div>
+                {renderExplanation()}
               </div>
-
-              <button
-                onClick={handleNext}
-                style={{
-                  width: "100%",
-                  padding: "16px",
-                  background: "var(--gw-blue)",
-                  color: "white",
-                  borderRadius: "16px",
-                  border: "none",
-                  cursor: "pointer",
-                  fontWeight: 800,
-                  fontSize: "1rem",
-                  letterSpacing: "-0.01em",
-                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                  boxShadow: "0 6px 20px oklch(0.52 0.19 255 / 0.35)",
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.02)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
-                onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(0.97)"; }}
-                onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.02)"; }}
-              >
-                {questionIdx + 1 < questions.length ? t("next") : t("finish")}
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          /* ── Vertical card (video / no-media questions) ── */
+          <div
+            style={{
+              background: "var(--gw-card)",
+              border: "2px solid var(--gw-card-border)",
+              borderRadius: "28px",
+              padding: "clamp(20px, 4vw, 36px)",
+              animation: "gw-pop-in 0.35s cubic-bezier(0.16,1,0.3,1) both",
+            }}
+          >
+            <p style={{ fontWeight: 800, fontSize: "clamp(1rem, 2.8vw, 1.25rem)", color: "var(--gw-ink)", lineHeight: 1.4, marginBottom: "24px", textWrap: "balance" }}>
+              {q.prompt[lang]}
+            </p>
+            {q.media_url && (
+              <div style={{ borderRadius: "16px", overflow: "hidden", marginBottom: "20px", background: "oklch(0.22 0.07 258 / 0.05)" }}>
+                <video src={q.media_url} controls style={{ width: "100%", maxHeight: "220px", objectFit: "contain" }} />
+              </div>
+            )}
+            {renderChoices()}
+            {selected !== null && (
+              <div style={{ animation: "gw-slide-up 0.35s cubic-bezier(0.16,1,0.3,1) both", marginTop: "20px" }}>
+                {renderExplanation()}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+      <style>{`
+        @media (max-width: 600px) {
+          .quiz-sbs-row { flex-direction: column !important; }
+          .quiz-sbs-img { flex: none !important; height: 180px !important; min-height: 0 !important; }
+        }
+      `}</style>
     </GameWorld>
   );
 }
@@ -425,6 +443,8 @@ function TransitionScreen({
   lastMax,
   onContinue,
   isGuest,
+  scenarios,
+  scenarioIdx,
   t,
   lang,
   translate,
@@ -434,6 +454,8 @@ function TransitionScreen({
   lastMax: number;
   onContinue: () => void;
   isGuest: boolean;
+  scenarios: ScenarioRow[];
+  scenarioIdx: number;
   t: (k: string) => string;
   lang: string;
   translate: (v: unknown) => string;
@@ -455,11 +477,10 @@ function TransitionScreen({
         justifyContent: "center",
         padding: "24px",
         position: "relative",
-        overflow: "hidden",
       }}
     >
-      {/* Background blobs */}
-      <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+      {/* Background blobs — clipped independently so mascot can overflow freely */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
         <div
           style={{
             position: "absolute",
@@ -499,10 +520,83 @@ function TransitionScreen({
           animation: "gw-pop-in 0.45s cubic-bezier(0.16,1,0.3,1) both",
         }}
       >
-        {/* Mascot */}
-        <div style={{ width: "clamp(80px, 20vw, 120px)", animation: "gw-celebrate 0.6s ease-in-out infinite" }}>
+        {/* Mascot — 3 bounces then holds; SVG overflow:visible handles arm clipping */}
+        <div style={{
+          width: "clamp(80px, 20vw, 120px)",
+          animationName: "gw-celebrate",
+          animationDuration: "0.55s",
+          animationTimingFunction: "ease-in-out",
+          animationIterationCount: 3,
+          animationFillMode: "forwards",
+        }}>
           <CyberMascot pose="celebrate" />
         </div>
+
+        {/* Checkpoint strip — shown only when category has multiple scenarios */}
+        {scenarios.length > 1 && (
+          <div style={{ width: "100%", maxWidth: "360px" }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {scenarios.map((_, i) => {
+                const done = i <= scenarioIdx;
+                const current = i === scenarioIdx;
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", flex: i < scenarios.length - 1 ? 1 : "none" }}>
+                    <div
+                      style={{
+                        width: current ? "46px" : "34px",
+                        height: current ? "46px" : "34px",
+                        borderRadius: "50%",
+                        flexShrink: 0,
+                        background: done ? "var(--gw-blue)" : "oklch(0.22 0.07 258 / 0.07)",
+                        border: `2px solid ${done ? "var(--gw-blue)" : "oklch(0.22 0.07 258 / 0.18)"}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                        boxShadow: current
+                          ? "0 0 0 5px oklch(0.52 0.19 255 / 0.18), 0 0 20px oklch(0.52 0.19 255 / 0.35)"
+                          : "none",
+                        animation: current ? "gw-pop-in 0.4s cubic-bezier(0.16,1,0.3,1) both" : undefined,
+                      }}
+                    >
+                      {done ? (
+                        <Check style={{ width: current ? 20 : 15, height: current ? 20 : 15, color: "white", flexShrink: 0 }} />
+                      ) : (
+                        <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "oklch(0.22 0.07 258 / 0.3)" }}>
+                          {i + 1}
+                        </span>
+                      )}
+                    </div>
+                    {i < scenarios.length - 1 && (
+                      <div
+                        style={{
+                          flex: 1,
+                          height: "2px",
+                          background: i < scenarioIdx
+                            ? "var(--gw-blue)"
+                            : "oklch(0.22 0.07 258 / 0.12)",
+                          transition: "background 0.5s ease",
+                          margin: "0 2px",
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p style={{
+              textAlign: "center",
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              color: "oklch(0.22 0.07 258 / 0.4)",
+              marginTop: "8px",
+              letterSpacing: "0.04em",
+            }}>
+              {scenarioIdx + 1} / {scenarios.length}
+            </p>
+          </div>
+        )}
 
         {/* Score recap */}
         <div

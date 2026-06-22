@@ -12,6 +12,7 @@ interface Props {
   accentColor?: string | null;
   done?: boolean;
   index?: number;
+  score?: { earned: number; max: number };
   t: (k: string) => string;
 }
 
@@ -24,6 +25,7 @@ export function TrackCard({
   accentColor,
   done = false,
   index = 0,
+  score,
   t,
 }: Props) {
   const [hovered, setHovered] = useState(false);
@@ -153,15 +155,35 @@ export function TrackCard({
           >
             {questionCount} {t("gameQuestions")}
           </span>
-          <Play
-            style={{
-              width: 13,
-              height: 13,
-              color: hovered ? "var(--gw-amber-dark)" : "oklch(0.22 0.07 258 / 0.3)",
-              fill: "currentColor",
-              transition: "color 0.2s ease",
-            }}
-          />
+          {score ? (
+            <span
+              style={{
+                fontSize: "0.78rem",
+                fontWeight: 800,
+                color:
+                  score.max === 0
+                    ? "oklch(0.22 0.07 258 / 0.35)"
+                    : score.earned / score.max >= 0.7
+                      ? "oklch(0.45 0.16 150)"
+                      : score.earned / score.max >= 0.4
+                        ? "oklch(0.50 0.14 75)"
+                        : "oklch(0.50 0.16 30)",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {score.earned}/{score.max}
+            </span>
+          ) : (
+            <Play
+              style={{
+                width: 13,
+                height: 13,
+                color: hovered ? "var(--gw-amber-dark)" : "oklch(0.22 0.07 258 / 0.3)",
+                fill: "currentColor",
+                transition: "color 0.2s ease",
+              }}
+            />
+          )}
         </div>
       </div>
     </Link>
