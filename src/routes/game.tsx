@@ -5,9 +5,11 @@ import { TrackCard } from "@/components/TrackCard";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useStudent } from "@/context/StudentContext";
 import { useI18n } from "@/hooks/use-i18n";
-import { api, ScenarioRow, CategoryRow } from "@/lib/supabase/api";
+import { api, ScenarioRow, CategoryRow, TutorialRow } from "@/lib/supabase/api";
 import { getDB } from "@/lib/offline/db";
-import { Loader2 } from "lucide-react";
+import { Loader2, BookOpen, X } from "lucide-react";
+import { DocMarkdown } from "@/components/DocMarkdown";
+import type { Json } from "@/lib/database.types";
 
 export const Route = createFileRoute("/game")({
   component: GameLayout,
@@ -33,6 +35,8 @@ function GameLobby() {
   const { translate } = useI18n();
   const navigate = useNavigate();
   const [items, setItems] = useState<CategoryItem[]>([]);
+  const [tutorials, setTutorials] = useState<TutorialRow[]>([]);
+  const [readerTut, setReaderTut] = useState<TutorialRow | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,6 +90,14 @@ function GameLobby() {
         if (navigator.onLine) {
           const results = await api.listResultsForStudent(student.id);
           for (const r of results) completedIds.add(r.scenario_id);
+        }
+
+        // Load visible tutorials for this class
+        if (navigator.onLine) {
+          try {
+            const visibleTuts = await api.listVisibleTutorials(student.class_id);
+            setTutorials(visibleTuts);
+          } catch { /* non-blocking */ }
         }
 
         setItems(
@@ -183,8 +195,103 @@ function GameLobby() {
           </div>
         )}
       </div>
+      {/* Tutorials section */}
+      {tutorials.length > 0 && (
+        <div style={{ maxWidth: "720px", marginTop: "40px" }}>
+          <p style={{
+            color: "var(--gw-blue)",
+            fontWeight: 700,
+            fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
+            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}>
+            <BookOpen style={{ width: 18, height: 18 }} />
+            {t("tutorialsSection")}
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {tutorials.map(tut => {
+              const title = parseBilingualGame(tut.title);
+              const content = parseBilingualGame(tut.content);
+              const displayTitle = lang === "fr" ? title.fr : title.ar;
+              const displayContent = lang === "fr" ? content.fr : content.ar;
+              return (
+                <button
+                  key={tut.id}
+                  onClick={() => setReaderTut(tut)}
+                  style={{
+                    background: "var(--gw-card)",
+                    border: "2px solid var(--gw-card-border)",
+                    borderRadius: "16px",
+                    padding: "16px 20px",
+                    textAlign: lang === "ar" ? "right" : "left",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "16px",
+                  }}
+                >
+                  {tut.image_url && (
+                    <img src={tut.image_url} alt="" style={{ width: 48, height: 48, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontWeight: 700, color: "var(--gw-blue)", fontSize: "0.95rem", marginBottom: 2 }}>{displayTitle}</p>
+                    <p style={{ color: "oklch(0.22 0.07 258 / 0.5)", fontSize: "0.8rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {displayContent}
+                    </p>
+                  </div>
+                  <span style={{ color: "var(--gw-blue)", fontSize: "0.78rem", fontWeight: 600, flexShrink: 0 }}>{t("readTutorial")}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Tutorial reader overlay */}
+      {readerTut && (() => {
+        const title = parseBilingualGame(readerTut.title);
+        const content = parseBilingualGame(readerTut.content);
+        const displayTitle = lang === "fr" ? title.fr : title.ar;
+        const displayContent = lang === "fr" ? content.fr : content.ar;
+        return (
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+            onClick={() => setReaderTut(null)}
+          >
+            <div
+              style={{ background: "var(--gw-card)", borderRadius: 20, maxWidth: 560, width: "100%", maxHeight: "80vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
+              onClick={e => e.stopPropagation()}
+            >
+              {readerTut.image_url && (
+                <img src={readerTut.image_url} alt="" style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: "20px 20px 0 0" }} />
+              )}
+              <div style={{ padding: "24px 28px", direction: lang === "ar" ? "rtl" : "ltr" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                  <h2 style={{ fontWeight: 800, color: "var(--gw-blue)", fontSize: "1.15rem" }}>{displayTitle}</h2>
+                  <button onClick={() => setReaderTut(null)} style={{ color: "oklch(0.22 0.07 258 / 0.4)", marginLeft: 12, flexShrink: 0, background: "none", border: "none", cursor: "pointer" }}>
+                    <X style={{ width: 20, height: 20 }} />
+                  </button>
+                </div>
+                <div style={{ color: "oklch(0.22 0.07 258 / 0.75)", fontSize: "0.9rem", lineHeight: 1.7 }}>
+                  <DocMarkdown text={displayContent} />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </GameWorld>
   );
+}
+
+function parseBilingualGame(val: Json): { fr: string; ar: string } {
+  if (val && typeof val === "object" && !Array.isArray(val)) {
+    const v = val as Record<string, unknown>;
+    return { fr: String(v.fr ?? ""), ar: String(v.ar ?? "") };
+  }
+  return { fr: "", ar: "" };
 }
 
 function LoadingScreen() {

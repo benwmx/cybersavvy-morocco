@@ -365,12 +365,105 @@ export const api = {
   },
 
   async listTutorials(categoryId?: string): Promise<TutorialRow[]> {
+    const session = await api.getSession();
     let query = supabase.from("tutorials").select("*");
+    if (session) {
+      query = query.or(`teacher_id.is.null,teacher_id.eq.${session.id}`);
+    } else {
+      query = query.is("teacher_id", null);
+    }
     if (categoryId) query = query.eq("category_id", categoryId);
-    
-    const { data, error } = await query;
+    const { data, error } = await query.order("created_at", { ascending: true });
     if (error) throw error;
     return data || [];
+  },
+
+  async createTutorial(tutorial: PublicTables["tutorials"]["Insert"]): Promise<TutorialRow> {
+    const { data, error } = await supabase.from("tutorials").insert([tutorial]).select().single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateTutorial(id: string, data: PublicTables["tutorials"]["Update"]): Promise<TutorialRow> {
+    const { data: updated, error } = await supabase.from("tutorials").update(data).eq("id", id).select().single();
+    if (error) throw error;
+    return updated;
+  },
+
+  async deleteTutorial(id: string): Promise<void> {
+    const { error } = await supabase.from("tutorials").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async copyTutorial(id: string): Promise<TutorialRow> {
+    const session = await api.getSession();
+    if (!session) throw new Error("Not authenticated");
+    const { data: original, error: fetchErr } = await supabase
+      .from("tutorials").select("*").eq("id", id).single();
+    if (fetchErr) throw fetchErr;
+    const { data, error } = await supabase
+      .from("tutorials")
+      .insert([{
+        category_id: original.category_id,
+        teacher_id: session.id,
+        title: original.title,
+        content: original.content,
+        image_url: original.image_url,
+      }])
+      .select().single();
+    if (error) throw error;
+    return data as TutorialRow;
+  },
+
+  async adminListGlobalTutorials(categoryId?: string): Promise<TutorialRow[]> {
+    let query = supabase.from("tutorials").select("*").is("teacher_id", null);
+    if (categoryId) query = query.eq("category_id", categoryId);
+    const { data, error } = await query.order("created_at", { ascending: true });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async adminSaveTutorial(id: string | null, categoryId: string, title: Json, content: Json, imageUrl?: string | null): Promise<string> {
+    const { data, error } = await supabase.rpc("admin_save_tutorial", {
+      p_id: id,
+      p_category_id: categoryId,
+      p_title: title,
+      p_content: content,
+      p_image_url: imageUrl ?? null,
+    });
+    if (error) throw error;
+    return data as string;
+  },
+
+  async adminDeleteTutorial(id: string): Promise<void> {
+    const { error } = await supabase.rpc("admin_delete_tutorial", { p_id: id });
+    if (error) throw error;
+  },
+
+  async listClassTutorialStatus(classId: string): Promise<{ tutorial_id: string; is_visible: boolean }[]> {
+    const { data, error } = await supabase
+      .from("class_tutorial_status")
+      .select("tutorial_id, is_visible")
+      .eq("class_id", classId);
+    if (error) throw error;
+    return (data || []) as { tutorial_id: string; is_visible: boolean }[];
+  },
+
+  async setTutorialVisibility(classId: string, tutorialId: string, isVisible: boolean): Promise<void> {
+    const { error } = await supabase
+      .from("class_tutorial_status")
+      .upsert({ class_id: classId, tutorial_id: tutorialId, is_visible: isVisible }, { onConflict: "class_id,tutorial_id" });
+    if (error) throw error;
+  },
+
+  async listVisibleTutorials(classId: string): Promise<TutorialRow[]> {
+    const { data, error } = await supabase
+      .from("class_tutorial_status")
+      .select("tutorials (*)")
+      .eq("class_id", classId)
+      .eq("is_visible", true);
+    if (error) throw error;
+    return (data || []).map((d: any) => d.tutorials).filter(Boolean) as unknown as TutorialRow[];
   },
 
   async listScenarios(): Promise<ScenarioRow[]> {

@@ -72,6 +72,8 @@ function TranslationsPage() {
     );
   }, [merged, search]);
 
+  const otherGroupLabel = t("adminGroupOther");
+
   // Grouped view — used when no search
   const groups = useMemo(() => {
     const mergedMap = new Map(merged.map(e => [e.key, e]));
@@ -142,7 +144,6 @@ function TranslationsPage() {
 
   const customCount = merged.filter(e => e.isCustom).length;
   const isSearching = search.trim().length > 0;
-  const otherGroupLabel = t("adminGroupOther");
 
   const ColHeader = () => (
     <div className="grid grid-cols-[16px_160px_1fr_1fr_72px] gap-3 px-5 py-2.5 bg-slate-50 border-y border-slate-100 text-xs font-medium text-slate-500">
@@ -154,8 +155,9 @@ function TranslationsPage() {
     </div>
   );
 
-  const EntryRow = ({ entry }: { entry: MergedEntry }) => (
+  const renderEntry = (entry: MergedEntry) => (
     <div
+      key={entry.key}
       className="grid grid-cols-[16px_160px_1fr_1fr_72px] gap-3 px-5 py-2.5 items-center hover:bg-slate-50/60 transition-colors group"
     >
       <div className="flex items-center justify-center">
@@ -278,7 +280,7 @@ function TranslationsPage() {
             <>
               <ColHeader />
               <div className="divide-y divide-slate-50 max-h-[62vh] overflow-y-auto">
-                {filtered.map(entry => <EntryRow key={entry.key} entry={entry} />)}
+                {filtered.map(entry => {renderEntry(entry)})}
               </div>
               {filtered.length === 0 && (
                 <div className="py-12 text-center text-sm text-slate-400">{t("adminNoResults")}</div>
@@ -323,7 +325,7 @@ function TranslationsPage() {
                           <span>{t("adminColAr")}</span>
                           <span />
                         </div>
-                        {group.entries.map(entry => <EntryRow key={entry.key} entry={entry} />)}
+                        {group.entries.map(entry => {renderEntry(entry)})}
                       </div>
                     )}
                   </div>
