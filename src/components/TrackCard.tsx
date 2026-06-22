@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Play, Shield, type LucideIcon } from "lucide-react";
+import { Play, Shield, CheckCircle2, type LucideIcon } from "lucide-react";
 import { getIconComponent } from "@/lib/icons";
 
 interface Props {
@@ -9,6 +9,8 @@ interface Props {
   description: string;
   questionCount: number;
   iconName?: string | null;
+  accentColor?: string | null;
+  done?: boolean;
   index?: number;
   t: (k: string) => string;
 }
@@ -19,6 +21,8 @@ export function TrackCard({
   description,
   questionCount,
   iconName,
+  accentColor,
+  done = false,
   index = 0,
   t,
 }: Props) {
@@ -40,25 +44,53 @@ export function TrackCard({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background: "var(--gw-card)",
-          border: `2px solid ${hovered ? "var(--gw-blue)" : "var(--gw-card-border)"}`,
+          background: done ? "oklch(0.97 0.01 150)" : "var(--gw-card)",
+          border: `2px solid ${done ? "oklch(0.75 0.12 150)" : hovered ? "var(--gw-blue)" : "var(--gw-card-border)"}`,
           borderRadius: "20px",
           padding: "20px",
           transition: "border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease",
-          transform: hovered ? "translateY(-3px)" : "translateY(0)",
-          boxShadow: hovered
+          transform: hovered && !done ? "translateY(-3px)" : "translateY(0)",
+          boxShadow: hovered && !done
             ? "0 10px 28px oklch(0.52 0.19 255 / 0.15)"
             : "0 2px 6px oklch(0.22 0.07 258 / 0.07)",
           cursor: "pointer",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
+        {/* Done badge */}
+        {done && (
+          <div style={{
+            position: "absolute",
+            top: "12px",
+            insetInlineEnd: "12px",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            background: "oklch(0.55 0.18 150)",
+            borderRadius: "999px",
+            padding: "2px 8px 2px 4px",
+          }}>
+            <CheckCircle2 style={{ width: 11, height: 11, color: "white" }} />
+            <span style={{ fontSize: "0.65rem", fontWeight: 800, color: "white", letterSpacing: "0.04em" }}>
+              {t("categoryDone")}
+            </span>
+          </div>
+        )}
+
         {/* Icon square */}
         <div
           style={{
             width: "44px",
             height: "44px",
             borderRadius: "12px",
-            background: hovered ? "var(--gw-blue)" : "oklch(0.52 0.19 255 / 0.12)",
+            background: done
+              ? "oklch(0.55 0.18 150 / 0.15)"
+              : hovered
+                ? (accentColor ?? "var(--gw-blue)")
+                : accentColor
+                  ? `${accentColor}20`
+                  : "oklch(0.52 0.19 255 / 0.12)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -71,7 +103,11 @@ export function TrackCard({
             style={{
               width: 20,
               height: 20,
-              color: hovered ? "white" : "var(--gw-blue)",
+              color: done
+                ? "oklch(0.45 0.16 150)"
+                : hovered
+                  ? "white"
+                  : (accentColor ?? "var(--gw-blue)"),
             }}
           />
         </div>

@@ -290,6 +290,7 @@ export const api = {
         teacher_id: session.id,
         name: global.name,
         color_code: global.color_code,
+        icon: global.icon,
         source_category_id: globalCategoryId,
       }])
       .select()
@@ -393,9 +394,68 @@ export const api = {
       .select("scenarios (*)")
       .eq("class_id", classId)
       .eq("is_visible", true);
-    
+
     if (error) throw error;
     return (data || []).map((d: any) => d.scenarios) as unknown as ScenarioRow[];
+  },
+
+  async listVisibleScenariosForCategory(classId: string, categoryId: string): Promise<ScenarioRow[]> {
+    const db = getDB();
+    if (db) {
+      const rows = await db.class_scenario_status
+        .where("class_id")
+        .equals(classId)
+        .filter((r) => r.is_visible)
+        .toArray();
+      if (rows.length > 0) {
+        const ids = rows.map((r) => r.scenario_id);
+        const local = await db.scenarios
+          .where("id")
+          .anyOf(ids)
+          .filter((s) => s.category_id === categoryId)
+          .toArray();
+        if (local.length > 0) return local as ScenarioRow[];
+      }
+    }
+    if (navigator.onLine) {
+      const { data: statusRows } = await supabase
+        .from("class_scenario_status")
+        .select("scenario_id")
+        .eq("class_id", classId)
+        .eq("is_visible", true);
+      const ids = (statusRows || []).map((r: any) => r.scenario_id as string);
+      if (ids.length === 0) return [];
+      const { data, error } = await supabase
+        .from("scenarios")
+        .select("*")
+        .in("id", ids)
+        .eq("category_id", categoryId);
+      if (error) throw error;
+      return (data || []) as ScenarioRow[];
+    }
+    return [];
+  },
+
+  async listPublicScenariosForCategory(categoryId: string): Promise<ScenarioRow[]> {
+    const db = getDB();
+    if (db) {
+      const local = await db.scenarios
+        .where("category_id")
+        .equals(categoryId)
+        .filter((s) => s.teacher_id === null || s.teacher_id === undefined)
+        .toArray();
+      if (local.length > 0) return local as ScenarioRow[];
+    }
+    if (navigator.onLine) {
+      const { data, error } = await supabase
+        .from("scenarios")
+        .select("*")
+        .eq("category_id", categoryId)
+        .is("teacher_id", null);
+      if (error) throw error;
+      return (data || []) as ScenarioRow[];
+    }
+    return [];
   },
 
   async createScenario(scenario: PublicTables["scenarios"]["Insert"]): Promise<ScenarioRow> {

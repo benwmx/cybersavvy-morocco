@@ -32,6 +32,7 @@ export interface Database {
           teacher_id: string | null
           name: Json
           color_code: string | null
+          icon: string | null
           source_category_id: string | null
         }
         Insert: {
@@ -39,6 +40,7 @@ export interface Database {
           teacher_id?: string | null
           name: Json
           color_code?: string | null
+          icon?: string | null
           source_category_id?: string | null
         }
         Update: {
@@ -46,6 +48,7 @@ export interface Database {
           teacher_id?: string | null
           name?: Json
           color_code?: string | null
+          icon?: string | null
           source_category_id?: string | null
         }
       }
