@@ -9,7 +9,7 @@ import { useStudent } from "@/context/StudentContext";
 import { getTrack } from "@/content/scenarios";
 import { api, ScenarioRow } from "@/lib/supabase/api";
 import { saveResult } from "@/lib/offline/queue";
-import { Check, X, Lightbulb, RotateCcw, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, X, Lightbulb, RotateCcw, ArrowLeft, Loader2, ZoomIn } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/game/$trackId")({
@@ -71,6 +71,14 @@ function CategoryRunner() {
   const [phase, setPhase] = useState<Phase>("quiz");
   const [allResults, setAllResults] = useState<ScenarioResult[]>([]);
   const [saveState, setSaveState] = useState<"idle" | "online" | "queued" | "guest">("idle");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!lightboxUrl) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setLightboxUrl(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxUrl]);
 
   if (loading) return <QuizLoading />;
 
@@ -359,7 +367,8 @@ function CategoryRunner() {
               {/* Left: image column — blurred bg fills letterbox, foreground image fully visible */}
               <div
                 className="quiz-sbs-img"
-                style={{ flex: "0 0 58%", position: "relative", minHeight: "clamp(380px, 52vh, 560px)", overflow: "hidden", background: "oklch(0.12 0.04 258)" }}
+                style={{ flex: "0 0 58%", position: "relative", minHeight: "clamp(380px, 52vh, 560px)", overflow: "hidden", background: "oklch(0.12 0.04 258)", cursor: q.media_url ? "zoom-in" : "default" }}
+                onClick={() => q.media_url && setLightboxUrl(q.media_url)}
               >
                 {q.media_url ? (
                   <>
@@ -379,6 +388,10 @@ function CategoryRunner() {
                       alt=""
                       style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" }}
                     />
+                    {/* Zoom hint */}
+                    <div style={{ position: "absolute", top: 12, right: 12, background: "oklch(0 0 0 / 0.45)", borderRadius: "8px", padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+                      <ZoomIn style={{ width: 16, height: 16, color: "white" }} />
+                    </div>
                   </>
                 ) : (
                   <div style={{ position: "absolute", inset: 0 }}>
@@ -444,7 +457,57 @@ function CategoryRunner() {
           .quiz-sbs-row { flex-direction: column !important; }
           .quiz-sbs-img { flex: none !important; height: 240px !important; min-height: 0 !important; }
         }
+        @keyframes lb-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes lb-img-in { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) {
+          .lb-overlay, .lb-img { animation: none !important; }
+        }
       `}</style>
+
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <div
+          className="lb-overlay"
+          onClick={() => setLightboxUrl(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 100,
+            background: "oklch(0 0 0 / 0.88)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "24px",
+            animation: "lb-in 0.2s ease both",
+          }}
+        >
+          <img
+            className="lb-img"
+            src={lightboxUrl}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "100%", maxHeight: "100%",
+              objectFit: "contain",
+              borderRadius: "12px",
+              boxShadow: "0 32px 80px oklch(0 0 0 / 0.6)",
+              animation: "lb-img-in 0.25s cubic-bezier(0.16,1,0.3,1) both",
+            }}
+          />
+          <button
+            onClick={() => setLightboxUrl(null)}
+            style={{
+              position: "fixed", top: 20, right: 20,
+              width: 44, height: 44, borderRadius: "50%",
+              background: "oklch(1 0 0 / 0.12)", border: "none",
+              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+              backdropFilter: "blur(8px)",
+              transition: "background 0.15s ease",
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "oklch(1 0 0 / 0.22)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "oklch(1 0 0 / 0.12)"; }}
+            aria-label="Fermer"
+          >
+            <X style={{ width: 20, height: 20, color: "white" }} />
+          </button>
+        </div>
+      )}
     </GameWorld>
   );
 }
