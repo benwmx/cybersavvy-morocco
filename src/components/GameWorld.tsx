@@ -308,7 +308,7 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, pro
             minWidth: 0,
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
+            alignSelf: "flex-start",
           }}
         >
           {children}
