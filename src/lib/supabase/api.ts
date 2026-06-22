@@ -671,6 +671,27 @@ export const api = {
     if (error) throw error;
   },
 
+  async getUploadLimits(): Promise<{ imageMb: number; videoMb: number }> {
+    const { data } = await supabase
+      .from("app_settings")
+      .select("key, value")
+      .in("key", ["image_size_limit_mb", "video_size_limit_mb"]);
+    const row = (key: string) => data?.find(d => d.key === key)?.value;
+    return {
+      imageMb: (row("image_size_limit_mb") as number) ?? 10,
+      videoMb: (row("video_size_limit_mb") as number) ?? 50,
+    };
+  },
+
+  async saveUploadLimits(imageMb: number, videoMb: number): Promise<void> {
+    const now = new Date().toISOString();
+    const { error } = await supabase.from("app_settings").upsert([
+      { key: "image_size_limit_mb", value: imageMb as unknown as Json, updated_at: now },
+      { key: "video_size_limit_mb", value: videoMb as unknown as Json, updated_at: now },
+    ]);
+    if (error) throw error;
+  },
+
   async listResultsForTeacher(): Promise<ResultRow[]> {
     const session = await api.getSession();
     if (!session) return [];

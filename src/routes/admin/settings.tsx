@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Mail, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Settings, Mail, Lock, CheckCircle2, AlertCircle, HardDrive } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/settings")({
   component: SettingsPage,
@@ -110,6 +112,9 @@ function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Storage limits card */}
+      <UploadLimitsCard />
+
       {/* Password card */}
       <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
         <div className="h-0.5 bg-[#1E3A8A]" />
@@ -134,6 +139,103 @@ function SettingsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function UploadLimitsCard() {
+  const { t } = useLang();
+  const qc = useQueryClient();
+
+  const { data: limits } = useQuery({
+    queryKey: ["upload-limits"],
+    queryFn: () => api.getUploadLimits(),
+  });
+
+  const [imageMb, setImageMb] = useState<number | null>(null);
+  const [videoMb, setVideoMb] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const currentImage = imageMb ?? limits?.imageMb ?? 10;
+  const currentVideo = videoMb ?? limits?.videoMb ?? 50;
+
+  const IMAGE_MAX = 10;
+  const VIDEO_MAX = 50;
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await api.saveUploadLimits(currentImage, currentVideo);
+      qc.invalidateQueries({ queryKey: ["upload-limits"] });
+      toast.success(t("uploadLimitSaved"));
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card className="border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden">
+      <div className="h-0.5 bg-[#1E3A8A]" />
+      <CardHeader className="p-5 pb-3 flex flex-row items-center gap-2">
+        <HardDrive className="h-4 w-4 text-[#1E3A8A] shrink-0" />
+        <div>
+          <CardTitle className="text-base font-semibold text-slate-800">{t("storageSettings")}</CardTitle>
+          <CardDescription className="text-xs mt-0.5">{t("storageSettingsDesc")}</CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="p-5 pt-0 space-y-5">
+        {/* Image limit */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs text-slate-500">{t("imageLimitLabel")}</label>
+            <span className="text-xs font-semibold text-slate-700 tabular-nums">{currentImage} Mo</span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={IMAGE_MAX}
+            step={1}
+            value={currentImage}
+            onChange={e => setImageMb(Number(e.target.value))}
+            className="w-full accent-[#1E3A8A] h-1.5 rounded-full cursor-pointer"
+          />
+          <div className="flex justify-between text-[10px] text-slate-400">
+            <span>1 Mo</span>
+            <span>{IMAGE_MAX} Mo</span>
+          </div>
+        </div>
+
+        {/* Video limit */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs text-slate-500">{t("videoLimitLabel")}</label>
+            <span className="text-xs font-semibold text-slate-700 tabular-nums">{currentVideo} Mo</span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={VIDEO_MAX}
+            step={1}
+            value={currentVideo}
+            onChange={e => setVideoMb(Number(e.target.value))}
+            className="w-full accent-[#1E3A8A] h-1.5 rounded-full cursor-pointer"
+          />
+          <div className="flex justify-between text-[10px] text-slate-400">
+            <span>1 Mo</span>
+            <span>{VIDEO_MAX} Mo</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full rounded bg-[#1E3A8A] text-white text-sm font-medium py-2 hover:bg-[#1E3A8A]/90 disabled:opacity-50 transition-all"
+        >
+          {saving ? t("adminUpdating") : t("save")}
+        </button>
+      </CardContent>
+    </Card>
   );
 }
 

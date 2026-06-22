@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Upload, X, Loader2, Image } from "lucide-react";
 import { api } from "@/lib/supabase/api";
 import { toast } from "sonner";
 import { useLang } from "@/lib/i18n/LanguageContext";
 
 const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+const isVideoType = (type: string) => type.startsWith("video/");
 
 interface ImageUploadProps {
   value: string | null;
@@ -19,9 +21,24 @@ export function ImageUpload({ value, onChange, userId, folder = "scenarios", lab
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const { data: limits } = useQuery({
+    queryKey: ["upload-limits"],
+    queryFn: () => api.getUploadLimits(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const imageMb = limits?.imageMb ?? 10;
+  const videoMb = limits?.videoMb ?? 50;
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const limitMb = isVideoType(file.type) ? videoMb : imageMb;
+    if (file.size > limitMb * 1024 * 1024) {
+      toast.error(t("fileTooLarge"));
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
     setUploading(true);
     try {
       const path = await api.uploadMedia(userId, folder, file);
@@ -70,22 +87,25 @@ export function ImageUpload({ value, onChange, userId, folder = "scenarios", lab
           </button>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          className="w-full rounded border-2 border-dashed border-slate-200 hover:border-[#1E3A8A] bg-slate-50/50 hover:bg-blue-50/30 transition-colors aspect-video flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-[#1E3A8A]"
-        >
-          {uploading ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
-          ) : (
-            <>
-              <Image className="h-5 w-5" />
-              <span className="text-xs font-medium">{t("clickToUpload")}</span>
-              <span className="text-[10px] text-slate-300">JPEG · PNG · WebP · GIF · MP4 · WebM</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-start gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded border border-dashed border-slate-300 bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] text-slate-500 text-xs font-medium transition-colors shrink-0"
+          >
+            {uploading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Image className="h-3.5 w-3.5" />
+            )}
+            {uploading ? t("uploading") : t("clickToUpload")}
+          </button>
+          <div className="flex flex-col gap-0.5 pt-0.5">
+            <span className="text-[10px] text-slate-400">{t("imageFormatsHint")} — max {imageMb} Mo</span>
+            <span className="text-[10px] text-slate-400">{t("videoFormatsHint")} — max {videoMb} Mo</span>
+          </div>
+        </div>
       )}
     </div>
   );
