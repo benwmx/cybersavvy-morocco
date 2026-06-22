@@ -626,11 +626,12 @@ export const api = {
     return data as string;
   },
 
-  async adminSaveCategory(id: string | null, name: Json, colorCode: string): Promise<string> {
+  async adminSaveCategory(id: string | null, name: Json, colorCode: string, icon?: string | null): Promise<string> {
     const { data, error } = await supabase.rpc("admin_save_category", {
       p_id: id,
       p_name: name,
       p_color_code: colorCode,
+      p_icon: icon ?? null,
     });
     if (error) throw error;
     return data as string;
