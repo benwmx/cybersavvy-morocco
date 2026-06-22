@@ -23,7 +23,7 @@ export function CyberMascot({ pose = "neutral", className = "" }: Props) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       className={className}
-      style={{ display: "block", width: "100%", height: "auto" }}
+      style={{ display: "block", width: "100%", height: "auto", overflow: "visible" }}
     >
       <defs>
         {/* Head — 3-stop radial for a sphere highlight */}

@@ -18,7 +18,7 @@ interface CategoryItem {
   totalQuestions: number;
 }
 
-type HistoryEntry = { trackId: string; score: number; total: number; date: string };
+type HistoryEntry = { trackId: string; titleFr?: string; titleAr?: string; score: number; total: number; date: string };
 
 function GuestLobby() {
   const { t, lang } = useLang();
@@ -173,6 +173,10 @@ function GuestLobby() {
                   .map((h, i) => {
                     const tr = TRACKS.find((tk) => tk.id === h.trackId);
                     const pct = h.total > 0 ? Math.round((h.score / h.total) * 100) : 0;
+                    const displayTitle =
+                      (lang === "ar" ? h.titleAr : h.titleFr) ||
+                      (tr ? tr.title[lang as "fr" | "ar"] : null) ||
+                      (h.titleFr || h.titleAr || "—");
                     return (
                       <div
                         key={i}
@@ -192,7 +196,7 @@ function GuestLobby() {
                             lineHeight: 1.3,
                           }}
                         >
-                          {tr ? tr.title[lang as "fr" | "ar"] : h.trackId}
+                          {displayTitle}
                         </p>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <p style={{ fontSize: "0.7rem", color: "oklch(0.22 0.07 258 / 0.45)", fontWeight: 600 }}>
