@@ -211,7 +211,7 @@ function GameLobby() {
             color: "var(--gw-blue)",
             fontWeight: 700,
             fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
-            marginBottom: "16px",
+            marginBottom: "14px",
             display: "flex",
             alignItems: "center",
             gap: "8px",
@@ -219,38 +219,64 @@ function GameLobby() {
             <BookOpen style={{ width: 18, height: 18 }} />
             {t("tutorialsSection")}
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+            gap: "14px",
+          }}>
             {tutorials.map(tut => {
               const title = parseBilingualGame(tut.title);
-              const content = parseBilingualGame(tut.content);
               const displayTitle = lang === "fr" ? title.fr : title.ar;
-              const displayContent = lang === "fr" ? content.fr : content.ar;
               return (
                 <button
                   key={tut.id}
                   onClick={() => setReaderTut(tut)}
                   style={{
-                    background: "var(--gw-card)",
-                    border: "2px solid var(--gw-card-border)",
-                    borderRadius: "16px",
-                    padding: "16px 20px",
-                    textAlign: lang === "ar" ? "right" : "left",
+                    position: "relative",
+                    height: "160px",
+                    borderRadius: "18px",
+                    border: "none",
                     cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
+                    overflow: "hidden",
+                    padding: 0,
+                    background: "oklch(0.28 0.12 255)",
                   }}
                 >
-                  {tut.image_url && (
-                    <img src={tut.image_url} alt="" style={{ width: 48, height: 48, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+                  {/* Cover image or colored placeholder */}
+                  {tut.image_url ? (
+                    <img
+                      src={tut.image_url}
+                      alt=""
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: "linear-gradient(135deg, oklch(0.42 0.18 255), oklch(0.28 0.14 270))",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <BookOpen style={{ width: 44, height: 44, color: "white", opacity: 0.3 }} />
+                    </div>
                   )}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontWeight: 700, color: "var(--gw-blue)", fontSize: "0.95rem", marginBottom: 2 }}>{displayTitle}</p>
-                    <p style={{ color: "oklch(0.22 0.07 258 / 0.5)", fontSize: "0.8rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {displayContent}
-                    </p>
-                  </div>
-                  <span style={{ color: "var(--gw-blue)", fontSize: "0.78rem", fontWeight: 600, flexShrink: 0 }}>{t("readTutorial")}</span>
+                  {/* Gradient overlay */}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(to top, oklch(0.10 0.05 258 / 0.82) 0%, oklch(0.10 0.05 258 / 0.1) 55%, transparent 100%)",
+                  }} />
+                  {/* Title */}
+                  <p style={{
+                    position: "absolute",
+                    bottom: 0, left: 0, right: 0,
+                    padding: "12px 14px",
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.88rem",
+                    lineHeight: 1.3,
+                    textAlign: lang === "ar" ? "right" : "left",
+                    textShadow: "0 1px 4px rgba(0,0,0,0.4)",
+                  }}>
+                    {displayTitle}
+                  </p>
                 </button>
               );
             })}

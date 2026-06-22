@@ -30,15 +30,14 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, pro
         minHeight: "100dvh",
         background: "var(--gw-bg)",
         position: "relative",
-        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      {/* ── Decorative blobs ── */}
+      {/* ── Decorative blobs — overflow clipped here, not on outer, so sticky nav works ── */}
       <div
         aria-hidden="true"
-        style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}
+        style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}
       >
         {/* Mint circle top-left */}
         <div
@@ -112,16 +111,21 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, pro
         />
       </div>
 
-      {/* ── Top navigation bar ── */}
+      {/* ── Top navigation bar — sticky so it stays visible while scrolling ── */}
       <div
         style={{
-          position: "relative",
-          zIndex: 10,
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           padding: "16px 20px",
           flexShrink: 0,
+          background: "oklch(0.97 0.01 255 / 0.88)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderBottom: "1px solid oklch(0.22 0.07 258 / 0.06)",
         }}
       >
         {/* Back button */}
