@@ -27,6 +27,7 @@ interface CategoryItem {
   scenarios: ScenarioRow[];
   totalQuestions: number;
   isDone: boolean;
+  catScore?: { earned: number; max: number };
 }
 
 function GameLobby() {
@@ -85,12 +86,9 @@ function GameLobby() {
           cats = all.filter((c) => byCat[c.id]);
         }
 
-        // Load results to mark completion
-        const completedIds = new Set<string>();
-        if (navigator.onLine) {
-          const results = await api.listResultsForStudent(student.id);
-          for (const r of results) completedIds.add(r.scenario_id);
-        }
+        // Load results to mark completion and build per-category scores
+        const results = navigator.onLine ? await api.listResultsForStudent(student.id) : [];
+        const completedIds = new Set(results.map((r) => r.scenario_id));
 
         // Load visible tutorials for this class
         if (navigator.onLine) {
@@ -103,6 +101,15 @@ function GameLobby() {
         setItems(
           cats.map((cat) => {
             const scenarios = byCat[cat.id] ?? [];
+            const catScenarioIds = new Set(scenarios.map((s) => s.id));
+            const catResults = results.filter((r) => catScenarioIds.has(r.scenario_id));
+            const catScore =
+              catResults.length > 0
+                ? {
+                    earned: catResults.reduce((sum, r) => sum + r.score, 0),
+                    max: catResults.reduce((sum, r) => sum + r.max_score, 0),
+                  }
+                : undefined;
             return {
               category: cat,
               scenarios,
@@ -111,6 +118,7 @@ function GameLobby() {
                 0,
               ),
               isDone: scenarios.length > 0 && scenarios.every((s) => completedIds.has(s.id)),
+              catScore,
             };
           }),
         );
@@ -178,7 +186,7 @@ function GameLobby() {
               gap: "16px",
             }}
           >
-            {items.map(({ category, scenarios, totalQuestions, isDone }, idx) => (
+            {items.map(({ category, scenarios, totalQuestions, isDone, catScore }, idx) => (
               <TrackCard
                 key={category.id}
                 trackId={category.id}
@@ -188,6 +196,7 @@ function GameLobby() {
                 iconName={category.icon}
                 accentColor={category.color_code}
                 done={isDone}
+                score={catScore}
                 index={idx}
                 t={t}
               />
