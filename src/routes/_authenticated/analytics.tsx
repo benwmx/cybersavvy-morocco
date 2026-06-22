@@ -131,6 +131,11 @@ function AnalyticsPage() {
     queryFn: () => api.listResultsWithStudents(classIdForQuery!),
     enabled: !!classIdForQuery,
   });
+  const { data: allStudents = [] } = useQuery({
+    queryKey: ["all-students-teacher"],
+    queryFn: () => api.listAllStudentsForTeacher(),
+    enabled: selectedClassId === "all",
+  });
 
   // ── Derived: overview stats ───────────────────────────────────────────────
 
@@ -212,15 +217,28 @@ function AnalyticsPage() {
   // ── Derived: student stats ────────────────────────────────────────────────
 
   const studentStats = useMemo(() => {
-    if (!classIdForQuery || studentsInClass.length === 0) return null;
+    const isAll = selectedClassId === "all";
+    const roster = isAll ? allStudents : studentsInClass;
+    if (roster.length === 0) return null;
 
-    const resultsByStudent: Record<string, typeof resultsWithStudents> = {};
-    resultsWithStudents.forEach(r => {
-      if (!resultsByStudent[r.student_id]) resultsByStudent[r.student_id] = [];
-      resultsByStudent[r.student_id].push(r);
-    });
+    // For "all classes" mode, build result map from filteredResults (no student names).
+    // For single-class mode, resultsWithStudents already has the join.
+    const resultsByStudent: Record<string, { score: number; max_score: number; scenario_id: string }[]> = {};
+    if (isAll) {
+      filteredResults.forEach(r => {
+        if (!resultsByStudent[r.student_id]) resultsByStudent[r.student_id] = [];
+        resultsByStudent[r.student_id].push(r);
+      });
+    } else {
+      resultsWithStudents.forEach(r => {
+        if (!resultsByStudent[r.student_id]) resultsByStudent[r.student_id] = [];
+        resultsByStudent[r.student_id].push(r);
+      });
+    }
 
-    const rows = studentsInClass.map(student => {
+    const classNameById = Object.fromEntries(classes.map(c => [c.id, c.name]));
+
+    const rows = roster.map(student => {
       const sResults = resultsByStudent[student.id] ?? [];
       const totalScore = sResults.reduce((s, r) => s + r.score, 0);
       const totalMax = sResults.reduce((s, r) => s + r.max_score, 0);
@@ -229,6 +247,7 @@ function AnalyticsPage() {
       return {
         id: student.id,
         name: lang === "ar" ? student.name_ar : student.name_fr,
+        className: isAll ? (classNameById[student.class_id] ?? "") : undefined,
         avg,
         attempts: sResults.length,
         completed,
@@ -238,15 +257,15 @@ function AnalyticsPage() {
 
     return rows.sort((a, b) => {
       let va: number | string, vb: number | string;
-      if (sortCol === "name")      { va = a.name;      vb = b.name; }
-      else if (sortCol === "avg")  { va = a.avg;       vb = b.avg; }
-      else if (sortCol === "attempts") { va = a.attempts; vb = b.attempts; }
-      else                         { va = a.completed; vb = b.completed; }
+      if (sortCol === "name")          { va = a.name;      vb = b.name; }
+      else if (sortCol === "avg")      { va = a.avg;       vb = b.avg; }
+      else if (sortCol === "attempts") { va = a.attempts;  vb = b.attempts; }
+      else                             { va = a.completed; vb = b.completed; }
       if (va < vb) return sortDir === "asc" ? -1 : 1;
       if (va > vb) return sortDir === "asc" ? 1 : -1;
       return 0;
     });
-  }, [studentsInClass, resultsWithStudents, classIdForQuery, lang, sortCol, sortDir]);
+  }, [selectedClassId, allStudents, studentsInClass, filteredResults, resultsWithStudents, classes, lang, sortCol, sortDir]);
 
   // ── Derived: trends data ──────────────────────────────────────────────────
 
@@ -478,28 +497,16 @@ function AnalyticsPage() {
 
       {/* ── TAB: Students ── */}
       {activeTab === "students" && (
-        !classIdForQuery ? (
-          <div className="py-12 flex flex-col items-center gap-3 text-center">
-            <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center">
-              <Users className="h-5 w-5 text-slate-400" />
-            </div>
-            <p className="text-sm text-slate-500 max-w-xs">{t("selectClassForStudents")}</p>
-          </div>
-        ) : !studentStats ? (
+        !studentStats ? (
           <div className="py-12 flex items-center justify-center">
             <Loader2 className="h-5 w-5 text-[#1E3A8A] animate-spin" />
           </div>
         ) : (
           <div className="space-y-4">
-
             {/* Export button */}
             <div className="flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportCsv}
-                className="h-8 px-3 text-xs rounded border-slate-200 text-slate-600 hover:bg-slate-50"
-              >
+              <Button variant="outline" size="sm" onClick={exportCsv}
+                className="h-8 px-3 text-xs rounded border-slate-200 text-slate-600 hover:bg-slate-50">
                 <Download className="h-3.5 w-3.5 me-1.5" />
                 {t("exportCsv")}
               </Button>
@@ -512,6 +519,9 @@ function AnalyticsPage() {
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50">
                       <SortTh label={t("studentName")} col="name" active={sortCol} dir={sortDir} onClick={() => handleSort("name")} />
+                      {selectedClassId === "all" && (
+                        <th className="px-4 py-2.5 text-start text-xs font-semibold text-slate-500">{t("aiClassLabel")}</th>
+                      )}
                       <SortTh label={t("average")} col="avg" active={sortCol} dir={sortDir} onClick={() => handleSort("avg")} />
                       <SortTh label={t("attempts")} col="attempts" active={sortCol} dir={sortDir} onClick={() => handleSort("attempts")} />
                       <SortTh label={t("scenariosCompleted")} col="completed" active={sortCol} dir={sortDir} onClick={() => handleSort("completed")} />
@@ -522,6 +532,9 @@ function AnalyticsPage() {
                     {studentStats.map(s => (
                       <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-4 py-3 font-medium text-slate-800">{s.name}</td>
+                        {selectedClassId === "all" && (
+                          <td className="px-4 py-3 text-xs text-slate-400">{s.className}</td>
+                        )}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <span className="font-mono font-semibold text-[#1E3A8A] w-10 shrink-0">{s.attempts > 0 ? Math.round(s.avg) + "%" : "—"}</span>
@@ -542,7 +555,7 @@ function AnalyticsPage() {
               </div>
             </Card>
 
-            {/* Not started students */}
+            {/* Not started */}
             {(() => {
               const notStarted = studentStats.filter(s => s.status === "not_started");
               if (notStarted.length === 0) return (
@@ -554,7 +567,7 @@ function AnalyticsPage() {
                   <div className="flex flex-wrap gap-2 mt-4">
                     {notStarted.map(s => (
                       <span key={s.id} className="inline-flex items-center px-3 py-1 rounded-full border border-slate-200 bg-slate-50 text-xs font-medium text-slate-600">
-                        {s.name}
+                        {s.name}{s.className ? ` · ${s.className}` : ""}
                       </span>
                     ))}
                   </div>
