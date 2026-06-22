@@ -11,6 +11,7 @@ interface StudentDetails {
 interface StudentContextType {
   student: StudentDetails | null;
   isAuthenticated: boolean;
+  initialized: boolean;
   login: (details: StudentDetails) => void;
   logout: () => void;
 }
@@ -19,6 +20,7 @@ const StudentContext = createContext<StudentContextType | undefined>(undefined);
 
 export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [student, setStudent] = useState<StudentDetails | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("cs.student");
@@ -29,6 +31,7 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         localStorage.removeItem("cs.student");
       }
     }
+    setInitialized(true);
   }, []);
 
   const login = useCallback((details: StudentDetails) => {
@@ -44,7 +47,7 @@ export const StudentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   return (
-    <StudentContext.Provider value={{ student, isAuthenticated: !!student, login, logout }}>
+    <StudentContext.Provider value={{ student, isAuthenticated: !!student, initialized, login, logout }}>
       {children}
     </StudentContext.Provider>
   );
