@@ -11,10 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, BookOpen, Save, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Plus, BookOpen, Save, Loader2, GitFork } from "lucide-react";
 import type { Json } from "@/lib/database.types";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DocMarkdown } from "@/components/DocMarkdown";
+import { IconPicker } from "@/components/IconPicker";
 
 export const Route = createFileRoute("/_authenticated/tutorials")({
   component: TutorialsPage,
@@ -41,6 +42,7 @@ function TutorialsPage() {
   const qc = useQueryClient();
 
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
+  const [catAction, setCatAction] = useState<"create" | { edit: CategoryRow } | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTut, setEditingTut] = useState<TutorialRow | null>(null);
   const [form, setForm] = useState<TutorialFormState>(EMPTY_FORM);
@@ -64,9 +66,17 @@ function TutorialsPage() {
     queryFn: () => api.listCategories(),
   });
 
-  // Only show global categories in the sidebar — teacher forks share the same name
-  // and tutorials are assigned per category_id, so we use the canonical global ones
-  const categories = rawCategories.filter(c => c.teacher_id === null);
+  // Global categories + teacher's brand-new custom categories (not forks — forks duplicate global names)
+  // Build category list: teacher's own (forks + custom) always shown,
+  // global categories hidden when the teacher has already forked them (no duplicates)
+  const forkedSourceIds = new Set(
+    rawCategories
+      .filter(c => c.teacher_id === session?.id && c.source_category_id)
+      .map(c => c.source_category_id)
+  );
+  const categories = rawCategories.filter(
+    c => c.teacher_id !== null || !forkedSourceIds.has(c.id)
+  );
 
   const { data: tutorials = [] } = useQuery<TutorialRow[]>({
     queryKey: ["tutorials", selectedCatId, session?.id],
@@ -130,6 +140,26 @@ function TutorialsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const forkCategory = useMutation({
+    mutationFn: (id: string) => api.forkCategory(id),
+    onSuccess: cat => {
+      qc.invalidateQueries({ queryKey: ["categories"] });
+      setSelectedCatId(cat.id);
+      toast.success(t("categoryCustomCreated"));
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteCategory = useMutation({
+    mutationFn: (id: string) => api.deleteCategory(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["categories"] });
+      setSelectedCatId(null);
+      toast.success(t("categoryDeleted"));
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const openCreate = () => {
     setEditingTut(null);
     setForm(EMPTY_FORM);
@@ -159,7 +189,7 @@ function TutorialsPage() {
   const selectedCat = categories.find(c => c.id === selectedCatId);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-6">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2.5">
@@ -178,24 +208,48 @@ function TutorialsPage() {
         )}
       </div>
 
-      <div className="flex gap-4 h-[calc(100vh-220px)]">
+      <div className="flex gap-4 h-[calc(100vh-215px)] lg:h-[calc(100vh-250px)]">
         {/* Category list */}
-        <Card className="w-52 shrink-0 border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden flex flex-col">
+        <Card className="w-56 shrink-0 border border-slate-200 shadow-none bg-white rounded-sm overflow-hidden flex flex-col">
           <div className="h-0.5 bg-[#1E3A8A]" />
-          <CardHeader className="p-3 pb-2">
+          <CardHeader className="p-3 pb-2 flex-row items-center justify-between gap-2">
             <CardTitle className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{t("adminCategories")}</CardTitle>
+            <button onClick={() => setCatAction("create")}
+              className="h-5 w-5 rounded flex items-center justify-center text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50 transition-colors shrink-0">
+              <Plus className="h-3.5 w-3.5" />
+            </button>
           </CardHeader>
           <CardContent className="p-0 flex-1 overflow-y-auto">
             {categories.map(cat => {
               const active = cat.id === selectedCatId;
+              const isGlobal = cat.teacher_id === null;
               return (
-                <button key={cat.id} onClick={() => setSelectedCatId(cat.id)}
-                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors ${
-                    active ? "bg-blue-50 text-[#1E3A8A] font-semibold" : "text-slate-700 hover:bg-slate-50"
-                  }`}>
-                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color_code || "#94a3b8" }} />
-                  <span className="truncate">{translate(cat.name)}</span>
-                </button>
+                <div key={cat.id} className={`group flex items-center gap-1 px-2 transition-colors ${active ? "bg-blue-50" : "hover:bg-slate-50"}`}>
+                  <button onClick={() => setSelectedCatId(cat.id)}
+                    className={`flex-1 flex items-center gap-2 py-2.5 text-left text-sm min-w-0 ${active ? "text-[#1E3A8A] font-semibold" : "text-slate-700"}`}>
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color_code || "#94a3b8" }} />
+                    <span className="truncate">{translate(cat.name)}</span>
+                  </button>
+                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    {isGlobal ? (
+                      <button onClick={() => forkCategory.mutate(cat.id)} title={t("createMyVersion")}
+                        className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                        <GitFork className="h-3 w-3" />
+                      </button>
+                    ) : (
+                      <>
+                        <button onClick={() => setCatAction({ edit: cat })}
+                          className="p-1 rounded text-slate-400 hover:text-[#1E3A8A] transition-colors">
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                        <button onClick={() => { if (confirm(t("confirmDeleteCategory"))) deleteCategory.mutate(cat.id); }}
+                          className="p-1 rounded text-slate-400 hover:text-rose-500 transition-colors">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </CardContent>
@@ -335,10 +389,97 @@ function TutorialsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Category create/edit dialog */}
+      <Dialog open={catAction !== null} onOpenChange={v => { if (!v) setCatAction(null); }}>
+        <DialogContent className="max-w-lg rounded-sm">
+          <DialogHeader>
+            <DialogTitle className="text-slate-800 font-semibold">
+              {catAction === "create" ? t("newCategoryBtn") : t("editCategoryTitle")}
+            </DialogTitle>
+          </DialogHeader>
+          {catAction !== null && (
+            <CategoryForm
+              initial={catAction === "create" ? null : (catAction as { edit: CategoryRow }).edit}
+              onSuccess={() => {
+                qc.invalidateQueries({ queryKey: ["categories"] });
+                setCatAction(null);
+              }}
+              onCancel={() => setCatAction(null)}
+              t={t}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Reader modal */}
       {readerTut && (
         <TutorialReader tut={readerTut} lang={lang} t={t} onClose={() => setReaderTut(null)} />
       )}
+    </div>
+  );
+}
+
+function CategoryForm({
+  initial, onSuccess, onCancel, t,
+}: {
+  initial: CategoryRow | null;
+  onSuccess: () => void;
+  onCancel: () => void;
+  t: (k: string) => string;
+}) {
+  const [name, setName] = useState(
+    initial ? (initial.name as { fr: string; ar: string }) : { fr: "", ar: "" }
+  );
+  const [color, setColor] = useState(initial?.color_code || "#3B82F6");
+  const [iconName, setIconName] = useState<string | null>(initial?.icon ?? null);
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (initial) return api.updateCategory(initial.id, { name, color_code: color, icon: iconName });
+      const session = await api.getSession();
+      if (!session) throw new Error("Not authenticated");
+      return api.createCategory({ teacher_id: session.id, name, color_code: color, icon: iconName });
+    },
+    onSuccess: () => {
+      toast.success(initial ? t("categoryUpdated") : t("categoryCreated"));
+      onSuccess();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="space-y-4 pt-1">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-slate-500">{t("adminNameFr")}</Label>
+          <Input value={name.fr} onChange={e => setName({ ...name, fr: e.target.value })}
+            placeholder="Ex: Sécurité mobile" className="h-8 rounded bg-slate-50 text-sm" autoFocus />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-slate-500">{t("adminNameAr")}</Label>
+          <Input value={name.ar} onChange={e => setName({ ...name, ar: e.target.value })}
+            placeholder="مثال: أمان الهاتف" className="h-8 rounded bg-slate-50 text-sm text-right" dir="rtl" />
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs text-slate-500">{t("adminColor")}</Label>
+        <div className="flex items-center gap-3">
+          <input type="color" value={color} onChange={e => setColor(e.target.value)}
+            className="h-8 w-12 rounded border border-slate-200 cursor-pointer shrink-0" />
+          <Input value={color} onChange={e => setColor(e.target.value)}
+            className="h-8 rounded bg-slate-50 font-mono text-sm flex-1" maxLength={7} />
+        </div>
+      </div>
+      <IconPicker value={iconName} onChange={setIconName} />
+      <div className="flex justify-end gap-2 pt-1">
+        <Button variant="ghost" onClick={onCancel} className="rounded text-sm px-4 h-8">
+          {t("adminCancel")}
+        </Button>
+        <Button onClick={() => save.mutate()} disabled={!name.fr.trim() || !name.ar.trim() || save.isPending}
+          className="rounded bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-sm px-4 h-8">
+          {initial ? t("save") : t("create")}
+        </Button>
+      </div>
     </div>
   );
 }
