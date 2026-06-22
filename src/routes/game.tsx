@@ -38,6 +38,7 @@ function GameLobby() {
   const [items, setItems] = useState<CategoryItem[]>([]);
   const [tutorials, setTutorials] = useState<TutorialRow[]>([]);
   const [readerTut, setReaderTut] = useState<TutorialRow | null>(null);
+  const [tab, setTab] = useState<"scenarios" | "resources">("scenarios");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -158,67 +159,112 @@ function GameLobby() {
             color: "oklch(0.22 0.07 258 / 0.55)",
             fontWeight: 600,
             fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
-            marginBottom: "32px",
+            marginBottom: "24px",
           }}
         >
           {t("chooseTrack")}
         </p>
 
-        {items.length === 0 ? (
-          <div
-            style={{
-              background: "var(--gw-card)",
-              border: "2px solid var(--gw-card-border)",
-              borderRadius: "24px",
-              padding: "40px 32px",
-              textAlign: "center",
-            }}
-          >
-            <p style={{ color: "oklch(0.22 0.07 258 / 0.5)", fontWeight: 600, fontSize: "0.95rem" }}>
-              {t("noTracksAvailable")}
-            </p>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-              gap: "16px",
-            }}
-          >
-            {items.map(({ category, scenarios, totalQuestions, isDone, catScore }, idx) => (
-              <TrackCard
-                key={category.id}
-                trackId={category.id}
-                title={translate(category.name)}
-                description={`${scenarios.length} ${t("trackCount")}`}
-                questionCount={totalQuestions}
-                iconName={category.icon}
-                accentColor={category.color_code}
-                done={isDone}
-                score={catScore}
-                index={idx}
-                t={t}
-              />
-            ))}
+        {/* Tab bar — only rendered when the teacher assigned tutorials */}
+        {tutorials.length > 0 && (
+          <div style={{ display: "flex", gap: "8px", marginBottom: "28px" }}>
+            <button
+              onClick={() => setTab("scenarios")}
+              style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                padding: "9px 20px",
+                borderRadius: "999px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: "0.88rem",
+                transition: "all 0.2s ease",
+                background: tab === "scenarios" ? "var(--gw-blue)" : "oklch(0.22 0.07 258 / 0.08)",
+                color: tab === "scenarios" ? "white" : "oklch(0.22 0.07 258 / 0.5)",
+                boxShadow: tab === "scenarios" ? "0 4px 14px oklch(0.52 0.19 255 / 0.28)" : "none",
+              }}
+            >
+              {t("tracks")}
+            </button>
+            <button
+              onClick={() => setTab("resources")}
+              style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                padding: "9px 20px",
+                borderRadius: "999px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: "0.88rem",
+                transition: "all 0.2s ease",
+                background: tab === "resources" ? "var(--gw-blue)" : "oklch(0.22 0.07 258 / 0.08)",
+                color: tab === "resources" ? "white" : "oklch(0.22 0.07 258 / 0.5)",
+                boxShadow: tab === "resources" ? "0 4px 14px oklch(0.52 0.19 255 / 0.28)" : "none",
+              }}
+            >
+              {t("tutorialsSection")}
+              <span style={{
+                background: tab === "resources" ? "white" : "var(--gw-blue)",
+                color: tab === "resources" ? "var(--gw-blue)" : "white",
+                borderRadius: "999px",
+                fontSize: "0.7rem",
+                fontWeight: 800,
+                padding: "1px 7px",
+                lineHeight: "18px",
+                minWidth: "18px",
+                textAlign: "center",
+              }}>
+                {tutorials.length}
+              </span>
+            </button>
           </div>
         )}
-      </div>
-      {/* Tutorials section */}
-      {tutorials.length > 0 && (
-        <div style={{ maxWidth: "720px", marginTop: "40px" }}>
-          <p style={{
-            color: "var(--gw-blue)",
-            fontWeight: 700,
-            fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
-            marginBottom: "14px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}>
-            <BookOpen style={{ width: 18, height: 18 }} />
-            {t("tutorialsSection")}
-          </p>
+
+        {/* ── Scenarios tab ── */}
+        {tab === "scenarios" && (
+          items.length === 0 ? (
+            <div
+              style={{
+                background: "var(--gw-card)",
+                border: "2px solid var(--gw-card-border)",
+                borderRadius: "24px",
+                padding: "40px 32px",
+                textAlign: "center",
+              }}
+            >
+              <p style={{ color: "oklch(0.22 0.07 258 / 0.5)", fontWeight: 600, fontSize: "0.95rem" }}>
+                {t("noTracksAvailable")}
+              </p>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                gap: "16px",
+              }}
+            >
+              {items.map(({ category, scenarios, totalQuestions, isDone, catScore }, idx) => (
+                <TrackCard
+                  key={category.id}
+                  trackId={category.id}
+                  title={translate(category.name)}
+                  description={`${scenarios.length} ${t("trackCount")}`}
+                  questionCount={totalQuestions}
+                  iconName={category.icon}
+                  accentColor={category.color_code}
+                  done={isDone}
+                  score={catScore}
+                  index={idx}
+                  t={t}
+                />
+              ))}
+            </div>
+          )
+        )}
+
+        {/* ── Resources tab ── */}
+        {tab === "resources" && tutorials.length > 0 && (
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
@@ -242,7 +288,6 @@ function GameLobby() {
                     background: "oklch(0.28 0.12 255)",
                   }}
                 >
-                  {/* Cover image or colored placeholder */}
                   {tut.image_url ? (
                     <img
                       src={tut.image_url}
@@ -258,12 +303,10 @@ function GameLobby() {
                       <BookOpen style={{ width: 44, height: 44, color: "white", opacity: 0.3 }} />
                     </div>
                   )}
-                  {/* Gradient overlay */}
                   <div style={{
                     position: "absolute", inset: 0,
                     background: "linear-gradient(to top, oklch(0.10 0.05 258 / 0.82) 0%, oklch(0.10 0.05 258 / 0.1) 55%, transparent 100%)",
                   }} />
-                  {/* Title */}
                   <p style={{
                     position: "absolute",
                     bottom: 0, left: 0, right: 0,
@@ -281,8 +324,8 @@ function GameLobby() {
               );
             })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Tutorial reader overlay */}
       {readerTut && (() => {
