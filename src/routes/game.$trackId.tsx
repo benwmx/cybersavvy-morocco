@@ -341,7 +341,7 @@ function CategoryRunner() {
         segmentIdx: scenarioIdx,
       }}
     >
-      <div style={{ maxWidth: hasSideBySide ? "800px" : "640px", width: "100%" }}>
+      <div style={{ maxWidth: hasSideBySide ? "920px" : "640px", width: "100%" }}>
         {hasSideBySide ? (
           /* ── Side-by-side card (image left, Q+choices right) ── */
           <div
@@ -355,17 +355,30 @@ function CategoryRunner() {
           >
             {/* Top row */}
             <div className="quiz-sbs-row" style={{ display: "flex" }}>
-              {/* Left: image / visual — full image visible, no cropping */}
+              {/* Left: image column — blurred bg fills letterbox, foreground image fully visible */}
               <div
                 className="quiz-sbs-img"
-                style={{ flex: "0 0 48%", position: "relative", minHeight: "300px", background: "oklch(0.15 0.05 258 / 0.06)" }}
+                style={{ flex: "0 0 52%", position: "relative", minHeight: "380px", overflow: "hidden", background: "oklch(0.12 0.04 258)" }}
               >
                 {q.media_url ? (
-                  <img
-                    src={q.media_url}
-                    alt=""
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" }}
-                  />
+                  <>
+                    {/* Blurred backdrop — fills letterbox space */}
+                    <img
+                      src={q.media_url}
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute", inset: "-8px", width: "calc(100% + 16px)", height: "calc(100% + 16px)",
+                        objectFit: "cover",
+                        filter: "blur(18px) brightness(0.45) saturate(1.3)",
+                      }}
+                    />
+                    {/* Foreground — full image, no cropping */}
+                    <img
+                      src={q.media_url}
+                      alt=""
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" }}
+                    />
+                  </>
                 ) : (
                   <div style={{ position: "absolute", inset: 0 }}>
                     <ScenarioVisuals
@@ -426,9 +439,9 @@ function CategoryRunner() {
         )}
       </div>
       <style>{`
-        @media (max-width: 640px) {
+        @media (max-width: 680px) {
           .quiz-sbs-row { flex-direction: column !important; }
-          .quiz-sbs-img { flex: none !important; height: 220px !important; min-height: 0 !important; position: relative !important; }
+          .quiz-sbs-img { flex: none !important; height: 240px !important; min-height: 0 !important; }
         }
       `}</style>
     </GameWorld>
