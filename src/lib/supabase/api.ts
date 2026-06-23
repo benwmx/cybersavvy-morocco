@@ -553,13 +553,34 @@ export const api = {
     return [];
   },
 
+  async listPublicCategories(): Promise<CategoryRow[]> {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .is("teacher_id", null)
+      .is("source_category_id", null);
+    if (error) throw error;
+    return (data || []) as CategoryRow[];
+  },
+
+  async listPublicTutorialsForCategory(categoryId: string): Promise<TutorialRow[]> {
+    const { data, error } = await supabase
+      .from("tutorials")
+      .select("*")
+      .eq("category_id", categoryId)
+      .is("teacher_id", null)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return (data || []) as TutorialRow[];
+  },
+
   async listPublicScenariosForCategory(categoryId: string): Promise<ScenarioRow[]> {
     const db = getDB();
     if (db) {
       const local = await db.scenarios
         .where("category_id")
         .equals(categoryId)
-        .filter((s) => s.teacher_id === null || s.teacher_id === undefined)
+        .filter((s) => s.is_public === true)
         .toArray();
       if (local.length > 0) return local as ScenarioRow[];
     }
@@ -568,7 +589,7 @@ export const api = {
         .from("scenarios")
         .select("*")
         .eq("category_id", categoryId)
-        .is("teacher_id", null);
+        .eq("is_public", true);
       if (error) throw error;
       return (data || []) as ScenarioRow[];
     }

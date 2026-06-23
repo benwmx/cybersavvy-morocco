@@ -43,7 +43,7 @@ interface CategoryItem {
 
 function GameLobby() {
   const { t, lang } = useLang();
-  const { student, initialized } = useStudent();
+  const { student, initialized, logout } = useStudent();
   const { translate } = useI18n();
   const navigate = useNavigate();
   const [items, setItems] = useState<CategoryItem[]>([]);
@@ -108,7 +108,7 @@ function GameLobby() {
           cats = all.filter((c) => byCat[c.id]);
         }
 
-        const results = navigator.onLine ? await api.listResultsForStudent(student.id) : [];
+        const results = navigator.onLine ? await api.listResultsForStudent(student.id).catch(() => []) : [];
         const completedIds = new Set(results.map((r) => r.scenario_id));
 
         if (navigator.onLine) {
@@ -171,8 +171,13 @@ function GameLobby() {
     lang === "fr" ? student.name_fr : student.name_ar,
   );
 
+  const handleLogout = () => {
+    logout();
+    navigate({ to: "/login" });
+  };
+
   return (
-    <GameWorld mascotPose="neutral" backTo="/login">
+    <GameWorld mascotPose="neutral" onLogout={handleLogout}>
       <div style={{ maxWidth: "720px" }}>
         <p
           style={{
