@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft, Home, LogOut } from "lucide-react";
 import { CyberMascot } from "./CyberMascot";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLang } from "@/lib/i18n/LanguageContext";
@@ -10,6 +10,7 @@ interface Props {
   children: React.ReactNode;
   mascotPose?: Pose;
   backTo?: string;
+  onLogout?: () => void;
   title?: string;
   contentAlign?: "start" | "center";
   progress?: {
@@ -20,7 +21,7 @@ interface Props {
   };
 }
 
-export function GameWorld({ children, mascotPose = "neutral", backTo, title, contentAlign = "start", progress }: Props) {
+export function GameWorld({ children, mascotPose = "neutral", backTo, onLogout, title, contentAlign = "start", progress }: Props) {
   const { t, dir } = useLang();
 
   return (
@@ -129,8 +130,36 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, con
           borderBottom: "1px solid oklch(0.22 0.07 258 / 0.06)",
         }}
       >
-        {/* Back button */}
-        {backTo ? (
+        {/* Back / logout button */}
+        {onLogout ? (
+          <button
+            onClick={onLogout}
+            title={t("logout")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              height: "44px",
+              padding: "0 14px",
+              borderRadius: "12px",
+              background: "var(--gw-amber)",
+              color: "var(--gw-ink)",
+              boxShadow: "0 4px 12px oklch(0.60 0.145 68 / 0.35)",
+              transition: "transform 0.15s ease",
+              flexShrink: 0,
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 700,
+              fontSize: "0.8rem",
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.05)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
+          >
+            <LogOut style={{ width: 17, height: 17, transform: dir === "rtl" ? "scaleX(-1)" : "none" }} />
+            {t("logout")}
+          </button>
+        ) : backTo ? (
           <Link
             to={backTo}
             style={{
@@ -146,20 +175,10 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, con
               transition: "transform 0.15s ease, box-shadow 0.15s ease",
               flexShrink: 0,
             }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "scale(1.08)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "scale(1)";
-            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.08)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
           >
-            <ArrowLeft
-              style={{
-                width: 20,
-                height: 20,
-                transform: dir === "rtl" ? "rotate(180deg)" : "none",
-              }}
-            />
+            <ArrowLeft style={{ width: 20, height: 20, transform: dir === "rtl" ? "rotate(180deg)" : "none" }} />
           </Link>
         ) : (
           <div style={{ width: 44 }} />
@@ -268,14 +287,16 @@ export function GameWorld({ children, mascotPose = "neutral", backTo, title, con
                     key={i}
                     style={{
                       height: "5px",
-                      width: curr ? "22px" : "5px",
+                      width: "22px",
                       borderRadius: "999px",
                       background: done
                         ? "oklch(0.52 0.19 255 / 0.45)"
                         : curr
                         ? "var(--gw-blue)"
                         : "oklch(0.22 0.07 258 / 0.15)",
-                      transition: "width 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease",
+                      transformOrigin: dir === "rtl" ? "right center" : "left center",
+                      transform: curr ? "scaleX(1)" : "scaleX(0.23)",
+                      transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease",
                       boxShadow: curr ? "0 0 6px oklch(0.52 0.19 255 / 0.5)" : "none",
                     }}
                   />
