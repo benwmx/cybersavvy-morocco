@@ -184,6 +184,37 @@
   .gw-float, .gw-mascot, .gw-pop-in, .gw-slide-up { animation: none !important; }
 }
 
+/* ── Login / Auth surfaces ──────────────────────────────── */
+.login-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid oklch(0.88 0.015 258);
+  border-radius: 8px;
+  background: white;
+  color: oklch(0.15 0.08 258);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.login-input:focus {
+  border-color: oklch(0.32 0.14 258);
+  box-shadow: 0 0 0 3px oklch(0.32 0.14 258 / 0.12);
+}
+.login-input::placeholder {
+  color: oklch(0.68 0.02 260);
+}
+.login-input.mono {
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', monospace;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-input { transition: none; }
+}
+
 /* ─────────────────────────────────────────────────────── */
 
 @layer base {
