@@ -34,7 +34,10 @@ export function getAIConfig(userId: string): AIConfig | null {
   if (raw) {
     try {
       const config = JSON.parse(raw) as AIConfig;
-      if (!PROVIDER_META[config.provider]) config.provider = "gemini";
+      if (!PROVIDER_META[config.provider]) {
+        config.provider = "gemini";
+        localStorage.setItem(configKey(userId), JSON.stringify(config));
+      }
       return config;
     } catch { /* fall through */ }
   }

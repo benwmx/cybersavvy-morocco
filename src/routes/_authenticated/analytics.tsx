@@ -144,13 +144,29 @@ function AnalyticsPage() {
     return results.filter(r => r.class_id === selectedClassId);
   }, [results, selectedClassId]);
 
-  const questionTextMap = useMemo(() => {
-    const map: Record<string, { fr: string; ar: string }> = {};
+  const questionContextMap = useMemo(() => {
+    const map: Record<string, {
+      fr: string; ar: string;
+      scenarioFr: string; scenarioAr: string;
+      categoryId: string;
+    }> = {};
     scenarios.forEach(s => {
+      const title = s.title as Record<string, string> | null;
+      const scenarioFr = title?.fr ?? "";
+      const scenarioAr = title?.ar ?? scenarioFr;
       const qs = s.questions as any[];
       if (Array.isArray(qs)) {
-        qs.forEach(q => {
-          if (q?.id && q?.prompt?.fr) map[q.id] = { fr: q.prompt.fr, ar: q.prompt.ar ?? q.prompt.fr };
+        qs.forEach((q, idx) => {
+          if (!q?.id) return;
+          const promptFr: string | undefined = q?.prompt?.fr;
+          const promptAr: string | undefined = q?.prompt?.ar ?? promptFr;
+          map[q.id] = {
+            fr: promptFr ?? (scenarioFr ? `${scenarioFr} — Q${idx + 1}` : q.id),
+            ar: promptAr ?? (scenarioAr ? `${scenarioAr} — س${idx + 1}` : q.id),
+            scenarioFr,
+            scenarioAr,
+            categoryId: s.category_id,
+          };
         });
       }
     });
@@ -193,8 +209,22 @@ function AnalyticsPage() {
     });
 
     const commonMistakes = Object.entries(mistakeCounts)
-      .sort((a, b) => b[1] - a[1]).slice(0, 5)
-      .map(([id, count]) => ({ fr: questionTextMap[id]?.fr ?? id, ar: questionTextMap[id]?.ar ?? id, count }));
+      .sort((a, b) => b[1] - a[1])
+      .filter(([id]) => questionContextMap[id])
+      .slice(0, 6)
+      .map(([id, count]) => {
+        const ctx = questionContextMap[id]!;
+        const cat = categories.find(c => c.id === ctx.categoryId);
+        return {
+          fr: ctx.fr,
+          ar: ctx.ar,
+          scenarioFr: ctx.scenarioFr,
+          scenarioAr: ctx.scenarioAr,
+          categoryName: cat ? translate(cat.name) : "",
+          categoryColor: cat?.color_code ?? "#94a3b8",
+          count,
+        };
+      });
 
     const scenarioChartData = Object.values(scenarioStats)
       .sort((a, b) => b.attempts - a.attempts).slice(0, 10)
@@ -212,7 +242,7 @@ function AnalyticsPage() {
       commonMistakes,
       scenarioChartData,
     };
-  }, [filteredResults, scenarios, categories, translate, questionTextMap]);
+  }, [filteredResults, scenarios, categories, translate, questionContextMap]);
 
   // ── Derived: student stats ────────────────────────────────────────────────
 
@@ -464,9 +494,31 @@ function AnalyticsPage() {
                     <p className="text-slate-400 text-sm">{t("noFrequentErrors")}</p>
                   ) : (
                     stats.commonMistakes.map((m, i) => (
-                      <div key={i} className="flex items-start justify-between gap-2 p-3 rounded border border-rose-100 bg-rose-50/30">
-                        <p className="text-sm text-slate-700 leading-snug">{lang === "ar" ? m.ar : m.fr}</p>
-                        <span className="text-xs font-semibold text-rose-600 shrink-0">{m.count}×</span>
+                      <div key={i} className="flex flex-col gap-2.5 p-4 rounded-sm border border-slate-100 bg-[#FAFAFA]">
+                        {/* Category + scenario */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold text-white"
+                            style={{ background: m.categoryColor }}
+                          >
+                            {m.categoryName}
+                          </span>
+                          {(lang === "ar" ? m.scenarioAr : m.scenarioFr) && (
+                            <span className="text-[11px] text-slate-400 font-medium truncate max-w-[140px]">
+                              {lang === "ar" ? m.scenarioAr : m.scenarioFr}
+                            </span>
+                          )}
+                        </div>
+                        {/* Question text */}
+                        <p className="text-sm font-medium text-slate-800 leading-snug flex-1">
+                          {lang === "ar" ? m.ar : m.fr}
+                        </p>
+                        {/* Error count */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-50 border border-rose-100 text-[11px] font-bold text-rose-600">
+                            {m.count}× {t("studentsFailed")}
+                          </span>
+                        </div>
                       </div>
                     ))
                   )}
