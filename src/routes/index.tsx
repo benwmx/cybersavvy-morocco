@@ -12,6 +12,9 @@ import {
   MessageSquareWarning,
   Lock,
   Bug,
+  Newspaper,
+  Fingerprint,
+  Scale,
   ArrowUpRight
 } from "lucide-react";
 
@@ -38,6 +41,9 @@ function LandingPage() {
     { id: "bullying", icon: MessageSquareWarning, label: t("pillarBullying") },
     { id: "privacy", icon: Lock, label: t("pillarPrivacy") },
     { id: "threats", icon: Bug, label: t("pillarMalware") },
+    { id: "fake-news", icon: Newspaper, label: t("pillarFakeNews") },
+    { id: "digital-identity", icon: Fingerprint, label: t("pillarDigitalIdentity") },
+    { id: "digital-rights", icon: Scale, label: t("pillarDigitalRights") },
   ];
 
   const scrollToContent = () => {

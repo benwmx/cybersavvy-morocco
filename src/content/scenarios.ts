@@ -13,7 +13,7 @@ export interface Question {
 
 export interface Track {
   id: string;
-  icon: "Fish" | "KeyRound" | "Users" | "MessageSquareWarning" | "Lock" | "Bug";
+  icon: "Fish" | "KeyRound" | "Users" | "MessageSquareWarning" | "Lock" | "Bug" | "Newspaper" | "Fingerprint" | "Scale";
   color: string;
   title: { fr: string; ar: string };
   description: { fr: string; ar: string };
@@ -392,6 +392,265 @@ export const CATEGORIES: Track[] = [
             { label_fr: "App Store officiel ✓", label_ar: "المتجر الرسمي ✓", style: "secondary" },
             { label_fr: "⬇ Télécharger ici (gratuit!)", label_ar: "⬇ حمّل هنا (مجاناً!)", style: "danger" },
           ],
+        },
+      },
+    ],
+  },
+  // ── Culture numérique ────────────────────────────────────────────────────────
+  {
+    id: "fake-news",
+    icon: "Newspaper",
+    color: "text-amber-500",
+    title: { fr: "Fake News", ar: "الأخبار المزيفة" },
+    description: { fr: "Reconnaître et déjouer la désinformation.", ar: "التعرف على المعلومات المضللة ومواجهتها." },
+    questions: [
+      {
+        id: "fake-news-q1",
+        prompt: {
+          fr: "Une vidéo choquante circule sur WhatsApp affirmant que les vaccins sont dangereux. Que fais-tu avant de la partager ?",
+          ar: "مقطع مثير ينتشر على واتساب يزعم أن اللقاحات خطيرة. ماذا تفعل قبل مشاركته؟",
+        },
+        choices: {
+          fr: ["Je la partage car ça semble vrai", "Je vérifie sur un site officiel avant de partager", "Je la transfère à ma famille pour les prévenir"],
+          ar: ["أشاركه لأنه يبدو حقيقياً", "أتحقق من موقع رسمي قبل المشاركة", "أرسله لعائلتي لتحذيرهم"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "Avant de partager, vérifie la source. Les fausses informations se propagent 6 fois plus vite que les vraies.",
+          ar: "قبل المشاركة، تحقق من المصدر. تنتشر الأخبار الكاذبة 6 مرات أسرع من الحقيقية.",
+        },
+        visual_type: "social_feed",
+        visual_config: {
+          username: "info_rapide_22",
+          caption_fr: "URGENT ! Des médecins révèlent la VÉRITÉ sur les vaccins ! Partagez avant que ça soit censuré ! 😱",
+          caption_ar: "عاجل! أطباء يكشفون الحقيقة عن اللقاحات! شاركوا قبل أن يُحذف! 😱",
+          show_location: false,
+        },
+      },
+      {
+        id: "fake-news-q2",
+        prompt: {
+          fr: "Un titre annonce : 'LES SCIENTIFIQUES PROUVENT QUE LES ÉCRANS DÉTRUISENT LE CERVEAU !!' Quel est l'indice de manipulation ?",
+          ar: "عنوان يعلن: 'العلماء يُثبتون أن الشاشات تُدمّر الدماغ!!' ما علامة التلاعب؟",
+        },
+        choices: {
+          fr: ["Le sujet est grave, donc c'est vrai", "Les majuscules et l'exagération signalent une fake news", "Les scientifiques ont toujours raison"],
+          ar: ["الموضوع خطير إذن هو حقيقي", "الأحرف الكبيرة والمبالغة علامة خبر مزيف", "العلماء دائماً على حق"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "Les titres en majuscules, sans source citée, avec des mots comme 'PROUVENT' ou 'RÉVÈLENT' sont des signaux d'alarme classiques.",
+          ar: "العناوين بأحرف كبيرة، بدون مصادر، مع كلمات مثل 'يُثبتون' أو 'يكشفون' — هذه إشارات تحذير كلاسيكية.",
+        },
+        visual_type: "browser_popup",
+        visual_config: {
+          url: "infoflash-actu.net",
+          title_fr: "LES ÉCRANS DÉTRUISENT LE CERVEAU !!",
+          title_ar: "الشاشات تُدمّر الدماغ!!",
+          body_fr: "Des scientifiques ont PROUVÉ que 2h d'écran par jour détruisent définitivement les neurones. Partagez cette info VITALE !",
+          body_ar: "أثبت العلماء أن ساعتين أمام الشاشة يومياً تدمران الخلايا العصبية نهائياً. شاركوا هذه المعلومة الحيوية!",
+          cta_fr: "LIRE LA SUITE",
+          cta_ar: "اقرأ المزيد",
+        },
+      },
+      {
+        id: "fake-news-q3",
+        prompt: {
+          fr: "Quelle est la bonne méthode pour vérifier si une information est vraie ?",
+          ar: "ما الطريقة الصحيحة للتحقق من صحة خبر ما؟",
+        },
+        choices: {
+          fr: ["Compter les likes et les partages", "Chercher sur plusieurs sources officielles indépendantes", "Demander à ses amis"],
+          ar: ["عدّ الإعجابات والمشاركات", "البحث في عدة مصادر رسمية مستقلة", "سؤال الأصدقاء"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "Vérifie sur au moins deux sources officielles. Des sites de fact-checking comme AFP Factuel aident à démêler le vrai du faux.",
+          ar: "تحقق من مصدرين رسميين على الأقل. مواقع التحقق من الحقائق مثل AFP Factuel تساعد في التمييز بين الصحيح والمزيف.",
+        },
+        visual_type: "fake_download",
+        visual_config: {
+          app_name: "Comment vérifier une info ?",
+          app_desc_fr: "Choisissez la bonne méthode",
+          app_desc_ar: "اختر الطريقة الصحيحة",
+          buttons: [
+            { label_fr: "👍 Compter les likes", label_ar: "👍 عدّ الإعجابات", style: "danger" },
+            { label_fr: "✓ Vérifier sur des sites officiels", label_ar: "✓ التحقق من مواقع رسمية", style: "primary" },
+            { label_fr: "💬 Demander à des amis", label_ar: "💬 سؤال الأصدقاء", style: "secondary" },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "digital-identity",
+    icon: "Fingerprint",
+    color: "text-teal-600",
+    title: { fr: "Identité numérique", ar: "الهوية الرقمية" },
+    description: { fr: "Comprendre et maîtriser son empreinte en ligne.", ar: "فهم بصمتك الرقمية والتحكم فيها." },
+    questions: [
+      {
+        id: "digital-identity-q1",
+        prompt: {
+          fr: "Tu supprimes une publication embarrassante d'il y a 2 ans sur Instagram. Est-elle vraiment effacée ?",
+          ar: "حذفت منشوراً محرجاً من سنتين على إنستغرام. هل اختفى فعلاً؟",
+        },
+        choices: {
+          fr: ["Oui, elle disparaît complètement d'internet", "Non, elle peut rester en capture d'écran ou dans des caches", "Oui, si tu supprimes aussi ton compte"],
+          ar: ["نعم، يختفي تماماً من الإنترنت", "لا، قد يبقى في لقطات الشاشة أو الذاكرة المؤقتة", "نعم، إذا حذفت الحساب أيضاً"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "Internet garde des traces : captures d'écran, caches Google, archives web. La suppression n'efface jamais tout à 100%.",
+          ar: "يحتفظ الإنترنت بالآثار: لقطات الشاشة، ذاكرة التخزين المؤقت لجوجل، أرشيفات الويب. الحذف لا يمحو كل شيء أبداً.",
+        },
+        visual_type: "comment_section",
+        visual_config: {
+          post_caption_fr: "Regardez ma bêtise de l'année dernière 😂😂",
+          post_caption_ar: "انظروا لحماقتي من السنة الماضية 😂😂",
+          comments: [
+            { username: "sara_m", text_fr: "J'ai pris un screenshot lol", text_ar: "أخذت لقطة شاشة لول", type: "mean" },
+            { username: "karim_22", text_fr: "Trop drôle 😭", text_ar: "مضحك جداً 😭", type: "supportive" },
+            { username: "nadia.off", text_fr: "Je l'ai enregistrée aussi !", text_ar: "حفظته أنا كذلك!", type: "mean" },
+          ],
+        },
+      },
+      {
+        id: "digital-identity-q2",
+        prompt: {
+          fr: "Dans 10 ans, un recruteur googlelise ton nom. Qu'est-ce qu'il risque de trouver ?",
+          ar: "بعد 10 سنوات، يبحث مسؤول توظيف عن اسمك على غوغل. ماذا قد يجد؟",
+        },
+        choices: {
+          fr: ["Rien, mes comptes sont privés", "Ce que tu publies aujourd'hui peut définir ton image demain", "Seulement ce que tu lui montreras"],
+          ar: ["لا شيء، حساباتي خاصة", "ما تنشره اليوم قد يحدد صورتك غداً", "فقط ما ستريه له"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "Ton empreinte numérique se construit dès maintenant. Réfléchis à ce que tu veux que les autres voient de toi en ligne.",
+          ar: "تبدأ بصمتك الرقمية الآن. فكّر فيما تريد أن يراه الآخرون عنك على الإنترنت.",
+        },
+        visual_type: "social_feed",
+        visual_config: {
+          username: "youssef_officiel",
+          caption_fr: "Mon profil public... visible par tout le monde, y compris dans 10 ans 👀",
+          caption_ar: "ملفي الشخصي العام... مرئي للجميع، حتى بعد 10 سنوات 👀",
+          show_location: true,
+          location_fr: "Collège Ibn Khaldoun - Casablanca",
+          location_ar: "ثانوية ابن خلدون - الدار البيضاء",
+        },
+      },
+      {
+        id: "digital-identity-q3",
+        prompt: {
+          fr: "Tu utilises un pseudonyme pour rester anonyme en ligne. Es-tu vraiment invisible ?",
+          ar: "تستخدم اسماً مستعاراً لتبقى مجهولاً على الإنترنت. هل أنت مجهول فعلاً؟",
+        },
+        choices: {
+          fr: ["Oui, personne ne peut te retrouver", "Non, ton adresse IP et tes habitudes laissent des traces", "Oui, si tu changes de pseudo souvent"],
+          ar: ["نعم، لا أحد يستطيع إيجادك", "لا، عنوان IP وعاداتك تترك آثاراً", "نعم، إذا غيّرت الاسم المستعار كثيراً"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "L'anonymat complet est très difficile : ton fournisseur internet, les plateformes et les cookies peuvent t'identifier même sans ton vrai nom.",
+          ar: "الإخفاء الكامل صعب جداً: مزود الإنترنت والمنصات وملفات تعريف الارتباط يمكنها التعرف عليك حتى بدون اسمك الحقيقي.",
+        },
+        visual_type: "cookie_consent",
+        visual_config: {
+          site_name: "reseau-social-ado.ma",
+          body_fr: "Nous collectons votre adresse IP, l'appareil utilisé, votre localisation et vos habitudes de navigation — même si vous utilisez un pseudonyme.",
+          body_ar: "نجمع عنوان IP الخاص بك، الجهاز المستخدم، موقعك وعاداتك في التصفح — حتى إن كنت تستخدم اسماً مستعاراً.",
+          accept_fr: "J'accepte",
+          accept_ar: "أقبل",
+          reject_fr: "En savoir plus",
+          reject_ar: "معرفة المزيد",
+        },
+      },
+    ],
+  },
+  {
+    id: "digital-rights",
+    icon: "Scale",
+    color: "text-indigo-500",
+    title: { fr: "Droits numériques", ar: "الحقوق الرقمية" },
+    description: { fr: "Propriété intellectuelle et droits en ligne.", ar: "الملكية الفكرية والحقوق على الإنترنت." },
+    questions: [
+      {
+        id: "digital-rights-q1",
+        prompt: {
+          fr: "Tu trouves une belle photo sur Google Images pour ton exposé scolaire. Tu peux...",
+          ar: "وجدت صورة جميلة على غوغل للصور لعرضك المدرسي. يمكنك...",
+        },
+        choices: {
+          fr: ["L'utiliser librement, elle est sur internet", "Vérifier sa licence — certaines sont libres d'utilisation, d'autres non", "La modifier légèrement pour éviter les problèmes"],
+          ar: ["استخدامها بحرية، فهي على الإنترنت", "التحقق من رخصتها — بعضها مجاني وبعضها محمي", "تعديلها قليلاً لتجنب المشاكل"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "Les images sur internet ont des droits d'auteur. Utilise le filtre 'Droits d'utilisation' de Google Images ou des sites comme Unsplash.",
+          ar: "للصور على الإنترنت حقوق ملكية فكرية. استخدم فلتر 'حقوق الاستخدام' في غوغل للصور أو مواقع مثل Unsplash.",
+        },
+        visual_type: "browser_popup",
+        visual_config: {
+          url: "images.google.com",
+          title_fr: "Cette image est protégée",
+          title_ar: "هذه الصورة محمية",
+          body_fr: "© Photographe : Yassine Belkadi. Tous droits réservés. L'utilisation sans permission est interdite.",
+          body_ar: "© المصور: ياسين بلقاضي. جميع الحقوق محفوظة. الاستخدام بدون إذن ممنوع.",
+          cta_fr: "Demander une licence",
+          cta_ar: "طلب ترخيص",
+        },
+      },
+      {
+        id: "digital-rights-q2",
+        prompt: {
+          fr: "Ton ami copie un texte entier de Wikipédia dans son devoir sans citer la source. C'est...",
+          ar: "صديقك نسخ نصاً كاملاً من ويكيبيديا في واجبه دون ذكر المصدر. هذا...",
+        },
+        choices: {
+          fr: ["Normal, Wikipédia est gratuit", "Du plagiat, même si le contenu est gratuit", "Autorisé pour les devoirs scolaires"],
+          ar: ["طبيعي، ويكيبيديا مجاني", "سرقة أدبية حتى لو كان المحتوى مجانياً", "مسموح به للواجبات المدرسية"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "Gratuit ne veut pas dire sans auteur. Copier sans citer = plagiat. Il suffit d'écrire : 'Source : Wikipédia, article sur...'.",
+          ar: "المجاني لا يعني بلا مؤلف. النسخ بدون إسناد = سرقة أدبية. يكفي أن تكتب: 'المصدر: ويكيبيديا، مقال حول...'",
+        },
+        visual_type: "chat_group",
+        visual_config: {
+          group_name_fr: "Groupe Devoirs",
+          group_name_ar: "مجموعة الواجبات",
+          messages: [
+            { username: "Adam", color: "#3b82f6", text_fr: "J'ai copié-collé tout l'article Wikipédia, c'est bon non ?", text_ar: "نسخت ولصقت المقال كله من ويكيبيديا، هذا مقبول؟", side: "left" },
+            { username: "Lina", color: "#8b5cf6", text_fr: "Non ! C'est du plagiat même si c'est gratuit...", text_ar: "لا! هذه سرقة أدبية حتى لو كان مجانياً...", side: "left" },
+            { username: "Adam", color: "#3b82f6", text_fr: "Ah bon ? Même pour l'école ?", text_ar: "آه؟ حتى للمدرسة؟", side: "left" },
+          ],
+        },
+      },
+      {
+        id: "digital-rights-q3",
+        prompt: {
+          fr: "Tu veux ajouter une chanson populaire à ta vidéo YouTube. Que peux-tu faire légalement ?",
+          ar: "تريد إضافة أغنية شهيرة لفيديو يوتيوب. ما يمكنك فعله بشكل قانوني؟",
+        },
+        choices: {
+          fr: ["Utiliser n'importe quelle chanson en mentionnant l'artiste", "Utiliser de la musique libre de droits ou Creative Commons", "Télécharger la chanson et la modifier légèrement"],
+          ar: ["استخدام أي أغنية مع ذكر الفنان", "استخدام موسيقى مجانية الحقوق أو Creative Commons", "تحميل الأغنية وتعديلها قليلاً"],
+        },
+        correctIndex: 1,
+        explanation: {
+          fr: "Mentionner l'artiste ne suffit pas. Utilise la bibliothèque audio YouTube ou des sites de musique sous licence Creative Commons.",
+          ar: "ذكر الفنان لا يكفي. استخدم مكتبة يوتيوب الصوتية أو مواقع موسيقى بترخيص Creative Commons.",
+        },
+        visual_type: "phone_permissions",
+        visual_config: {
+          app_name: "YouTube Studio",
+          permission_fr: "utiliser 'Blinding Lights' (The Weeknd) dans votre vidéo — droits d'auteur protégés",
+          permission_ar: "استخدام أغنية محمية بحقوق النشر في فيديوك",
+          allow_fr: "Utiliser quand même",
+          allow_ar: "استخدام رغم ذلك",
+          deny_fr: "Choisir une musique libre",
+          deny_ar: "اختيار موسيقى مجانية",
         },
       },
     ],
