@@ -18,8 +18,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "CyberSafe",
-        short_name: "CyberSafe",
+        name: "e-Wa3y",
+        short_name: "e-Wa3y",
         theme_color: "#1E3A8A",
         icons: [
           {

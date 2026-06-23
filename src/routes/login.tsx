@@ -5,7 +5,8 @@ import { useStudent } from "@/context/StudentContext";
 import { api } from "@/lib/supabase/api";
 import { toast } from "sonner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { Shield, GraduationCap, ShieldCheck, Loader2, ArrowRight } from "lucide-react";
+import { GraduationCap, ShieldCheck, Loader2, ArrowRight } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
 import { z } from "zod";
 
 const loginSearchSchema = z.object({
@@ -15,7 +16,7 @@ const loginSearchSchema = z.object({
 export const Route = createFileRoute("/login")({
   validateSearch: (search) => loginSearchSchema.parse(search),
   component: LoginPage,
-  head: () => ({ meta: [{ title: "Accès — CyberSafe" }] }),
+  head: () => ({ meta: [{ title: "Accès — e-Wa3y" }] }),
 });
 
 function LoginPage() {
@@ -37,19 +38,7 @@ function LoginPage() {
           padding: "clamp(2.5rem, 5vw, 4rem)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{
-            width: 40, height: 40,
-            background: "oklch(1 0 0 / 0.12)",
-            borderRadius: "10px",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <Shield style={{ width: 20, height: 20, color: "white" }} />
-          </div>
-          <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "white", letterSpacing: "-0.01em" }}>
-            {t("appName")}
-          </span>
-        </div>
+        <AppLogo variant="dark" to="/" />
 
         <div>
           <p style={{
@@ -75,7 +64,7 @@ function LoginPage() {
         </div>
 
         <p style={{ color: "oklch(1 0 0 / 0.22)", fontSize: "0.7rem", fontWeight: 500 }}>
-          © 2025 CyberSafe · MENPS
+          © 2025 e-Wa3y · MENPS
         </p>
       </div>
 
@@ -94,11 +83,8 @@ function LoginPage() {
           padding: "16px 28px",
           borderBottom: "1px solid oklch(0.93 0.01 260)",
         }}>
-          <div className="flex md:hidden items-center gap-2">
-            <Shield style={{ width: 18, height: 18, color: "oklch(0.22 0.14 258)" }} />
-            <span style={{ fontWeight: 700, color: "oklch(0.22 0.14 258)", fontSize: "0.95rem" }}>
-              {t("appName")}
-            </span>
+          <div className="flex md:hidden">
+            <AppLogo variant="light" to="/" />
           </div>
           <div className="hidden md:block" />
           <LanguageSwitcher />

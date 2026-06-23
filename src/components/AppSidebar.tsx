@@ -1,5 +1,6 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, BarChart3, LogOut, Shield, Settings, User, GraduationCap, Users, BookOpen, BookMarked, BookText } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, Settings, User, GraduationCap, Users, BookOpen, BookMarked, BookText } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
 import {
   Sidebar,
   SidebarContent,
@@ -50,14 +51,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" side="left">
       <SidebarHeader>
         <Link to="/dashboard" className="flex items-center gap-2 px-2 py-2 min-h-[48px] justify-center lg:justify-start">
-          <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-[#1E3A8A] text-white shrink-0 mx-auto lg:mx-0">
-            <Shield className="h-3.5 w-3.5" />
-          </div>
-          {state === "expanded" && (
-            <span className="font-semibold truncate ms-2 text-slate-800 text-sm">
-              {t("appName")}
-            </span>
-          )}
+          <AppLogo variant="light" showText={state === "expanded"} />
         </Link>
       </SidebarHeader>
 
