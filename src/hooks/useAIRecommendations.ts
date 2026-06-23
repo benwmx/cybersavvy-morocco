@@ -24,7 +24,7 @@ const PROMPT_STRINGS = {
     s2desc: "(3 étapes concrètes que l'enseignant devrait mettre en œuvre lors des 2-3 prochaines séances)",
     s3: "Méthodes pédagogiques recommandées",
     s3desc: "(2-3 activités de classe adaptées au contexte marocain — jeux de rôle, ateliers, études de cas, approche par compétences du programme GENIE)",
-    s4: "Tutoriels à créer dans CyberSafe",
+    s4: "Tutoriels à créer dans e-Wa3y",
     s4desc: "(2-3 titres de tutoriels spécifiques à créer dans l'application pour renforcer les points faibles identifiés)",
   },
   ar: {
@@ -37,14 +37,14 @@ const PROMPT_STRINGS = {
     s2desc: "(3 خطوات ملموسة وقابلة للتنفيذ يجب على المعلم تطبيقها في الجلسات الـ2-3 القادمة)",
     s3: "الأساليب البيداغوجية الموصى بها",
     s3desc: "(2-3 أنشطة صفية مكيفة مع السياق التعليمي المغربي — لعب الأدوار، الورش، دراسات الحالة، المقاربة بالكفاءات من برنامج جيني)",
-    s4: "دروس تعليمية لإنشائها في CyberSafe",
+    s4: "دروس تعليمية لإنشائها في e-Wa3y",
     s4desc: "(2-3 عناوين دروس تعليمية محددة يمكن إنشاؤها في التطبيق لتعزيز نقاط الضعف المحددة)",
   },
 } as const;
 
 export function getDefaultSystemPrompt(lang: Lang): string {
   const s = PROMPT_STRINGS[lang];
-  return `You are a pedagogical advisor for Moroccan secondary school teachers (collèges and lycées) using the CyberSafe platform to teach digital citizenship and cybersecurity.
+  return `You are a pedagogical advisor for Moroccan secondary school teachers (collèges and lycées) using the e-Wa3y platform to teach digital culture and cybersecurity.
 
 Based on the class performance data the teacher provides and the Moroccan national digital competency framework (programme GENIE / CNTE), generate structured, practical recommendations.
 

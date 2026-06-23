@@ -4,11 +4,12 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { api, supabaseClient } from "@/lib/supabase/api";
 import { toast } from "sonner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { Shield, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
-  head: () => ({ meta: [{ title: "Réinitialisation — CyberSafe" }] }),
+  head: () => ({ meta: [{ title: "Réinitialisation — e-Wa3y" }] }),
 });
 
 function ResetPasswordPage() {
@@ -65,19 +66,7 @@ function ResetPasswordPage() {
           padding: "clamp(2.5rem, 5vw, 4rem)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{
-            width: 40, height: 40,
-            background: "oklch(1 0 0 / 0.12)",
-            borderRadius: "10px",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <Shield style={{ width: 20, height: 20, color: "white" }} />
-          </div>
-          <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "white", letterSpacing: "-0.01em" }}>
-            {t("appName")}
-          </span>
-        </div>
+        <AppLogo variant="dark" to="/" />
 
         <div>
           <p style={{
@@ -103,7 +92,7 @@ function ResetPasswordPage() {
         </div>
 
         <p style={{ color: "oklch(1 0 0 / 0.22)", fontSize: "0.7rem", fontWeight: 500 }}>
-          © 2025 CyberSafe · MENPS
+          © 2025 e-Wa3y · MENPS
         </p>
       </div>
 
@@ -122,11 +111,8 @@ function ResetPasswordPage() {
           padding: "16px 28px",
           borderBottom: "1px solid oklch(0.93 0.01 260)",
         }}>
-          <div className="flex md:hidden items-center gap-2">
-            <Shield style={{ width: 18, height: 18, color: "oklch(0.22 0.14 258)" }} />
-            <span style={{ fontWeight: 700, color: "oklch(0.22 0.14 258)", fontSize: "0.95rem" }}>
-              {t("appName")}
-            </span>
+          <div className="flex md:hidden">
+            <AppLogo variant="light" to="/" />
           </div>
           <div className="hidden md:block" />
           <LanguageSwitcher />

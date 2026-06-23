@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Shield, RefreshCw, LogOut } from "lucide-react";
+import { RefreshCw, LogOut } from "lucide-react";
+import { AppLogo } from "./AppLogo";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useOffline } from "@/lib/offline/OfflineSyncProvider";
@@ -25,11 +26,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1E3A8A] text-white shadow-lg shadow-blue-900/20 group-hover:scale-105 transition-transform">
-            <Shield className="h-5 w-5" />
-          </div>
-          <span className="font-bold text-xl text-[#1E3A8A] tracking-tight">{t("appName")}</span>
+        <Link to="/">
+          <AppLogo variant="light" />
         </Link>
         <div className="flex items-center gap-4">
           {syncing && (

@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import {
-  ShieldCheck,
   ArrowRight,
   Wifi,
   ChevronDown,
@@ -17,15 +16,16 @@ import {
   Scale,
   ArrowUpRight
 } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     meta: [
-      { title: "CyberSafe — Plateforme Nationale de Cybersécurité" },
+      { title: "e-Wa3y — Culture Numérique et Cybersécurité" },
       {
         name: "description",
-        content: "Plateforme d'Évaluation et de Sensibilisation à la Cybersécurité pour le milieu éducatif.",
+        content: "Outil pédagogique interactif pour renforcer la culture numérique et la cybersécurité chez les collégiens.",
       },
     ],
   }),
@@ -55,10 +55,7 @@ function LandingPage() {
       {/* 1. THE SYSTEM NAVIGATION HEADER */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-[#1E3A8A]" />
-            <span className="text-xl font-extrabold tracking-tighter text-[#1E3A8A]">{t("appName")}</span>
-          </div>
+          <AppLogo variant="light" to="/" />
 
           <div className="flex items-center gap-4">
             <div className="flex p-1 bg-slate-50 border border-slate-100 rounded-lg">

@@ -1,7 +1,8 @@
 import { createFileRoute, Outlet, redirect, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { api } from "@/lib/supabase/api";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { Shield, Languages, LogOut, Type, LayoutDashboard, Users, Layers, GraduationCap, Settings, BookText, BookOpen } from "lucide-react";
+import { Languages, LogOut, Type, LayoutDashboard, Users, Layers, GraduationCap, Settings, BookText, BookOpen } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
@@ -39,13 +40,8 @@ function AdminLayout() {
       {/* Dark admin sidebar */}
       <aside className="w-60 shrink-0 flex flex-col bg-[#0f172a] border-e border-white/5">
         <div className="h-16 flex items-center gap-3 px-5 border-b border-white/5">
-          <div className="h-8 w-8 rounded-xl bg-[#1E3A8A] flex items-center justify-center text-white shadow-lg shrink-0">
-            <Shield className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-black text-white text-sm leading-none">CyberSafe</p>
-            <p className="text-[10px] text-[#1E3A8A] font-black uppercase tracking-[0.2em] mt-0.5">Admin</p>
-          </div>
+          <AppLogo variant="dark" to="/" />
+          <span className="text-[10px] text-[#3b82f6] font-black uppercase tracking-[0.2em] ms-1">Admin</span>
         </div>
 
         <nav className="flex-1 px-3 py-5 space-y-1">
