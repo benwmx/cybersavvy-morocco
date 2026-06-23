@@ -29,6 +29,8 @@ import {
   Cpu,
   Cloud,
   Camera,
+  Newspaper,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 
@@ -75,6 +77,8 @@ export const ICON_REGISTRY: IconDef[] = [
   { name: "Cpu", component: Cpu, labelFr: "Matériel", labelAr: "معدات" },
   { name: "Cloud", component: Cloud, labelFr: "Cloud", labelAr: "سحابة" },
   { name: "Camera", component: Camera, labelFr: "Caméra / Vie privée", labelAr: "كاميرا / خصوصية" },
+  { name: "Newspaper", component: Newspaper, labelFr: "Actualités / Fake news", labelAr: "أخبار / معلومات مزيفة" },
+  { name: "Scale", component: Scale, labelFr: "Droits numériques", labelAr: "الحقوق الرقمية" },
 ];
 
 export function getIconComponent(name: string | null | undefined): LucideIcon | null {
