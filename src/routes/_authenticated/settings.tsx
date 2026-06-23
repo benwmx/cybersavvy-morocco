@@ -44,13 +44,22 @@ function SettingsPage() {
   const [password, setPassword] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
 
-  // Connection settings
-  const [provider, setProvider] = useState<AIProvider>("gemini");
-  const [model, setModel] = useState(PROVIDER_META.gemini.defaultModel);
+  // Connection settings — lazy-init from cache so first render is already correct
+  const [provider, setProvider] = useState<AIProvider>(() => {
+    if (!session?.id) return "gemini";
+    return getAIConfig(session.id)?.provider ?? "gemini";
+  });
+  const [model, setModel] = useState(() => {
+    if (!session?.id) return PROVIDER_META.gemini.defaultModel;
+    return getAIConfig(session.id)?.model ?? PROVIDER_META.gemini.defaultModel;
+  });
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [keyStatus, setKeyStatus] = useState<"idle" | "testing" | "valid" | "invalid">("idle");
-  const [hasSavedKey, setHasSavedKey] = useState(false);
+  const [hasSavedKey, setHasSavedKey] = useState(() => {
+    if (!session?.id) return false;
+    return !!getAIConfig(session.id);
+  });
 
   // Generation settings
   const [temperature, setTemperature] = useState(0.3);
@@ -258,7 +267,7 @@ function SettingsPage() {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-3.5 w-3.5 text-violet-600" />
                     <span className="text-xs font-medium text-violet-700">{t("keyConfigured")}</span>
-                    <span className="text-xs text-slate-400">— {PROVIDER_META[provider].label}</span>
+                    <span className="text-xs text-slate-400">— {PROVIDER_META[provider]?.label ?? provider}</span>
                   </div>
                   <Button
                     variant="ghost"
