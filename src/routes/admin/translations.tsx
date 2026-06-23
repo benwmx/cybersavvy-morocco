@@ -280,7 +280,7 @@ function TranslationsPage() {
             <>
               <ColHeader />
               <div className="divide-y divide-slate-50 max-h-[62vh] overflow-y-auto">
-                {filtered.map(entry => {renderEntry(entry)})}
+                {filtered.map(entry => renderEntry(entry))}
               </div>
               {filtered.length === 0 && (
                 <div className="py-12 text-center text-sm text-slate-400">{t("adminNoResults")}</div>
@@ -325,7 +325,7 @@ function TranslationsPage() {
                           <span>{t("adminColAr")}</span>
                           <span />
                         </div>
-                        {group.entries.map(entry => {renderEntry(entry)})}
+                        {group.entries.map(entry => renderEntry(entry))}
                       </div>
                     )}
                   </div>
