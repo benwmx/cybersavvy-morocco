@@ -2,7 +2,7 @@
 
 e-Wa3y is a cybersecurity awareness platform for Moroccan schools. Learners work through interactive scenarios to learn about digital safety; teachers get a dashboard to manage classes, assign content, and track progress. All content is cached locally and syncs when connectivity is restored, which matters a lot in classrooms where the internet drops out regularly.
 
-**Live:** [cybersafemorocco.netlify.app](https://cybersafemorocco.netlify.app)
+**Live:** [e-wa3y.netlify.app](https://e-wa3y.netlify.app)
 
 ## Background
 
