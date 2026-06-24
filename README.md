@@ -1,50 +1,69 @@
-# CyberSafe: Plateforme Nationale de Cybersécurité
+# e-Wa3y: Plateforme Nationale de Cybersécurité
 
-CyberSafe is a cybersecurity awareness platform for Moroccan schools. Students work through interactive scenarios to learn about digital safety; teachers get a dashboard to manage classes, assign content, and track progress. All content is cached locally and syncs when connectivity is restored, which matters a lot in classrooms where the internet drops out regularly.
+e-Wa3y is a cybersecurity awareness platform for Moroccan schools. Learners work through interactive scenarios to learn about digital safety; teachers get a dashboard to manage classes, assign content, and track progress. All content is cached locally and syncs when connectivity is restored, which matters a lot in classrooms where the internet drops out regularly.
 
 **Live:** [cybersafemorocco.netlify.app](https://cybersafemorocco.netlify.app)
 
 ## Background
 
-Cybersecurity education in Morocco is still catching up. Most schools don't have a structured way to teach students about phishing, password hygiene, social engineering, or safe browsing. The tools that do exist are usually in English only, require constant internet, or aren't built for a classroom.
+Cybersecurity education in Morocco is still catching up. Most schools don't have a structured way to teach learners about phishing, password hygiene, social engineering, or safe browsing. The tools that do exist are usually in English only, require constant internet, or aren't built for a classroom.
 
-CyberSafe was made for this context specifically. It follows the Moroccan GENIE curriculum, runs in French and Arabic with proper RTL support, and works reliably in schools where sessions get interrupted by connectivity issues.
+e-Wa3y was made for this context specifically. It follows the Moroccan GENIE curriculum, runs in French and Arabic with proper RTL support, and works reliably in schools where sessions get interrupted by connectivity issues.
 
 ## Who it's for
 
 Three types of users:
 
-- Students: work through cybersecurity scenarios at their own pace, answer questions, and get immediate feedback
-- Teachers: create and manage classes, assign scenario categories, monitor progress, and see where students are struggling
-- Admins: manage all platform content and control every UI string through a translations editor, so wording can be changed without touching code
+- **Learners**: explore cybersecurity categories, work through interactive scenarios at their own pace, answer questions, and get immediate feedback — all inside a game-world interface with an animated mascot
+- **Teachers**: create and manage classes, assign scenario categories, monitor progress, see where learners are struggling, and push tutorials to their classes
+- **Admins**: manage all platform content and control every UI string through a translations editor, so wording can be changed without touching code
 
 ## Features
 
-### Learning
+### Learning experience
 
-- Scenarios covering phishing, passwords, social engineering, malware, and safe browsing
+- Game-world interface with an animated mascot, category cards, and a sequential scenario runner
+- Scenarios covering phishing, passwords, social engineering, malware, safe browsing, fake news, digital identity, and digital rights
 - Each scenario has a cover, questions with media (images or video), and a score tracked per attempt
-- Students can replay scenarios to improve their score
+- Quiz images displayed side-by-side with a blurred backdrop; click any image to open a full-screen lightbox (ESC or backdrop to close)
+- Checkpoint strip between scenarios and category score shown on each lobby card
+- Vigilance points shown as rich context cards at the end of each scenario
+- Learners can replay scenarios to improve their score
 - Guest mode for quick demos without an account
+- Public discovery page per category (`/decouvrir/:categoryId`) — no login required
+
+### Tutorials
+
+- Admins create tutorials with full Markdown support
+- Teachers copy tutorials to their classes and assign them to learners
+- Tutorials appear as visual cover cards in the game lobby; clicking opens a full-page reader
+- Tutorials tab in the lobby alongside the scenario list
 
 ### Teacher tools
 
-- Class management: create classes, add students one by one or via bulk CSV import
+- Class management: create classes, add learners one by one or via bulk CSV import
 - Assign scenario categories to specific classes
-- Analytics: per-student and per-scenario scores, attempt counts, and a chart of average performance across the class
-- Pedagogical recommendations based on class performance data, generated via the Gemini API (teachers paste their own API key in settings)
+- Analytics dashboard with tabs for:
+  - **Overview** — per-learner and per-scenario scores, attempt counts
+  - **Students** — full learner list across all classes with a class column when unfiltered, CSV export
+  - **Trends** — average performance over time, sortable table
+  - **AI** — pedagogical recommendations generated via the Gemini API (teachers paste their own API key in settings), with a data preview and enriched attempt history
 
 ### Admin
 
-- Content management: add, edit, or delete categories, scenarios, and questions
-- Per-question media upload (images and video)
+- Content management: add, edit, or delete categories, scenarios, questions, and tutorials
+- Icon picker for categories
+- Drag-and-drop ordering for scenarios within a category
+- Collapsible question editor
+- Per-type media upload limits configurable via admin sliders
+- Docs panel with a resizable sidebar for reference articles
 - Translations editor: override any UI string from the dashboard without a redeploy
 
 ### Infrastructure
 
-- Offline-first: all scenario data is cached in IndexedDB via Dexie.js. Students can complete exercises without internet; results sync to Supabase when connectivity is restored
+- Offline-first: all scenario data is cached in IndexedDB via Dexie.js; learners can complete exercises without internet, results sync to Supabase when connectivity is restored
 - Full RTL layout for Arabic
-- RLS on all Supabase tables: teachers only see their own classes and students
+- RLS on all Supabase tables: teachers only see their own classes and learners
 
 ## Tech stack
 
@@ -69,8 +88,8 @@ Three types of users:
 ### Setup
 
 ```bash
-git clone https://github.com/benwmx/cybersavvy-morocco.git
-cd cybersavvy-morocco
+git clone https://github.com/benwmx/E-Wa3y.git
+cd E-Wa3y
 bun install
 cp .env.example .env
 ```
@@ -102,6 +121,11 @@ bun format
 ```
 src/
 ├── routes/          # TanStack Router file-based routes
+│   ├── _authenticated/  # teacher dashboard routes (analytics, classes, students, tutorials…)
+│   ├── admin/           # admin panel routes (content, translations, tutorials, docs…)
+│   ├── game.tsx         # student game world
+│   ├── game.$categoryId.tsx  # scenario runner for a category
+│   └── decouvrir.$categoryId.tsx  # public category discovery page
 ├── hooks/           # custom hooks (auth, data fetching, analytics)
 ├── lib/
 │   ├── supabase/    # API layer and database types
